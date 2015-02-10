@@ -5,6 +5,7 @@ from device.conf import TellstickConfig
 
 # Create your tests here.
 
+
 class BasicDeviceTest(TestCase):
     def setUp(self):
         self.device = Device(
@@ -15,6 +16,7 @@ class BasicDeviceTest(TestCase):
             unit="1",
         )
         self.device.save()
+
 
 class DeviceConfigTests(BasicDeviceTest):
     def test_render_template_from_device(self):
@@ -55,5 +57,7 @@ class TellstickConfigTests(BasicDeviceTest):
         self.assertNotEqual("", tc.render_config())
         self.assertIsNotNone(tc.render_config())
 
-        print(tc.render_config())
+        self.assertIsInstance(tc.render_config(), str)
+
+        print(type(tc.render_config()))
 

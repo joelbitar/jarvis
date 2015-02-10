@@ -36,6 +36,10 @@ class Device(models.Model):
     fade = models.CharField(max_length=12, null=True, blank=True, default=None)
 
     @property
+    def config_id(self):
+        return str(self.pk)
+
+    @property
     def protocol_string(self):
         return dict(self.PROTOCOL_CHOICES).get(
             self.protocol
@@ -51,4 +55,11 @@ class Device(models.Model):
         return DeviceConfig(
             self
         ).render_device_conf()
+
+    def __unicode__(self):
+        return self.protocol_string
+
+    def __str__(self):
+        return self.protocol_string
+
 

@@ -21,7 +21,7 @@ class DeviceConfig(object):
             }
         )
 
-        return template.render(context)
+        return str(template.render(context))
 
 
 class TellstickConfig(object):
@@ -45,4 +45,10 @@ class TellstickConfig(object):
             }
         )
 
-        return template.render(context)
+        return str(template.render(context))
+
+
+class TellstickConfigWriter(TellstickConfig):
+    def write_config(self):
+        file = open(settings.TELLSTICK_CONFIG_PATH, 'w')
+        print(self.render_config())
