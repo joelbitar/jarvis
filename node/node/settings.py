@@ -39,7 +39,11 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'rest',
+    'rest_framework',
+
+    'device',
+
+
 )
 
 MIDDLEWARE_CLASSES = (
@@ -103,3 +107,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+
+TELLSTICK_USER = 'nobody'
+TELLSTICK_GROUP = 'plugdev'
+TELLSTICK_DEVICE_NODE = '/dev/tellstick'
