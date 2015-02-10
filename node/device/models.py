@@ -1,5 +1,6 @@
 from django.db import models
 from device.conf import DeviceConfig
+from device.commands import CommandDispatcher
 
 
 # Create your models here.
@@ -51,6 +52,10 @@ class Device(models.Model):
             self.model
         )
 
+    @property
+    def commands(self):
+        return CommandDispatcher(device=self)
+
     def render_config(self):
         return DeviceConfig(
             self
@@ -61,5 +66,6 @@ class Device(models.Model):
 
     def __str__(self):
         return self.protocol_string
+
 
 
