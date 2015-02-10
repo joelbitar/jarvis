@@ -1,12 +1,13 @@
 from django.db import models
 from device.conf import DeviceConfig
+from device.commands import CommandDispatcher
 
 
 # Create your models here.
 class Device(models.Model):
     PROTOCOL_ARCHTEC = 1
     PROTOCOL_CHOICES = (
-        (PROTOCOL_ARCHTEC, 'archtech'),
+        (PROTOCOL_ARCHTEC, 'arctech'),
     )
 
     MODEL_CODESWITCH = 1
@@ -51,6 +52,10 @@ class Device(models.Model):
             self.model
         )
 
+    @property
+    def commands(self):
+        return CommandDispatcher(device=self)
+
     def render_config(self):
         return DeviceConfig(
             self
@@ -61,5 +66,6 @@ class Device(models.Model):
 
     def __str__(self):
         return self.protocol_string
+
 
 
