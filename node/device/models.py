@@ -6,7 +6,7 @@ from device.conf import DeviceConfig
 class Device(models.Model):
     PROTOCOL_ARCHTEC = 1
     PROTOCOL_CHOICES = (
-        (PROTOCOL_ARCHTEC, 'archtech'),
+        (PROTOCOL_ARCHTEC, 'arctech'),
     )
 
     MODEL_CODESWITCH = 1
