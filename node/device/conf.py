@@ -51,4 +51,4 @@ class TellstickConfig(object):
 class TellstickConfigWriter(TellstickConfig):
     def write_config(self):
         file = open(settings.TELLSTICK_CONFIG_PATH, 'w')
-        print(self.render_config())
+        file.write(self.render_config())

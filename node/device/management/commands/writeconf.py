@@ -11,7 +11,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         devices = Device.objects.all()
         #print('Writing config for {device_count} devices'.format(device_count=str(devices.count())))
-        print(devices)
         tellstick_config_writer = TellstickConfigWriter(devices=devices)
         tellstick_config_writer.write_config()
 
