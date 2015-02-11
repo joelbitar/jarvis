@@ -10,8 +10,8 @@ class BasicDeviceTest(TestCase):
     def setUp(self):
         self.device = Device(
             name='Test device',
-            protocol=Device.PROTOCOL_ARCHTEC,
-            model=Device.MODEL_CODESWITCH,
+            protocol='arctech',
+            model='codeswitch',
             house="A",
             unit="1",
         )
@@ -33,20 +33,6 @@ class DeviceConfigTests(BasicDeviceTest):
             device_conf_object.render_device_conf(),
             self.device.render_config()
         )
-
-class TestDeviceMethodsForConfig(BasicDeviceTest):
-    def test_should_get_protocol_string(self):
-        self.assertEqual(
-            self.device.protocol_string,
-            dict(Device.PROTOCOL_CHOICES)[self.device.protocol]
-        )
-
-    def test_should_get_model_string(self):
-        self.assertEqual(
-            self.device.model_string,
-            dict(Device.MODEL_CHOICES)[self.device.model]
-        )
-
 
 class TellstickConfigTests(BasicDeviceTest):
     def test_render_tellstick_config_is_a_string(self):

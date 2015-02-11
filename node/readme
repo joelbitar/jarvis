@@ -1,6 +1,4 @@
 depends on telldus-core 2.1.0
 http://download.telldus.se/TellStick/Software/telldus-core/
 
-sudo apt-get install libftdi1 libftdi-dev libconfuse0 libconfuse-dev
-
-make install
+virtualenv

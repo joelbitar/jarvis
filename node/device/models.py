@@ -5,6 +5,8 @@ from device.commands import CommandDispatcher
 
 # Create your models here.
 class Device(models.Model):
+    """
+    # These should be in hub, not node.
     PROTOCOL_ARCHTEC = 1
     PROTOCOL_CHOICES = (
         (PROTOCOL_ARCHTEC, 'arctech'),
@@ -21,10 +23,13 @@ class Device(models.Model):
         (MODEL_SELFLEARNING_DIMMER, 'selflearning-dimmer'),
     )
 
-    protocol = models.PositiveSmallIntegerField(choices=PROTOCOL_CHOICES, default=PROTOCOL_ARCHTEC)
+    """
+
+    # Arctec etc
+    protocol = models.CharField(max_length=56)
     name = models.CharField(max_length=56)
     description = models.TextField(default='', blank=True)
-    model = models.PositiveSmallIntegerField(choices=MODEL_CHOICES)
+    model = models.CharField(max_length=56)
     controller = models.PositiveIntegerField(null=True, blank=True, default=None)
 
     # parameters
@@ -39,18 +44,6 @@ class Device(models.Model):
     @property
     def config_id(self):
         return str(self.pk)
-
-    @property
-    def protocol_string(self):
-        return dict(self.PROTOCOL_CHOICES).get(
-            self.protocol
-        )
-
-    @property
-    def model_string(self):
-        return dict(self.MODEL_CHOICES).get(
-            self.model
-        )
 
     @property
     def commands(self):
