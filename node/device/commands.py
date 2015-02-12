@@ -1,20 +1,35 @@
 __author__ = 'joel'
 import os
 from subprocess import call
+from django.core import mail
 
 
 class CommandDispatcher(object):
     __device = None
+    __send_commands = True
 
     def __init__(self, device):
         self.__device = device
+
+        # If we are in Test mode we disable sending commands
+        if hasattr(mail, 'outbox'):
+            self.__send_commands = False
+        else:
+            self.__send_commands = True
+
+    @property
+    def send_commands(self):
+        return self.__send_commands
 
     @property
     def device(self):
         return self.__device
 
     def execute_command(self, command_name):
-        call(['tdtool', command_name, str(self.device.pk)])
+        if self.send_commands:
+            call(['tdtool', command_name, str(self.device.pk)])
+        else:
+            print('Does not send command, in test mode.')
 
     def learn(self):
         self.execute_command('--learn')

@@ -7,7 +7,7 @@ from device.commands import CommandDispatcher
 
 class Command(BaseCommand):
     args = '<device id>'
-    help = 'Writes tellstick config file to disk'
+    help = 'Turns on a specific device'
 
     def handle(self, *args, **options):
         device_id = args[0]

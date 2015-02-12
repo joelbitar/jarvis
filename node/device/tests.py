@@ -2,9 +2,9 @@ from django.test import TestCase
 from device.models import Device
 from device.conf import DeviceConfig
 from device.conf import TellstickConfig
+from django.conf import settings
 
 # Create your tests here.
-
 
 class BasicDeviceTest(TestCase):
     def setUp(self):
@@ -45,5 +45,8 @@ class TellstickConfigTests(BasicDeviceTest):
 
         self.assertIsInstance(tc.render_config(), str)
 
-        print(type(tc.render_config()))
+
+class TellstickTestToggleDevice(BasicDeviceTest):
+    def test_call_turn_on_device(self):
+        self.device.commands.turn_on()
 
