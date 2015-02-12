@@ -1,10 +1,12 @@
 from django.test import TestCase
+from django.test.client import Client
+from django.core.urlresolvers import reverse
 from device.models import Device
 from device.conf import DeviceConfig
 from device.conf import TellstickConfig
+from django.conf import settings
 
 # Create your tests here.
-
 
 class BasicDeviceTest(TestCase):
     def setUp(self):
@@ -34,6 +36,7 @@ class DeviceConfigTests(BasicDeviceTest):
             self.device.render_config()
         )
 
+
 class TellstickConfigTests(BasicDeviceTest):
     def test_render_tellstick_config_is_a_string(self):
         tc = TellstickConfig(
@@ -45,5 +48,67 @@ class TellstickConfigTests(BasicDeviceTest):
 
         self.assertIsInstance(tc.render_config(), str)
 
-        print(type(tc.render_config()))
 
+class TellstickTestSwitchCommands(BasicDeviceTest):
+    def test_call_turn_on_device(self):
+        self.device.commands.turn_on()
+
+    def test_call_turn_off_device(self):
+        self.device.commands.turn_off()
+
+    def test_learn_device(self):
+        self.device.commands.learn()
+
+class DeviceRestCalls(BasicDeviceTest):
+        def test_send_on_command(self):
+            client = Client()
+
+            url = reverse('device-command', kwargs={'pk' : self.device.pk})
+
+            response = client.post(
+                url,
+                {
+                    'command' : 'on'
+                }
+            )
+
+            self.assertEqual(response.status_code, 200)
+
+        def test_should_not_be_able_to_send_command_that_does_not_exist(self):
+            client = Client()
+
+            url = reverse('device-command', kwargs={'pk' : self.device.pk})
+
+            response = client.post(
+                url,
+                {
+                    'command' : 'asdf'
+                }
+            )
+
+            print(response.content)
+
+            self.assertEqual(response.status_code, 400)
+
+            response = client.post(
+                url,
+                {
+                    'not_spelled_correctly' : 'on'
+                }
+            )
+
+            self.assertEqual(response.status_code, 400)
+
+        def test_should_receive_a_not_found_if_the_id_of_a_device_does_not_exist(self):
+            client = Client()
+
+            url = reverse('device-command', kwargs={'pk' : 666})
+
+            response = client.post(
+                url,
+                {
+                    'command' : 'on'
+                }
+            )
+
+            self.assertEqual(response.status_code, 404)
