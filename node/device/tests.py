@@ -34,6 +34,7 @@ class DeviceConfigTests(BasicDeviceTest):
             self.device.render_config()
         )
 
+
 class TellstickConfigTests(BasicDeviceTest):
     def test_render_tellstick_config_is_a_string(self):
         tc = TellstickConfig(
@@ -46,7 +47,12 @@ class TellstickConfigTests(BasicDeviceTest):
         self.assertIsInstance(tc.render_config(), str)
 
 
-class TellstickTestToggleDevice(BasicDeviceTest):
+class TellstickTestSwitchCommands(BasicDeviceTest):
     def test_call_turn_on_device(self):
         self.device.commands.turn_on()
 
+    def test_call_turn_off_device(self):
+        self.device.commands.turn_off()
+
+    def test_learn_device(self):
+        self.device.commands.learn()
