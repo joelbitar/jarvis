@@ -56,3 +56,7 @@ class TellstickTestSwitchCommands(BasicDeviceTest):
 
     def test_learn_device(self):
         self.device.commands.learn()
+
+
+class DeviceRestCalls(BasicDeviceTest):
+    pass
