@@ -2,3 +2,4 @@ depends on telldus-core 2.1.0
 http://download.telldus.se/TellStick/Software/telldus-core/
 
 virtualenv
+virtualenv --no-site-packages --distribute -p /usr/bin/python3.4

@@ -1,3 +1,2 @@
 Django==1.8a1
-distribute==0.6.31
 djangorestframework==3.0.4
