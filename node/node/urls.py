@@ -3,6 +3,7 @@ from django.contrib import admin
 from rest_framework import routers
 
 from device.views import DeviceViewSet
+from device.views import DeviceCommandView
 
 device_detail = DeviceViewSet.as_view({
     'get': 'retrieve',
@@ -18,5 +19,6 @@ urlpatterns = [
     # url(r'^$', 'node.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
     url(r'^', include(router.urls)),
+    url(r'devices/(?P<pk>[0-9]+)/execute/', DeviceCommandView.as_view(), name='device-command'),
     url(r'^admin/', include(admin.site.urls)),
 ]

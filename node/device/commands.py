@@ -3,6 +3,9 @@ import os
 from subprocess import call
 from django.core import mail
 
+class CommandError(Exception):
+    pass
+
 
 class CommandDispatcher(object):
     __device = None
@@ -25,17 +28,20 @@ class CommandDispatcher(object):
     def device(self):
         return self.__device
 
-    def execute_command(self, command_name):
+    def execute_command(self, command_name, **kwargs):
+        if command_name not in ['on', 'off', 'learn']:
+            raise CommandError('command name "{command_name}" is not in white list'.format(command_name=command_name))
+
         if self.send_commands:
-            call(['tdtool', command_name, str(self.device.pk)])
+            call(['tdtool', '--' + command_name, str(self.device.pk)])
         else:
             print('Does not send command, in test mode.')
 
     def learn(self):
-        self.execute_command('--learn')
+        self.execute_command('learn')
 
     def turn_on(self):
-        self.execute_command('--on')
+        self.execute_command('on')
 
     def turn_off(self):
-        self.execute_command('--off')
+        self.execute_command('off')

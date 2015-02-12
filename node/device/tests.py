@@ -1,4 +1,6 @@
 from django.test import TestCase
+from django.test.client import Client
+from django.core.urlresolvers import reverse
 from device.models import Device
 from device.conf import DeviceConfig
 from device.conf import TellstickConfig
@@ -57,6 +59,56 @@ class TellstickTestSwitchCommands(BasicDeviceTest):
     def test_learn_device(self):
         self.device.commands.learn()
 
-
 class DeviceRestCalls(BasicDeviceTest):
-    pass
+        def test_send_on_command(self):
+            client = Client()
+
+            url = reverse('device-command', kwargs={'pk' : self.device.pk})
+
+            response = client.post(
+                url,
+                {
+                    'command' : 'on'
+                }
+            )
+
+            self.assertEqual(response.status_code, 200)
+
+        def test_should_not_be_able_to_send_command_that_does_not_exist(self):
+            client = Client()
+
+            url = reverse('device-command', kwargs={'pk' : self.device.pk})
+
+            response = client.post(
+                url,
+                {
+                    'command' : 'asdf'
+                }
+            )
+
+            print(response.content)
+
+            self.assertEqual(response.status_code, 400)
+
+            response = client.post(
+                url,
+                {
+                    'not_spelled_correctly' : 'on'
+                }
+            )
+
+            self.assertEqual(response.status_code, 400)
+
+        def test_should_receive_a_not_found_if_the_id_of_a_device_does_not_exist(self):
+            client = Client()
+
+            url = reverse('device-command', kwargs={'pk' : 666})
+
+            response = client.post(
+                url,
+                {
+                    'command' : 'on'
+                }
+            )
+
+            self.assertEqual(response.status_code, 404)
