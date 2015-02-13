@@ -1,6 +1,9 @@
+from subprocess import call
 from django.template import Template, Context
 from django.template import loader
 from django.conf import settings
+
+from device.commands import BaseCommand
 
 
 class DeviceConfig(object):
@@ -24,7 +27,7 @@ class DeviceConfig(object):
         return str(template.render(context))
 
 
-class TellstickConfig(object):
+class TellstickConfig(BaseCommand):
     __devices = []
     def __init__(self, devices):
         self.__devices = devices or []
@@ -50,5 +53,22 @@ class TellstickConfig(object):
 
 class TellstickConfigWriter(TellstickConfig):
     def write_config(self):
+        if(self.is_in_test_mode()):
+            # Fake it till you make it!
+            self.devices.update(written_to_conf=True)
+            return None
+
         file = open(settings.TELLSTICK_CONFIG_PATH, 'w')
         file.write(self.render_config())
+
+        self.devices.update(written_to_conf=True)
+
+
+class RestartTelldusDaemon(BaseCommand):
+    def restart(self):
+        if(self.is_in_test_mode()):
+            return None
+
+        call(['sudo', settings.TELLSTICK_RESTART_DAEMON_SCRIPT_PATH])
+
+

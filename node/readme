@@ -3,3 +3,10 @@ http://download.telldus.se/TellStick/Software/telldus-core/
 
 virtualenv
 virtualenv --no-site-packages --distribute -p /usr/bin/python3.4
+
+# Enable normal user to run the restart-script as superuser
+$visudo
+
+and add
+
+joel ALL = NOPASSWD: /home/joel/projects/jarvis/node/scripts/restart_daemon.sh

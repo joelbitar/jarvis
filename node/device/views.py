@@ -4,6 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from device.serializers import DeviceSerializer
 from device.commands import CommandError
+from device.conf import TellstickConfigWriter
+from device.conf import RestartTelldusDaemon 
 
 
 class DeviceViewSet(viewsets.ModelViewSet):
@@ -29,3 +31,19 @@ class DeviceCommandView(APIView):
             return Response(data={'error': str(command_error)}, status=400)
 
         return Response()
+
+class WriteConfigView(APIView):
+    def post(self, request):
+        tellstick_config_writer = TellstickConfigWriter(devices=Device.objects.all())
+        tellstick_config_writer.write_config()
+
+        return Response()
+
+
+class RestartDaemonView(APIView):
+    def post(self, request):
+        restart_daemon = RestartTelldusDaemon()
+        restart_daemon.restart()
+
+        return Response()
+

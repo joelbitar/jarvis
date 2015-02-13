@@ -4,6 +4,8 @@ from rest_framework import routers
 
 from device.views import DeviceViewSet
 from device.views import DeviceCommandView
+from device.views import RestartDaemonView
+from device.views import WriteConfigView
 
 device_detail = DeviceViewSet.as_view({
     'get': 'retrieve',
@@ -20,5 +22,7 @@ urlpatterns = [
     # url(r'^blog/', include('blog.urls')),
     url(r'^', include(router.urls)),
     url(r'devices/(?P<pk>[0-9]+)/execute/', DeviceCommandView.as_view(), name='device-command'),
+    url(r'conf/write/', WriteConfigView.as_view(), name='write-conf'),
+    url(r'conf/restart-daemon/', RestartDaemonView.as_view(), name='restart-daemon'),
     url(r'^admin/', include(admin.site.urls)),
 ]

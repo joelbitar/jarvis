@@ -6,8 +6,15 @@ from django.core import mail
 class CommandError(Exception):
     pass
 
+class BaseCommand(object):
+    def is_in_test_mode(self):
+        if hasattr(mail, 'outbox'):
+           return True
+        else:
+            return False
 
-class CommandDispatcher(object):
+
+class CommandDispatcher(BaseCommand):
     __device = None
     __send_commands = True
 
@@ -15,11 +22,8 @@ class CommandDispatcher(object):
         self.__device = device
 
         # If we are in Test mode we disable sending commands
-        if hasattr(mail, 'outbox'):
-            self.__send_commands = False
-        else:
-            self.__send_commands = True
-
+        self.__send_commands = not self.is_in_test_mode() 
+        
     @property
     def send_commands(self):
         return self.__send_commands

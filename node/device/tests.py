@@ -182,6 +182,7 @@ class DeviceRestCrud(BasicDeviceTest):
                 'system': self.device.system,
                 'units': self.device.units,
                 'fade': self.device.fade,
+		'written_to_conf': self.device.written_to_conf,
             })
         )
 
@@ -237,3 +238,49 @@ class DeviceRestCalls(BasicDeviceTest):
         )
 
         self.assertEqual(response.status_code, 404)
+
+class DeviceRestTests(BasicDeviceTest):
+    def test_should_be_able_to_update_a_device(self):
+        client = Client()
+
+        response = client.put(
+                '/devices/' + str(self.device.pk) + '/',
+                json.dumps({
+                    'name' : 'New name',
+                    'model' : 'model',
+                    'protocol' : 'protocol',
+                }),
+                content_type='application/json'
+            )
+
+        self.assertEqual(response.status_code, 200, response.content)
+
+
+class WriteConfigRESTTest(BasicDeviceTest):
+    def test_should_respond_with_ok_when_trying_to_write_conf(self):
+        client = Client()
+
+        self.assertEqual(1, Device.objects.filter(written_to_conf=False).count())
+
+        response = client.post(
+                '/conf/write/', {}
+            )
+
+        self.assertEqual(response.status_code, 200, response.content)
+
+        self.assertEqual(0, Device.objects.filter(written_to_conf=False).count())
+
+
+class RestartTelldusRESTTest(TestCase):
+    def test_should_respond_with_ok_when_trying_restart_daemon(self):
+        client = Client()
+
+        response = client.post(
+                '/conf/restart-daemon/', {}
+            )
+
+        self.assertEqual(response.status_code, 200, response.content)
+
+
+
+

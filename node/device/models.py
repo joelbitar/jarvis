@@ -40,6 +40,7 @@ class Device(models.Model):
     system = models.CharField(max_length=12, null=True, blank=True, default=None)
     units = models.CharField(max_length=12, null=True, blank=True, default=None)
     fade = models.CharField(max_length=12, null=True, blank=True, default=None)
+    written_to_conf = models.BooleanField(default=False)
 
     @property
     def config_id(self):
