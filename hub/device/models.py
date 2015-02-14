@@ -1,40 +1,60 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from node.models import Node 
 
-class RoomGroup(models.Model):
-    name = models.CharField(max_length=55, help_text=_("'First floor', 'Basement', 'Hallways', 'Outside'"))
-
-
-class Room(models.Model):
-    name = models.CharField(max_length=12, help_text=_("'Kitchen', 'Driveway'"))
-    room_group = models.ManyToManyField(RoomGroup)
-
-
+# Create your models here.
 class Device(models.Model):
-    """
-    Receiver device, such as a
-    """
-    DEVICE_TYPE_DIMMER = 1
-    DEVICE_TYPE_SWITCH = 2
-    DEVICE_TYPE_BELL = 3
-
-    DEVICE_TYPES = (
-        (DEVICE_TYPE_DIMMER, _('Dimmer')),
-        (DEVICE_TYPE_SWITCH, _('Switch')),
-        (DEVICE_TYPE_BELL, _('Bell')),
+    PROTOCOL_ARCHTEC = 1
+    PROTOCOL_CHOICES = (
+        (PROTOCOL_ARCHTEC, 'arctech'),
     )
 
-    BROADCASTER_TELLSTICK = 1
-    BROADCASTER_CHOICES = (
-        (BROADCASTER_TELLSTICK, _('Tellstick')),
+    MODEL_CODESWITCH = 1
+    MODEL_BELL = 2
+    MODEL_SELFLEARNING_SWITCH = 3
+    MODEL_SELFLEARNING_DIMMER = 4
+    MODEL_CHOICES = (
+        (MODEL_CODESWITCH, 'codeswitch'),
+        (MODEL_BELL, 'bell'),
+        (MODEL_SELFLEARNING_SWITCH, 'selflearning-switch'),
+        (MODEL_SELFLEARNING_DIMMER, 'selflearning-dimmer'),
     )
 
-    broadcaster_data = models.CharField(max_length=255, db_index=True, unique=True)
-    name = models.CharField(max_length=55)
-    room = models.ForeignKey(Room)
-    broadcaster = models.PositiveSmallIntegerField(choices=BROADCASTER_CHOICES, default=BROADCASTER_TELLSTICK)
-    device_type = models.PositiveSmallIntegerField(choices=DEVICE_TYPES)
+    protocol = models.PositiveSmallIntegerField(choices=PROTOCOL_CHOICES)
+    name = models.CharField(max_length=56)
+    description = models.TextField(default='', blank=True)
+    model = models.PositiveSmallIntegerField(choices=MODEL_CHOICES)
+    controller = models.PositiveIntegerField(null=True, blank=True, default=None)
+
+    # parameters
+    devices = models.CharField(max_length=12, null=True, blank=True, default=None)
+    house = models.CharField(max_length=12, null=True, blank=True, default=None)
+    unit = models.CharField(max_length=12, null=True, blank=True, default=None)
+    code = models.CharField(max_length=12, null=True, blank=True, default=None)
+    system = models.CharField(max_length=12, null=True, blank=True, default=None)
+    units = models.CharField(max_length=12, null=True, blank=True, default=None)
+    fade = models.CharField(max_length=12, null=True, blank=True, default=None)
+
+    # Node data
+    node_device_pk = models.PositiveIntegerField(null=True, default=None, blank=True, help_text='PK in the node database')
+
+    # Relations
+    node = models.ForeignKey(Node)
+
+    def __unicode__(self):
+        return self.name
+
+    def __str__(self):
+        return self.protocol_string
+
+
+class Group(models.Model):
+    name = models.CharField(max_length=12, help_text=_("'Kitchen', 'Driveway'"))
+    devices = models.ManyToManyField(Device)
+
+    def __str__(self):
+        return self.name
 
 
 class Sensor(models.Model):
@@ -51,3 +71,4 @@ class Signal(models.Model):
     """
     SIGNAL_TYPE_EMAIL = 1
     SIGNAL_TYPE_GOOGLE_TALK = 2
+
