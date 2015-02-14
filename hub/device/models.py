@@ -39,6 +39,9 @@ class Device(models.Model):
     # Node data
     node_device_pk = models.PositiveIntegerField(null=True, default=None, blank=True, help_text='PK in the node database')
 
+    # Current state of the device, If null, the device has never changed
+    state = models.PositiveIntegerField(null=True, default=None, blank=True, help_text='Current State')
+
     # Relations
     node = models.ForeignKey(Node)
 
