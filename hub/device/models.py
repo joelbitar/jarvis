@@ -45,6 +45,16 @@ class Device(models.Model):
     # Relations
     node = models.ForeignKey(Node)
 
+    # String representation
+    @property
+    def protocol_string(self):
+        return dict(self.PROTOCOL_CHOICES).get(self.protocol)
+
+    @property
+    def model_string(self):
+        return dict(self.MODEL_CHOICES).get(self.model)
+
+
     def __unicode__(self):
         return self.name
 
