@@ -3,10 +3,12 @@ from device.models import Device
 from device.models import Group
 from node.models import Node
 
+from node.sender import NodeDevice
+
 # Create your tests here.
 
-class ModelTests(TestCase):
-    def test_create_device(self):
+class DeviceModelTestsBase(TestCase):
+    def setUp(self):
         n = Node()
         n.hostname = 'test'
         n.ip = '127.0.0.1'
@@ -26,4 +28,33 @@ class ModelTests(TestCase):
         g.devices.add(d)
         g.save()
 
+        self.node = n
+        self.device = d
+        self.group = g
+
+class DeviceTest(DeviceModelTestsBase):
+    def test_devices_have_been_created(self):
+        self.assertEqual(1, self.device.group_set.all().count())
+
+class NodeCrudCommunicationTests(DeviceModelTestsBase):
+    def test_create_device_on_node_rest_call(self):
+        nd = NodeDevice(device=self.device)
+        self.assertTrue(nd.create())
+
+    def test_delete_device_on_node_rest_call(self):
+        self.assertTrue(False)
+
+    def test_update_device_on_node_rest_call(self):
+        self.assertTrue(False)
+
+
+class NodeControlCommunicationsTests(DeviceModelTestsBase):
+    def test_send_learn_command(self):
+        self.assertTrue(False)
+
+    def test_send_off_command(self):
+        self.assertTrue(False)
+
+    def test_send_on_command(self):
+        self.assertTrue(False)
 
