@@ -10,8 +10,7 @@ from node.sender import NodeDevice
 class DeviceModelTestsBase(TestCase):
     def setUp(self):
         n = Node()
-        n.hostname = 'test'
-        n.ip = '127.0.0.1'
+        n.address = 'address'
         n.name = 'Test Node'
         n.save()
 
