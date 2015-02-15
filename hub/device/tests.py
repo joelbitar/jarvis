@@ -3,7 +3,7 @@ from device.models import Device
 from device.models import Group
 from node.models import Node
 
-from node.sender import NodeDevice
+from node.communicator import NodeDeviceCommunicator
 
 # Create your tests here.
 
@@ -37,7 +37,7 @@ class DeviceTest(DeviceModelTestsBase):
 
 class NodeCrudCommunicationTests(DeviceModelTestsBase):
     def test_create_device_on_node_rest_call(self):
-        nd = NodeDevice(device=self.device)
+        nd = NodeDeviceCommunicator(device=self.device)
         self.assertTrue(nd.create())
 
     def test_delete_device_on_node_rest_call(self):
