@@ -1,15 +1,18 @@
 import requests
 from django.core import mail
 
-class SenderBase(object):
+
+class CommunicatorBase(object):
     def is_in_test_mode(self):
         return hasattr(mail, 'outbox')
 
     def get_response(self, url, method, data=None):
         response = requests.get(url)
 
-class NodeRestSender(SenderBase):
-    __node = None 
+
+class NodeCommunicator(CommunicatorBase):
+    __node = None
+
     def __init__(self, node):
         self.__node = node
 
@@ -20,21 +23,18 @@ class NodeRestSender(SenderBase):
     def get_all_devices(self):
         pass
 
-class NodeDeviceRestSender(SenderBase):
+
+class NodeDeviceCommunicator(NodeCommunicator):
     __device = None
+
     def __init__(self, device):
         self.__device = device
+        super(NodeDeviceCommunicator, self).__init__(node=device.node)
 
     @property
     def device(self):
         return self.__device
 
-    @property
-    def node(self):
-        return self.device.node
-
-
-class NodeDevice(NodeDeviceRestSender):
     def create(self):
         pass
 
