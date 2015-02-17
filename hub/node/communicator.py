@@ -51,8 +51,6 @@ class CommunicatorBase(object):
     def execute_request(self, url, method, data=None):
         request_log_object = self.create_request_log(url, method, data)
 
-        print(request_log_object)
-
         status_code, response_json = self.get_response(url, method, data)
         self.update_request_log_with_response(
             request_log_object=request_log_object,
@@ -80,10 +78,10 @@ class NodeCommunicator(CommunicatorBase):
     def node_url(self):
         return self.node.address
 
-    def build_url(self, path):
+    def build_url(self, path, **kwargs):
         return '{node_url}/{path}'.format(
             node_url=self.node_url,
-            path=path
+            path=path.format(**kwargs)
         )
 
     def get_all_devices(self):
@@ -100,6 +98,37 @@ class NodeDeviceCommunicator(NodeCommunicator):
     @property
     def device(self):
         return self.__device
+
+    def get_device_url(self):
+        if self.device.node_device_pk is None:
+            raise ValueError('Could not build URL with device that has no node_pk')
+
+        return self.build_url(
+            'devices/{node_device_pk}/'.format(
+                node_device_pk=self.device.node_device_pk
+            )
+        )
+
+    def get_device_command_url(self):
+        return self.get_device_url() + 'command/'
+
+    def execute_device_command(self, command_name, command_data=None):
+        data = {
+            'command': command_name,
+        }
+
+        # Setting the 'data' key in request data to include all command data
+        if command_data is not None:
+            data['data'] = command_data
+
+        response = self.execute_request(
+            self.get_device_command_url(),
+            method='post',
+            data=data
+        )
+
+        return response is not None
+
 
     def serialize_device(self):
         return {
@@ -133,16 +162,34 @@ class NodeDeviceCommunicator(NodeCommunicator):
         return True
 
     def delete(self):
-        pass
+        response = self.execute_request(
+            url=self.get_device_url(),
+            method='delete',
+        )
+
+        return response is not None
 
     def update(self):
-        pass
+        response = self.execute_request(
+            url=self.get_device_url(),
+            method='put',
+            data=self.serialize_device(),
+        )
+
+        return response is not None
+
 
     def turn_on(self):
-        pass
+        return self.execute_device_command(
+            'on'
+        )
 
     def turn_off(self):
-        pass
+        return self.execute_device_command(
+            'off'
+        )
 
     def learn(self):
-        pass
+        return self.execute_device_command(
+            'learn'
+        )
