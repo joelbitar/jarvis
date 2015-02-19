@@ -89,10 +89,22 @@ class NodeCommunicator(CommunicatorBase):
         pass
 
     def write_conf(self):
-        pass
+        response = self.execute_request(
+            self.build_url('conf/write/'),
+            method='post',
+            data={}
+        )
+
+        return response is not None
 
     def restart_daemon(self):
-        pass
+        response = self.execute_request(
+            self.build_url('conf/restart-daemon/'),
+            method='post',
+            data={}
+        )
+
+        return response is not None
 
 
 class NodeDeviceCommunicator(NodeCommunicator):
