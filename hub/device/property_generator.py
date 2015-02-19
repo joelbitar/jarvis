@@ -163,8 +163,45 @@ class DevicePropertyGenerator(object):
             )
         )
 
+        arctec_selflearning_switch = (
+            Device.PROTOCOL_ARCHTEC, Device.MODEL_SELFLEARNING_SWITCH, PropertyValueGenerator(
+                {
+                    'name': 'unit',
+                    'type': PropertyValueGenerator.TYPE_INTEGER,
+                    'min': 1,
+                    'max': 16
+                },
+                {
+                    'name': 'house',
+                    'type': PropertyValueGenerator.TYPE_INTEGER,
+                    'min': 1,
+                    'max': 67108863
+                },
+            )
+        )
+
+        arctec_selflearning_dimmer = (
+            Device.PROTOCOL_ARCHTEC, Device.MODEL_SELFLEARNING_DIMMER, PropertyValueGenerator(
+                {
+                    'name': 'unit',
+                    'type': PropertyValueGenerator.TYPE_INTEGER,
+                    'min': 1,
+                    'max': 16
+                },
+                {
+                    'name': 'house',
+                    'type': PropertyValueGenerator.TYPE_INTEGER,
+                    'min': 1,
+                    'max': 67108863
+                },
+            )
+        )
+
+
         return (
             arctec_codeswitch,
+            arctec_selflearning_switch,
+            arctec_selflearning_dimmer,
         )
 
     def get_max_property_iteration(self):

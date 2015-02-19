@@ -243,6 +243,43 @@ class DeviceTests(DeviceModelTestsBase):
             '1'
         )
 
+    def test_auto_generate_properties_on_archtec_selflearningdimmer(self):
+        self.device.model = Device.MODEL_SELFLEARNING_DIMMER
+        self.device.protocol = Device.PROTOCOL_ARCHTEC
+        self.device.save()
+
+        dpg = DevicePropertyGenerator(device=self.device)
+        dpg.generate_properties()
+
+        d = self.refresh(self.device)
+        self.assertEqual(
+            d.house,
+            '1'
+        )
+        self.assertEqual(
+            d.unit,
+            '1'
+        )
+
+    def test_auto_generate_properties_on_archtec_selflearningswitch(self):
+        self.device.model = Device.MODEL_SELFLEARNING_SWITCH
+        self.device.protocol = Device.PROTOCOL_ARCHTEC
+        self.device.save()
+
+        dpg = DevicePropertyGenerator(device=self.device)
+        dpg.generate_properties()
+
+        d = self.refresh(self.device)
+        self.assertEqual(
+            d.house,
+            '1'
+        )
+        self.assertEqual(
+            d.unit,
+            '1'
+        )
+
+
     def test_auto_generate_properties_on_archtec_codeswitch_when_one_hundred_already_exists(self):
         self.device.model = Device.MODEL_CODESWITCH
         self.device.protocol = Device.PROTOCOL_ARCHTEC
