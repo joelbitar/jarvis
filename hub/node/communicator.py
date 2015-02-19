@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from node.models import RequestLog
 
+
 class CommunicatorBase(object):
     def is_in_test_mode(self):
         return hasattr(mail, 'outbox')
@@ -85,6 +86,12 @@ class NodeCommunicator(CommunicatorBase):
         )
 
     def get_all_devices(self):
+        pass
+
+    def write_conf(self):
+        pass
+
+    def restart_daemon(self):
         pass
 
 

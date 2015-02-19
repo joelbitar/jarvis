@@ -39,6 +39,9 @@ class Device(models.Model):
     # Node data
     node_device_pk = models.PositiveIntegerField(null=True, default=None, blank=True, help_text='PK in the node database')
 
+    # Node metadata
+    property_iteration = models.PositiveIntegerField(null=True, default=None, blank=True, help_text='When auto-generating properties, this is used')
+
     # Current state of the device, If null, the device has never changed
     state = models.PositiveIntegerField(null=True, default=None, blank=True, help_text='Current State')
 
@@ -53,7 +56,6 @@ class Device(models.Model):
     @property
     def model_string(self):
         return dict(self.MODEL_CHOICES).get(self.model)
-
 
     def __unicode__(self):
         return self.name
