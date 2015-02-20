@@ -1,6 +1,8 @@
 import json
 
 from django.test import TestCase
+from django.test.client import Client
+
 from device.models import Device
 from device.models import Group
 from node.models import Node
@@ -700,5 +702,105 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         self.assertEqual(
             r.response_status_code,
             200
+        )
+
+class HubDeviceRestTests(DeviceModelTestsBase):
+    """
+    Tests REST interfaces on HUB (they just proxy, but they should exist anywho)
+    """
+    def setUp(self):
+        super(HubDeviceRestTests, self).setUp()
+
+        self.device.node_device_pk = 1001
+        self.device.save()
+
+        self.client = Client()
+
+    def test_should_get_all_devices(self):
+        for i in range(10):
+            Device(
+                    name='TestDevice {i}'.format(i=i),
+                    node_device_pk=100 + i,
+                    protocol=Device.PROTOCOL_ARCHTEC,
+                    model=Device.MODEL_SELFLEARNING_SWITCH,
+                    node=self.node
+                ).save()
+
+        self.assertTrue(False)
+
+    def test_should_get_single_device(self):
+        response = self.client.get(
+            '/devices/{device_id}/'.format(device_id=self.device.id)
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertJSONEqual(
+                response.content.decode('utf-8'),
+                json.dumps(
+                    {
+                        'id' : self.device.id,
+                        'model_string' : self.device.model_string,
+                        'protocol_string': self.device.protocol_string,
+                    }
+                )
+            )
+
+        # No Logging should take place
+        self.assertEqual(
+            0,
+            RequestLog.objects.all().count()
+        )
+
+    def test_should_get_ok_response_when_sending_create(self):
+        self.assertTrue(False)
+
+        self.assertEqual(
+            1,
+            RequestLog.objects.all().count()
+        )
+
+    def test_should_get_ok_response_when_sending_update(self):
+        self.assertTrue(False)
+
+        self.assertEqual(
+            1,
+            RequestLog.objects.all().count()
+        )
+
+
+    def test_should_get_ok_response_when_sending_delete(self):
+        self.assertTrue(False)
+
+        self.assertEqual(
+            1,
+            RequestLog.objects.all().count()
+        )
+
+
+    def test_should_get_ok_response_when_sending_command_learn(self):
+        self.assertTrue(False)
+        
+        self.assertEqual(
+            1,
+            RequestLog.objects.all().count()
+        )
+
+
+    def test_should_get_ok_response_when_sending_command_on(self):
+        self.assertTrue(False)
+
+        self.assertEqual(
+            1,
+            RequestLog.objects.all().count()
+        )
+
+
+    def test_should_get_ok_response_when_sending_command_off(self):
+        self.assertTrue(False)
+
+        self.assertEqual(
+            1,
+            RequestLog.objects.all().count()
         )
 
