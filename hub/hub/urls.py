@@ -42,6 +42,6 @@ urlpatterns = [
     url(r'^devices/(?P<pk>[0-9]+)/command/off/$', DeviceCommandOffView.as_view(), name="device_off"),
     url(r'^devices/(?P<pk>[0-9]+)/command/learn/$', DeviceCommandLearnView.as_view(), name="device_learn"),
     url(r'^nodes/(?P<pk>[0-9]+)/writeconf/$', NodeWriteConfView.as_view(), name="node_writeconf"),
-    url(r'^nodes/(?P<pk>[0-9]+)/writeconf/$', NodeRestartDaemonView.as_view(), name="node_restartdaemon"),
+    url(r'^nodes/(?P<pk>[0-9]+)/restartdaemon/$', NodeRestartDaemonView.as_view(), name="node_restartdaemon"),
     url(r'^admin/', include(admin.site.urls)),
 ]

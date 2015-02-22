@@ -61,6 +61,11 @@ class TellstickConfigWriter(TellstickConfig):
         file = open(settings.TELLSTICK_CONFIG_PATH, 'w')
         file.write(self.render_config())
 
+        if len(self.devices) == 0:
+            return None
+
+        print(len(self.devices))
+
         self.devices.update(written_to_conf=True)
 
 

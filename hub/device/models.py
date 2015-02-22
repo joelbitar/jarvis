@@ -3,6 +3,8 @@ from django.utils.translation import gettext_lazy as _
 
 from node.models import Node 
 
+from node.communicator import NodeDeviceCommunicator
+
 
 # Create your models here.
 class Device(models.Model):
@@ -57,6 +59,9 @@ class Device(models.Model):
     @property
     def model_string(self):
         return dict(self.MODEL_CHOICES).get(self.model)
+
+    def get_communicator(self):
+        return NodeDeviceCommunicator(device=self)
 
     def __unicode__(self):
         return self.name

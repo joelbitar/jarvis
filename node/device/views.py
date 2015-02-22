@@ -32,6 +32,7 @@ class DeviceCommandView(APIView):
 
         return Response()
 
+
 class WriteConfigView(APIView):
     def post(self, request):
         tellstick_config_writer = TellstickConfigWriter(devices=Device.objects.all())
