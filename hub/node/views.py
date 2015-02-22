@@ -49,6 +49,9 @@ class NodeWriteConfView(NodeCommandViewBase):
 
 class NodeRestartDaemonView(NodeCommandViewBase):
     def execute_request(self, node):
+        if self.is_in_test_mode():
+            return Response()
+
         response = requests.post(
             self.build_url(node, 'restart-daemon'),
         )
