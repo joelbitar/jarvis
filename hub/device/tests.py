@@ -1,6 +1,8 @@
 import json
 
 from django.test import TestCase
+from django.test.client import Client
+
 from device.models import Device
 from device.models import Group
 from node.models import Node
@@ -37,17 +39,111 @@ class DeviceModelTestsBase(TestCase):
     def refresh(self, obj):
         return obj.__class__.objects.get(pk=obj.pk)
 
+class DeviceModelTests(TestCase):
+    def test_create_should_have_set_properties(self):
+        n = Node()
+        n.address = 'address'
+        n.name = 'Test Node'
+        n.save()
+
+        d = Device()
+        d.name = 'TestDevice'
+        d.protocol = Device.PROTOCOL_ARCHTEC
+        d.model = Device.MODEL_CODESWITCH
+        d.node = n
+        d.save()
+
+        self.assertEqual(d.house, 'A')
+        self.assertEqual(d.unit, 1)
+
+
+    def test_should_not_re_set_properties(self):
+        n = Node()
+        n.address = 'address'
+        n.name = 'Test Node'
+        n.save()
+
+        d = Device()
+        d.name = 'TestDevice'
+        d.protocol = Device.PROTOCOL_ARCHTEC
+        d.model = Device.MODEL_CODESWITCH
+        d.node = n
+        d.save()
+
+        d.save()
+
+        self.assertEqual(d.house, 'A')
+        self.assertEqual(d.unit, 1)
+
+
+class DevicePropertySetterTests(TestCase):
+    def setUp(self):
+        n = Node()
+        n.address = 'address'
+        n.name = 'Test Node'
+        n.save()
+
+        self.node = n
+
+    def test_should_set_unique_properties(self):
+        for i in range(1,5):
+            d = Device(
+                    name='Archtec Codeswitch',
+                    protocol=Device.PROTOCOL_ARCHTEC,
+                    model=Device.MODEL_CODESWITCH,
+                    node=self.node,
+                )
+
+            d.save()
+
+            self.assertEqual(
+                d.house,
+                'A'
+            )
+
+            self.assertEqual(
+                d.unit,
+                i
+            )
+
+
+
+    def test_should_set_iteration(self):
+        for i in range(1,5):
+            d = Device(
+                    name='Archtec Codeswitch',
+                    protocol=Device.PROTOCOL_ARCHTEC,
+                    model=Device.MODEL_CODESWITCH,
+                    node=self.node,
+                )
+
+            d.save()
+
+            self.assertEqual(
+                d.property_iteration,
+                i
+            )
+
 
 class DeviceTests(DeviceModelTestsBase):
     def test_devices_have_been_created(self):
         self.assertEqual(1, self.device.group_set.all().count())
 
     def test_should_set_property_iteration_on_model_after_saving_through_generate_properties_method(self):
+        # Should be first if we just look at the newly created device
+        self.assertEqual(
+            self.refresh(self.device).property_iteration,
+            1
+        )
+
         dpg = DevicePropertyGenerator(device=self.device)
 
         self.assertEqual(
             dpg.generate_properties(),
-            (self.device, 1)
+            ({
+                'unit': 2,
+                'house' : 'A'
+            }, 2)
         )
 
         self.assertEqual(
@@ -63,24 +159,32 @@ class DeviceTests(DeviceModelTestsBase):
             node=self.node,
         )
 
-        d.save()
-
+        print('\n')
+        print('Generating properties in test class')
         dpg = DevicePropertyGenerator(device=d)
-        device, iteration = dpg.generate_properties()
+        properties, iteration = dpg.generate_properties()
+
+        self.assertEqual(d.pk, None)
 
         self.assertEqual(
             iteration,
-            1
+            2
         )
 
         self.assertEqual(
-            device.house,
+            properties['unit'],
+            2
+        )
+        
+        self.assertEqual(
+            properties['house'],
             'A'
         )
-        self.assertEqual(
-            device.unit,
-            1
-        )
+
+        d.unit = properties['unit']
+        d.house = properties['house']
+
+        d.save()
 
         d = Device(
             name='Archtec Codeswitch 2',
@@ -91,21 +195,19 @@ class DeviceTests(DeviceModelTestsBase):
 
         d.save()
 
-        dpg = DevicePropertyGenerator(device=d)
-        device, iteration = dpg.generate_properties()
-
         self.assertEqual(
-            iteration,
-            2
+            d.property_iteration,
+            3
         )
 
         self.assertEqual(
-            device.house,
+            d.house,
             'A'
         )
+
         self.assertEqual(
-            device.unit,
-            2
+            d.unit,
+            3
         )
 
     def test_should_not_set_the_same_properties_if_generate_property_iteration_on_previous_devices_has_been_meddled_with(self):
@@ -128,7 +230,7 @@ class DeviceTests(DeviceModelTestsBase):
 
         self.assertEqual(
             iteration,
-            2
+            3
         )
 
     def test_is_device_unique_should_return_false_if_there_is_a_device_with_that_unit_and_house(self):
@@ -152,16 +254,15 @@ class DeviceTests(DeviceModelTestsBase):
                 }
             )
         )
-
+        
     def test_should_set_iteration_to_second_even_if_properties_has_been_manually_set(self):
-        Device(
+        d = Device(
             name='Archtec Codeswitch',
             protocol=Device.PROTOCOL_ARCHTEC,
             model=Device.MODEL_CODESWITCH,
             node=self.node,
-            house="A",
-            unit=1
-        ).save()
+        )
+        d.save()
 
         d = Device(
             name='Archtec Codeswitch',
@@ -169,17 +270,15 @@ class DeviceTests(DeviceModelTestsBase):
             model=Device.MODEL_CODESWITCH,
             node=self.node,
         )
-
         d.save()
 
         dpg = DevicePropertyGenerator(device=d)
-        device, iteration = dpg.generate_properties()
+        properties, iteration = dpg.generate_properties()
 
         self.assertEqual(
             iteration,
-            2
+            4
         )
-
 
     def test_should_only_select_max_iteration_from_within_model_and_protocol_group(self):
         archtec_codeswitch = Device(
@@ -187,8 +286,9 @@ class DeviceTests(DeviceModelTestsBase):
             protocol=Device.PROTOCOL_ARCHTEC,
             model=Device.MODEL_CODESWITCH,
             node=self.node,
-            property_iteration=1000
         )
+        archtec_codeswitch.save()
+        archtec_codeswitch.property_iteration = 1000
         archtec_codeswitch.save()
 
         archtec_selflearningcodeswitch = Device(
@@ -196,8 +296,9 @@ class DeviceTests(DeviceModelTestsBase):
             protocol=Device.PROTOCOL_ARCHTEC,
             model=Device.MODEL_SELFLEARNING_SWITCH,
             node=self.node,
-            property_iteration=100
         )
+        archtec_selflearningcodeswitch.save()
+        archtec_selflearningcodeswitch.property_iteration=100
         archtec_selflearningcodeswitch.save()
 
         archtec_selflearningdimmer = Device(
@@ -205,8 +306,9 @@ class DeviceTests(DeviceModelTestsBase):
             protocol=Device.PROTOCOL_ARCHTEC,
             model=Device.MODEL_SELFLEARNING_DIMMER,
             node=self.node,
-            property_iteration=10
         )
+        archtec_selflearningdimmer.save()
+        archtec_selflearningdimmer.property_iteration=10
         archtec_selflearningdimmer.save()
 
         dpg = DevicePropertyGenerator(device=archtec_codeswitch)
@@ -249,16 +351,16 @@ class DeviceTests(DeviceModelTestsBase):
         self.device.save()
 
         dpg = DevicePropertyGenerator(device=self.device)
-        dpg.generate_properties()
+        properties, iteration = dpg.generate_properties()
 
         d = self.refresh(self.device)
         self.assertEqual(
-            d.house,
-            '1'
+            str(properties['house']),
+            '2000'
         )
         self.assertEqual(
-            d.unit,
-            '1'
+            str(properties['unit']),
+            '2'
         )
 
     def test_auto_generate_properties_on_archtec_selflearningswitch(self):
@@ -267,16 +369,16 @@ class DeviceTests(DeviceModelTestsBase):
         self.device.save()
 
         dpg = DevicePropertyGenerator(device=self.device)
-        dpg.generate_properties()
+        properties, iteration = dpg.generate_properties()
 
         d = self.refresh(self.device)
         self.assertEqual(
-            d.house,
-            '1'
+            properties['house'],
+            1000
         )
         self.assertEqual(
-            d.unit,
-            '1'
+            properties['unit'],
+            2
         )
 
 
@@ -287,15 +389,15 @@ class DeviceTests(DeviceModelTestsBase):
         self.device.save()
 
         dpg = DevicePropertyGenerator(device=self.device)
-        dpg.generate_properties()
+        properties, iteration = dpg.generate_properties()
 
         d = self.refresh(self.device)
         self.assertEqual(
-            d.house,
+            str(properties['house']),
             'G'
         )
         self.assertEqual(
-            d.unit,
+            str(properties['unit']),
             '4'
         )
 
@@ -700,5 +802,222 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         self.assertEqual(
             r.response_status_code,
             200
+        )
+
+class HubDeviceOptionsTests(TestCase):
+    def test_get_options_for_device(self):
+        client = Client()
+
+        response = client.get('/device/options/')
+
+        self.assertJSONEqual(
+                response.content.decode('utf-8'),
+                json.dumps(
+                    [{
+                        'protocol' : {
+                            'id' : Device.PROTOCOL_ARCHTEC,
+                            'name' : 'arctech',
+                            'models' : [
+                                {
+                                    'id': Device.MODEL_CODESWITCH,
+                                    'name': 'Code switch',
+                                },
+                                {
+                                    'id': Device.MODEL_BELL,
+                                    'name': 'Bell',
+                                },
+                                {
+                                    'id': Device.MODEL_SELFLEARNING_SWITCH,
+                                    'name': 'Selflearning switch',
+                                },
+                                {
+                                    'id': Device.MODEL_SELFLEARNING_DIMMER,
+                                    'name': 'Selflearning dimmer',
+                                },
+                            ]
+                        },
+                    }]
+                )
+            )
+
+class HubDeviceRestTests(DeviceModelTestsBase):
+    """
+    Tests REST interfaces on HUB (they just proxy, but they should exist anywho)
+    """
+    def setUp(self):
+        super(HubDeviceRestTests, self).setUp()
+
+        self.device.node_device_pk = 1001
+        self.device.save()
+
+        self.client = Client()
+
+    def test_should_get_all_devices(self):
+        for i in range(10):
+            Device(
+                    name='TestDevice {i}'.format(i=i),
+                    node_device_pk=100 + i,
+                    protocol=Device.PROTOCOL_ARCHTEC,
+                    model=Device.MODEL_SELFLEARNING_SWITCH,
+                    node=self.node
+                ).save()
+        
+        response = self.client.get(
+            '/devices/'.format(device_id=self.device.id)
+        )
+
+        response_json = json.loads(response.content.decode('utf-8'))
+
+        self.assertEqual(len(response_json), Device.objects.all().count())
+
+    def test_should_get_single_device(self):
+        response = self.client.get(
+            '/devices/{device_id}/'.format(device_id=self.device.id)
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertJSONEqual(
+                response.content.decode('utf-8'),
+                json.dumps(
+                    {
+                        'id' : self.device.id,
+                        'model_string' : self.device.model_string,
+                        'protocol_string': self.device.protocol_string,
+                        'code': None,
+                        'controller': None,
+                        'description': '',
+                        'devices': None,
+                        'fade': None,
+                        'house': 'A',
+                        'model': self.device.model,
+                        'name': 'TestDevice',
+                        'node': self.device.node.pk,
+                        'node_device_pk': 1001,
+                        'property_iteration': 1,
+                        'protocol': self.device.protocol,
+                        'state': None,
+                        'system': None,
+                        'unit': '1',
+                        'units': None,
+                    }
+                )
+            )
+
+        # No Logging should take place
+        self.assertEqual(
+            0,
+            RequestLog.objects.all().count()
+        )
+
+    def test_should_get_ok_response_when_sending_create(self):
+        response = self.client.put(
+            '/devices/{id}/'.format(id=self.device.pk),
+            json.dumps({
+                'name' : 'New testDevice',
+                'model': self.device.model,
+                'node': self.device.node.pk,
+                'property_iteration': None,
+                'protocol': self.device.protocol,
+
+            }),
+            content_type='application/json'
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual(
+            0,
+            RequestLog.objects.all().count()
+        )
+
+        self.assertEqual(
+            0,
+            RequestLog.objects.all().count()
+        )
+
+        self.assertEqual(Device.objects.all().count(), 1)
+
+    def test_should_have_populated_properites(self):
+        self.test_should_get_ok_response_when_sending_create()
+
+        d = Device.objects.all()[0]
+
+        self.assertEqual(d.house, 'A')
+        self.assertEqual(d.unit, '1')
+
+
+    def test_should_get_ok_response_when_sending_update(self):
+        response = self.client.put(
+            '/devices/{id}/'.format(id=self.device.pk),
+            json.dumps({
+                'name' : 'New testDevice',
+                'model': self.device.model,
+                'node': self.device.node.pk,
+                'property_iteration': None,
+                'protocol': self.device.protocol,
+
+            }),
+            content_type='application/json'
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual(
+            0,
+            RequestLog.objects.all().count()
+        )
+
+
+    def test_should_get_ok_response_when_sending_delete(self):
+        response = self.client.delete(
+                '/devices/{id}/'.format(id=self.device.pk),
+                content_type='application/json'
+        )
+
+        self.assertEqual(
+            0,
+            RequestLog.objects.all().count()
+        )
+
+        self.assertEqual(Device.objects.all().count(), 0)
+
+
+    def test_should_get_ok_response_when_sending_command_learn(self):
+        response = self.client.get(
+                '/devices/{id}/command/learn/'.format(id=self.device.pk),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        
+        self.assertEqual(
+            1,
+            RequestLog.objects.all().count()
+        )
+
+    def test_should_get_ok_response_when_sending_command_on(self):
+        response = self.client.get(
+                '/devices/{id}/command/on/'.format(id=self.device.pk),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        
+
+        self.assertEqual(
+            1,
+            RequestLog.objects.all().count()
+        )
+
+
+    def test_should_get_ok_response_when_sending_command_off(self):
+        response = self.client.get(
+                '/devices/{id}/command/off/'.format(id=self.device.pk),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        
+        self.assertEqual(
+            1,
+            RequestLog.objects.all().count()
         )
 

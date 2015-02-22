@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from node.models import Node 
 
+
 # Create your models here.
 class Device(models.Model):
     PROTOCOL_ARCHTEC = 1
@@ -61,7 +62,7 @@ class Device(models.Model):
         return self.name
 
     def __str__(self):
-        return self.protocol_string
+        return self.name
 
 
 class Group(models.Model):

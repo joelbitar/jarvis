@@ -1,3 +1,149 @@
-from django.shortcuts import render
+import json
+import requests
 
-# Create your views here.
+from django.core import mail
+from django.utils import timezone
+
+from rest_framework import viewsets
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+from device.serializers import DeviceSerializer
+from device.models import Device
+from node.models import RequestLog
+
+
+class DeviceViewSet(viewsets.ModelViewSet):
+    queryset = Device.objects.all()
+    serializer_class = DeviceSerializer
+
+
+class DeviceCommandViewBase(APIView):
+    __device = None
+
+    @property
+    def device(self):
+        return self.__device
+
+    def is_in_test_mode(self):
+        if hasattr(mail, 'outbox'):
+            return True
+        else:
+            return False
+
+    def command_data(self):
+        raise NotImplementedError()
+
+    def build_url(self):
+        return '{node_url}/devices/{device_pk}/execute/'.format(
+                node_url=self.device.node.address,
+                device_pk=self.device.pk
+            )
+
+    def execute_request(self, url, data):
+        if self.is_in_test_mode():
+            return 200, {}
+
+        response = requests.post(
+            url,
+            json.dumps(data),
+            content_type='application/json'
+        )
+
+        return response.status_code, response.json()
+
+
+    def get(self, request, pk, format=None):
+        try:
+            self.__device = Device.objects.get(pk=pk)
+        except Device.DoesNotExist:
+            return Response(status_code=404)
+
+
+        url, data = self.command_data()
+
+        request_log_object = RequestLog(
+            url=url,
+            request_data=json.dumps(data)
+        )
+        request_log_object.save()
+
+        status_code, json_response = self.execute_request(
+            url, data
+        )
+
+        request_log_object.response_status_code = status_code
+        request_log_object.response_data = json.dumps(data) 
+        request_log_object.response_received = timezone.now()
+        request_log_object.save()
+
+        if status_code not in [200]:
+            return Response(status_code=400)
+        
+        return Response()
+
+class DeviceCommandOnView(DeviceCommandViewBase):
+    def command_data(self):
+        url = self.build_url()
+        data = {
+                'command': 'on',
+        }
+        return url, data
+
+
+class DeviceCommandOffView(DeviceCommandViewBase):
+    def command_data(self):
+        url = self.build_url()
+        data = {
+                'command': 'off',
+        }
+        return url, data
+
+
+class DeviceCommandLearnView(DeviceCommandViewBase):
+    def command_data(self):
+        url = self.build_url()
+        data = {
+                'command': 'learn',
+        }
+        return url, data
+
+
+class WriteConfigView(APIView):
+    def post(self, request):
+        pass
+
+
+class RestartDaemonView(APIView):
+    def post(self, request):
+        pass
+
+
+class DeviceOptionsView(APIView):
+    def get(self, request):
+        options = [{
+                        'protocol' : {
+                            'id' : Device.PROTOCOL_ARCHTEC,
+                            'name' : 'arctech',
+                            'models' : [
+                                {
+                                    'id': Device.MODEL_CODESWITCH,
+                                    'name': 'Code switch',
+                                },
+                                {
+                                    'id': Device.MODEL_BELL,
+                                    'name': 'Bell',
+                                },
+                                {
+                                    'id': Device.MODEL_SELFLEARNING_SWITCH,
+                                    'name': 'Selflearning switch',
+                                },
+                                {
+                                    'id': Device.MODEL_SELFLEARNING_DIMMER,
+                                    'name': 'Selflearning dimmer',
+                                },
+                            ]
+                        },
+                    }]
+
+        return Response(options)
