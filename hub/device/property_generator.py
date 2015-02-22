@@ -15,6 +15,7 @@ class PropertyConf(object):
 
     @property
     def type(self):
+        #print('Conf', self.__conf)
         return self.__conf['type']
 
     @property
@@ -30,7 +31,7 @@ class PropertyConf(object):
         return self.__conf['max']
 
     def __str__(self):
-        return self.__conf
+        return str(self.__conf)
 
     def __unicode__(self):
         return self.__str__()
@@ -44,10 +45,8 @@ class PropertyValueGenerator(object):
     __start_point = None
     __config = None
 
-    def __init__(self, *args, iteration=None):
+    def __init__(self, *args):
         self.reset()
-        if iteration is not None:
-            self.__iteration = iteration
 
         self.__config = [PropertyConf(c) for c in args]
 
@@ -174,8 +173,8 @@ class DevicePropertyGenerator(object):
                 {
                     'name': 'house',
                     'type': PropertyValueGenerator.TYPE_INTEGER,
-                    'min': 1,
-                    'max': 67108863
+                    'min': 1000,
+                    'max': 1999 
                 },
             )
         )
@@ -191,8 +190,9 @@ class DevicePropertyGenerator(object):
                 {
                     'name': 'house',
                     'type': PropertyValueGenerator.TYPE_INTEGER,
-                    'min': 1,
-                    'max': 67108863
+                    'min': 2000,
+                    'max': 2999 
+                    #'max': 67108863
                 },
             )
         )
@@ -239,22 +239,26 @@ class DevicePropertyGenerator(object):
             iteration=self.get_max_property_iteration() or 0
         )
 
+        properties = {}
+
         while True:
             properties = property_value_generator()
 
             if not self.is_device_unique(self.device, properties):
                 continue
 
-
             for key, value in properties.items():
                 setattr(self.device, key, value)
 
             self.device.property_iteration = property_value_generator.iteration
-            self.device.save()
+
+            if save_model:
+                self.device.save()
 
             break
 
-        return self.device, property_value_generator.iteration
+
+        return properties, property_value_generator.iteration
 
 
 
