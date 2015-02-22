@@ -41,7 +41,7 @@ class NodeWriteConfView(NodeCommandViewBase):
         if self.is_in_test_mode():
             return Response()
 
-        response = requests.get(
+        response = requests.post(
             self.build_url(node, 'write'),
         )
 
@@ -49,7 +49,7 @@ class NodeWriteConfView(NodeCommandViewBase):
 
 class NodeRestartDaemonView(NodeCommandViewBase):
     def execute_request(self, node):
-        response = requests.get(
+        response = requests.post(
             self.build_url(node, 'restart-daemon'),
         )
 

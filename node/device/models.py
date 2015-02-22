@@ -56,10 +56,10 @@ class Device(models.Model):
         ).render_device_conf()
 
     def __unicode__(self):
-        return self.protocol_string
+        return self.name
 
     def __str__(self):
-        return self.protocol_string
+        return self.name
 
 
 
