@@ -113,3 +113,5 @@ TELLSTICK_GROUP = 'plugdev'
 TELLSTICK_DEVICE_NODE = '/dev/tellstick'
 TELLSTICK_CONFIG_PATH = '/etc/tellstick.conf'
 TELLSTICK_RESTART_DAEMON_SCRIPT_PATH = os.path.join(BASE_DIR, 'scripts', 'restart_daemon.sh')
+
+HUB_URL = 'http://example.com'
