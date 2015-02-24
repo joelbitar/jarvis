@@ -1,4 +1,6 @@
 import json
+import os
+from django.conf import settings
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
@@ -22,6 +24,7 @@ class TestParseRawEvent(TestCase):
 
         e = Event.objects.all()[0]
 
+        self.assertEqual(e.event_class, 'command')
         self.assertEqual(e.protocol, 'arctech')
         self.assertEqual(e.model, 'selflearning')
         self.assertEqual(e.house, '2887766')
@@ -58,7 +61,6 @@ class TestEventEndPoints(TestCase):
             content_type='application/json'
         )
 
-
         self.assertEqual(
             response.status_code,
             200
@@ -67,9 +69,9 @@ class TestEventEndPoints(TestCase):
         self.assertEqual(Event.objects.all().count(), 1)
         self.assertEqual(Sender.objects.all().count(), 1)
 
-
         e = Event.objects.all()[0]
 
+        self.assertEqual(e.event_class, 'command')
         self.assertEqual(e.protocol, 'arctech')
         self.assertEqual(e.model, 'selflearning')
         self.assertEqual(e.house, '2887766')
@@ -78,3 +80,49 @@ class TestEventEndPoints(TestCase):
         self.assertEqual(e.group, '0')
         self.assertEqual(e.method, 'turnon')
 
+
+class TestReadEventsTXTFileAndCheckEventModelContent(TestCase):
+    def setUp(self):
+        self.events_txt_file_content = open(
+            os.path.join(
+                settings.BASE_DIR, 'events.txt'
+            )
+        ).read()
+
+    def test_receiver_change_name_from_class_to_event_class(self):
+        self.assertEqual(
+            Receiver().sanitize_key('class'),
+            'event_class'
+        )
+
+    def test_read_events_txt_file_and_check_created_event(self):
+        receiver = Receiver()
+
+        for line in self.events_txt_file_content.split('\n'):
+            if not line:
+                continue
+
+            if line.find('#') == 0:
+                continue
+
+            e = receiver.parse_raw_event(
+                line
+            )
+
+            # Refresh events to get a copy from the database
+            event = Event.objects.get(pk=e.pk)
+
+            # Go thgourh the line and check that all the posts are set.
+            for keyvalue in line.split(';'):
+                if not keyvalue:
+                    continue
+
+                key, value = keyvalue.split(':')
+
+                if key == 'class':
+                    key = 'event_class'
+
+                self.assertEqual(
+                    str(getattr(event, key)),
+                    str(value)
+                )

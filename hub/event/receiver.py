@@ -2,6 +2,7 @@
 from event.models import Event
 from event.models import Sender 
 
+from django.utils import timezone
 
 class Receiver(object):
     def get_or_create_sender(self, event):
@@ -27,6 +28,15 @@ class Receiver(object):
 
             return sender
 
+    def sanitize_key(self, key):
+        if key == 'class':
+            key = 'event_class'
+
+        return key
+
+    def sanitize_value(self, value):
+        return value
+
     def parse_raw_event(self, raw_event_string):
         event = Event(
             raw_command=raw_event_string
@@ -37,12 +47,17 @@ class Receiver(object):
                 continue
 
             key, value = event_part.split(':')
+
+            key = self.sanitize_key(key)
+            value = self.sanitize_value(value)
+
             setattr(event, key, value)
 
         event.sender = self.get_or_create_sender(event)
+        event.created = timezone.now()
         event.save()
 
-
+        return event
 
     def __call__(self, raw_event_string):
         pass

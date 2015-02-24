@@ -20,7 +20,8 @@ class Sender(models.Model):
 
 # Create your models here.
 class Event(models.Model):
-    received = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+
     raw_command = models.TextField()
     protocol = models.CharField(max_length=256, blank=True, null=True, default=None)
     house = models.CharField(max_length=256, blank=True, null=True, default=None)
@@ -29,5 +30,8 @@ class Event(models.Model):
     code = models.CharField(max_length=256, blank=True, null=True, default=None)
     group = models.CharField(max_length=256, blank=True, null=True, default=None)
     method = models.CharField(max_length=256, blank=True, null=True, default=None)
+    event_class = models.CharField(max_length=256, blank=True, null=True, default=None)
+    humidity = models.CharField(max_length=256, blank=True, null=True, default=None)
+    temp = models.CharField(max_length=256, blank=True, null=True, default=None)
 
     sender = models.ForeignKey(Sender, null=True, blank=True, default=None)
