@@ -42,8 +42,6 @@ INSTALLED_APPS = (
     'rest_framework',
 
     'device',
-
-
 )
 
 MIDDLEWARE_CLASSES = (
@@ -114,4 +112,4 @@ TELLSTICK_DEVICE_NODE = '/dev/tellstick'
 TELLSTICK_CONFIG_PATH = '/etc/tellstick.conf'
 TELLSTICK_RESTART_DAEMON_SCRIPT_PATH = os.path.join(BASE_DIR, 'scripts', 'restart_daemon.sh')
 
-HUB_URL = 'http://example.com'
+HUB_URL = 'http://127.0.0.1:8099'
