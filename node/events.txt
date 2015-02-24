@@ -1,0 +1,55 @@
+## Motion sensor:
+# Activation
+class:command;protocol:arctech;model:selflearning;house:16504526;unit:10;group:0;method:turnon;
+class:command;protocol:arctech;model:selflearning;house:33281742;unit:10;group:0;method:turnon;
+# After a few seconds
+class:command;protocol:arctech;model:selflearning;house:16504526;unit:10;group:0;method:turnoff;
+class:command;protocol:arctech;model:selflearning;house:33281742;unit:10;group:0;method:turnoff;
+
+## Wall-button
+# on
+class:command;protocol:arctech;model:selflearning;house:15185610;unit:11;group:0;method:turnon;
+class:command;protocol:everflourish;model:selflearning;house:15212;unit:3;method:learn;
+# off
+class:command;protocol:arctech;model:selflearning;house:15185610;unit:11;group:0;method:turnoff;
+class:command;protocol:everflourish;model:selflearning;house:15212;unit:3;method:learn;
+
+# Wall-button 2
+# on
+class:command;protocol:arctech;model:selflearning;house:15190034;unit:11;group:0;method:turnon;
+class:command;protocol:sartano;model:codeswitch;code:1010011011;method:turnoff;
+class:command;protocol:everflourish;model:selflearning;house:15489;unit:1;method:learn;
+# off
+class:command;protocol:arctech;model:selflearning;house:15190034;unit:11;group:0;method:turnoff;
+class:command;protocol:sartano;model:codeswitch;code:1010111011;method:turnoff;
+class:command;protocol:everflourish;model:selflearning;house:15489;unit:1;method:learn;
+
+## Door sensor
+# open
+class:command;protocol:arctech;model:selflearning;house:48810982;unit:11;group:0;method:turnon;
+class:command;protocol:sartano;model:codeswitch;code:1010011001;method:turnon;
+class:command;protocol:everflourish;model:selflearning;house:3262;unit:2;method:learn;
+class:command;protocol:everflourish;model:selflearning;house:3262;unit:2;method:learn;
+class:command;protocol:arctech;model:selflearning;house:48810982;unit:11;group:0;method:turnon;
+class:command;protocol:sartano;model:codeswitch;code:1010011001;method:turnon;
+class:command;protocol:arctech;model:selflearning;house:48810982;unit:11;group:0;method:turnon;
+class:command;protocol:sartano;model:codeswitch;code:1010011001;method:turnon;
+class:command;protocol:everflourish;model:selflearning;house:3262;unit:2;method:learn;
+
+# close
+class:command;protocol:arctech;model:selflearning;house:15633598;unit:10;group:0;method:turnoff;
+class:command;protocol:arctech;model:selflearning;house:15633598;unit:10;group:0;method:turnoff;
+class:command;protocol:arctech;model:selflearning;house:15633598;unit:10;group:0;method:turnoff;
+
+## temp sensor
+class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:44;temp:21.1;
+class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:53;temp:21.1;
+
+
+## Door button
+class:command;protocol:arctech;model:selflearning;house:15709058;unit:1;group:1;method:turnon;
+class:command;protocol:waveman;model:codeswitch;house:A;unit:12;method:turnoff;
+class:command;protocol:everflourish;model:selflearning;house:15160;unit:1;method:turnoff;
+class:command;protocol:everflourish;model:selflearning;house:15160;unit:1;method:turnoff;
+class:command;protocol:arctech;model:selflearning;house:15709058;unit:1;group:1;method:turnon;
+class:command;protocol:waveman;model:codeswitch;house:A;unit:12;method:turnoff;

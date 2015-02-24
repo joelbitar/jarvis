@@ -13,7 +13,7 @@ class RawEventHandler(object):
 
     def __call__(self, raw_command, controller_id=None, cid=None):
         if not self.__send_to_hub:
-            print('NOT sending command:', raw_command)
+            print(raw_command)
             return None
 
         requests.post(

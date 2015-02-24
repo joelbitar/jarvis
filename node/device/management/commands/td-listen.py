@@ -20,6 +20,9 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
+        if options['dry']:
+            print('Listening to events, but will only print them')
+
         loop = asyncio.get_event_loop()
         dispatcher = td.AsyncioCallbackDispatcher(loop)
 
