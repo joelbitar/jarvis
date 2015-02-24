@@ -14,7 +14,9 @@ from device.views import DeviceCommandLearnView
 
 from node.views import NodeViewSet
 from node.views import NodeWriteConfView
-from node.views import NodeRestartDaemonView 
+from node.views import NodeRestartDaemonView
+
+from event.views import EventReceiverView
 
 node_detail = NodeViewSet.as_view({
         'get': 'retrieve',
@@ -43,5 +45,6 @@ urlpatterns = [
     url(r'^devices/(?P<pk>[0-9]+)/command/learn/$', DeviceCommandLearnView.as_view(), name="device_learn"),
     url(r'^nodes/(?P<pk>[0-9]+)/writeconf/$', NodeWriteConfView.as_view(), name="node_writeconf"),
     url(r'^nodes/(?P<pk>[0-9]+)/restartdaemon/$', NodeRestartDaemonView.as_view(), name="node_restartdaemon"),
+    url(r'^event/$', EventReceiverView.as_view(), name="event"),
     url(r'^admin/', include(admin.site.urls)),
 ]

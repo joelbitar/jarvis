@@ -43,6 +43,10 @@ INSTALLED_APPS = (
 
     'device',
     'node',
+
+    'event',
+    #'action',
+    #'timer',
 )
 
 MIDDLEWARE_CLASSES = (
