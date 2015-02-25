@@ -12,7 +12,7 @@ class Button(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     archived = models.BooleanField(default=False)
-    senders = models.ManyToManyField(Sender, related_name='units')
+    senders = models.ManyToManyField(Sender, related_name='buttons')
 
     def log(self, signal):
         method_key = {

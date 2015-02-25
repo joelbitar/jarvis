@@ -111,14 +111,14 @@ class CreateSpecificModelInstanceTests(SignalTestsHelper):
         )
 
         self.assertEqual(
-            4,
+            1,
             SensorLog.objects.all().count()
         )
 
         sensor = Sensor.objects.all()[0]
 
         self.assertEqual(
-            len(sensor.logs),
+            sensor.logs.all().count(),
             SensorLog.objects.all().count()
         )
 
@@ -195,7 +195,7 @@ class SignalsAndUnitCreationTests(SignalTestsHelper):
         # Set up so that two senders are connected to one button
 
         duplicated_sender = Sender.objects.get(code="1010011011")
-        duplicated_button = duplicated_sender.units.all()[0]
+        duplicated_button = duplicated_sender.buttons.all()[0]
 
         self.assertIsInstance(
             duplicated_button,
@@ -268,7 +268,12 @@ class SignalsAndUnitCreationTests(SignalTestsHelper):
 
         # Check that both events should have the same button
         for event in events:
-            active_buttons = event.sender.units.filter(archived=False)
+            self.assertEqual(
+                event.sender.sensors.all().count(),
+                0
+            )
+
+            active_buttons = event.sender.buttons.filter(archived=False)
             self.assertEqual(len(active_buttons), 1)
             active_button = active_buttons[0]
 

@@ -16,9 +16,16 @@ class Sender(models.Model):
 
     def get_unit(self):
         try:
-            return self.units.all()[0]
+            return self.buttons.all()[0]
         except Exception:
-            return None
+            pass
+
+        try:
+            return self.sensors.all()[0]
+        except Exception:
+            pass
+
+        return None
 
     def __str__(self):
         return 'house: {sender.house}, unit: {sender.unit}, code: {sender.code}, last signal: {sender.last_signal_received}'.format(

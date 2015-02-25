@@ -46,6 +46,7 @@ INSTALLED_APPS = (
 
     'event',
     'button',
+    'sensor',
     #'action',
     #'timer',
 )

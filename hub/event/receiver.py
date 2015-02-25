@@ -6,6 +6,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from button.models import Button
+from sensor.models import Sensor
 
 
 class Receiver(object):
@@ -41,28 +42,24 @@ class Receiver(object):
 
             return sender
 
-    def get_or_create_button(self, event):
-        button = event.sender.get_unit()
-        if button is not None:
-            return button
-
-        button = Button()
-        button.save()
-
-        button.senders.add(event.sender)
-        button.save()
-
-        return button
-
     def get_or_create_unit(self, event):
         """
         Returns a Button or Sensor event
         :return:
         """
-        unit = None
+        unit = event.sender.get_unit()
+        if unit is not None:
+            return unit
 
         if event.event_class == 'command' and event.method in ['turnoff', 'turnon']:
-            unit = self.get_or_create_button(event)
+            unit = Button()
+
+        if event.event_class == 'sensor' and event.model in ['temperaturehumidity']:
+            unit = Sensor()
+
+        unit.save()
+        unit.senders.add(event.sender)
+        unit.save()
 
         return unit
 
