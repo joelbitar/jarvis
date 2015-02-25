@@ -14,7 +14,9 @@ class EventReceiverView(APIView):
 
         receiver = Receiver()
 
-        receiver.parse_raw_event(raw_event_string)
+        event = receiver.parse_raw_event(raw_event_string)
+
+        event.propagate()
 
         return Response()
 

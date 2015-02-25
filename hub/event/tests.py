@@ -1,28 +1,141 @@
 import json
 import os
+from datetime import timedelta
 from django.conf import settings
 from django.test import TestCase
+from django.utils import timezone
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 
 from event.receiver import Receiver
+from button.models import Button, ButtonLog
 
-from event.models import Event, Sender
+from event.models import Signal, Sender
+
+from sensor.models import Sensor, SensorLog
+
+
+class SignalTestsHelper(TestCase):
+    def helper_parse_event(self, *raw_command_strings):
+        r = Receiver()
+        signals = []
+
+        for raw_command_string in raw_command_strings:
+            signal, unit = r.act_on_raw_event_string(raw_command_string)
+            signals.append(signal)
+
+        return signals
+
+
+class CreateSpecificModelInstanceTests(SignalTestsHelper):
+    def test_create_a_specific_model_instance_when_button_on(self):
+        self.helper_parse_event(
+            'class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;'
+        )
+
+        self.assertEqual(
+            1,
+            Button.objects.all().count()
+        )
+
+    def test_create_a_specific_model_instance_when_door_sensor(self):
+        self.helper_parse_event(
+            'class:command;protocol:arctech;model:selflearning;house:48810982;unit:11;group:0;method:turnon;'
+        )
+
+        self.assertEqual(
+            1,
+            Button.objects.all().count()
+        )
+
+    def test_create_for_motion_sensor(self):
+        self.helper_parse_event(
+            'class:command;protocol:arctech;model:selflearning;house:16504526;unit:10;group:0;method:turnon;'
+        )
+
+        self.assertEqual(
+            1,
+            Button.objects.all().count()
+        )
+
+    def test_create_for_button_off(self):
+        self.helper_parse_event(
+            'class:command;protocol:arctech;model:selflearning;house:15190034;unit:11;group:0;method:turnoff;'
+        )
+
+        self.assertEqual(
+            1,
+            Button.objects.all().count()
+        )
+
+    def test_create_only_one_button_when_both_on_and_off_signals_are_sent(self):
+        self.helper_parse_event(
+            'class:command;protocol:arctech;model:selflearning;house:15190034;unit:11;group:0;method:turnon;'
+            'class:command;protocol:arctech;model:selflearning;house:15190034;unit:11;group:0;method:turnoff;',
+        )
+
+        self.assertEqual(
+            1,
+            Button.objects.all().count()
+        )
+
+        self.assertEqual(
+            1,
+            ButtonLog.objects.all().count()
+        )
+
+    def test_create_only_one_sensor_when_two_different_are_sent(self):
+        self.helper_parse_event(
+            'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:44;temp:21.1;',
+            'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:53;temp:21.1;'
+        )
+
+        self.assertEqual(
+            1,
+            Sensor.objects.all().count()
+        )
+
+        sensor = Sensor.objects.all()
+
+    def test_create_sensor_log_events(self):
+        self.helper_parse_event(
+            'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:44;temp:21.1;',
+            'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:53;temp:21.1;'
+            'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:53;temp:21.1;'
+            'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:44;temp:21.1;',
+        )
+
+        self.assertEqual(
+            1,
+            Sensor.objects.all().count()
+        )
+
+        self.assertEqual(
+            4,
+            SensorLog.objects.all().count()
+        )
+
+        sensor = Sensor.objects.all()[0]
+
+        self.assertEqual(
+            len(sensor.logs),
+            SensorLog.objects.all().count()
+        )
 
 
 # Create your tests here.
-class TestParseRawEvent(TestCase):
+class TestParseRawSignal(TestCase):
     def test_parse_event_and_should_create_sender_first_time(self):
         r = Receiver()
         r.parse_raw_event('class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;')
-        self.assertEqual(Event.objects.all().count(), 1)
+        self.assertEqual(Signal.objects.all().count(), 1)
         self.assertEqual(Sender.objects.all().count(), 1)
 
         r.parse_raw_event('class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;')
-        self.assertEqual(Event.objects.all().count(), 2)
+        self.assertEqual(Signal.objects.all().count(), 2)
         self.assertEqual(Sender.objects.all().count(), 1)
 
-        e = Event.objects.all()[0]
+        e = Signal.objects.all()[0]
 
         self.assertEqual(e.event_class, 'command')
         self.assertEqual(e.protocol, 'arctech')
@@ -34,7 +147,143 @@ class TestParseRawEvent(TestCase):
         self.assertEqual(e.method, 'turnon')
 
 
-class TestEventEndPoints(TestCase):
+class TestPropagateSignal(SignalTestsHelper):
+    def setUp(self):
+        r = Receiver()
+        self.event = r.parse_raw_event('class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;')
+
+    def test_propagate_event(self):
+        """
+        When an event comes in we should be able to propagate the event through its sender -> unit -> actions
+
+        event ->
+                 sender ->
+                            unit 1 ->
+                                        action 1
+                                        action 2
+
+        """
+        self.assertTrue(False)
+
+
+class SignalsAndUnitCreationTests(SignalTestsHelper):
+    def test_when_sending_multiple_signals_from_the_same_button_only_one_button_should_be_activate(self):
+        self.helper_parse_event(
+            'class:command;protocol:arctech;model:selflearning;house:15190034;unit:11;group:0;method:turnon;',
+            'class:command;protocol:sartano;model:codeswitch;code:1010011011;method:turnoff;',
+        )
+
+        # Before setup
+        self.assertEqual(
+            2,
+            Sender.objects.all().count(),
+        )
+        self.assertEqual(
+            2,
+            Signal.objects.all().count()
+        )
+        self.assertEqual(
+            2,
+            Button.objects.all().count()
+        )
+
+        self.assertEqual(
+            2,
+            ButtonLog.objects.all().count()
+        )
+
+        # Set up so that two senders are connected to one button
+
+        duplicated_sender = Sender.objects.get(code="1010011011")
+        duplicated_button = duplicated_sender.units.all()[0]
+
+        self.assertIsInstance(
+            duplicated_button,
+            Button
+        )
+
+        duplicated_button.delete()
+
+        primary_button = Button.objects.all()[0]
+
+        primary_button.senders.add(duplicated_sender)
+        primary_button.name = 'Primary button'
+        primary_button.save()
+
+        # Clear stuff
+        ButtonLog.objects.all().delete()
+        Signal.objects.all().delete()
+
+        # Set the previous signals to a long time ago..
+        Sender.objects.all().update(
+            last_signal_received=timezone.now() - timedelta(hours=1)
+        )
+
+        # Do the REAL tests
+        print('')
+        print('')
+        print('')
+
+        events = self.helper_parse_event(
+            'class:command;protocol:arctech;model:selflearning;house:15190034;unit:11;group:0;method:turnon;',
+            'class:command;protocol:sartano;model:codeswitch;code:1010011011;method:turnoff;',
+        )
+
+        # After setup
+        self.assertEqual(
+            2,
+            Sender.objects.all().count(),
+            'No new senders should be created'
+        )
+        self.assertEqual(
+            2,
+            Signal.objects.all().count(),
+            'Two Singals should have been created'
+        )
+        self.assertEqual(
+            len(events),
+            2
+        )
+
+        self.assertEqual(
+            1,
+            Button.objects.all().count(),
+            'Since the primary button have TWO senders no new buttons should be created automatically'
+        )
+
+        button = Button.objects.all()[0]
+        self.assertEqual(
+            2,
+            button.senders.all().count(),
+        )
+
+        """
+        In the 'propagate' call somewhere, perhaps in the button. we shall check if any of the senders
+        """
+        self.assertEqual(
+            1,
+            ButtonLog.objects.all().count(),
+            'Since the primary button has two senders only ONE should be activated and thus only one log event.'
+        )
+
+        # Check that both events should have the same button
+        for event in events:
+            active_buttons = event.sender.units.filter(archived=False)
+            self.assertEqual(len(active_buttons), 1)
+            active_button = active_buttons[0]
+
+            self.assertIsInstance(
+                active_button,
+                Button
+            )
+
+            self.assertEqual(
+                active_button.pk,
+                primary_button.pk
+            )
+
+
+class TestSignalEndPoints(TestCase):
     def setUp(self):
         self.client = Client()
 
@@ -66,10 +315,10 @@ class TestEventEndPoints(TestCase):
             200
         )
 
-        self.assertEqual(Event.objects.all().count(), 1)
+        self.assertEqual(Signal.objects.all().count(), 1)
         self.assertEqual(Sender.objects.all().count(), 1)
 
-        e = Event.objects.all()[0]
+        e = Signal.objects.all()[0]
 
         self.assertEqual(e.event_class, 'command')
         self.assertEqual(e.protocol, 'arctech')
@@ -81,7 +330,7 @@ class TestEventEndPoints(TestCase):
         self.assertEqual(e.method, 'turnon')
 
 
-class TestReadEventsTXTFileAndCheckEventModelContent(TestCase):
+class TestReadSignalsTXTFileAndCheckSignalModelContent(TestCase):
     def setUp(self):
         self.events_txt_file_content = open(
             os.path.join(
@@ -110,7 +359,7 @@ class TestReadEventsTXTFileAndCheckEventModelContent(TestCase):
             )
 
             # Refresh events to get a copy from the database
-            event = Event.objects.get(pk=e.pk)
+            event = Signal.objects.get(pk=e.pk)
 
             # Go thgourh the line and check that all the posts are set.
             for keyvalue in line.split(';'):
