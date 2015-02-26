@@ -13,27 +13,21 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Sensor',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, verbose_name='ID', serialize=False)),
-                ('created', models.DateTimeField(auto_created=True)),
-                ('humidity', models.SmallIntegerField()),
-                ('temperature', models.SmallIntegerField()),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('humidity', models.SmallIntegerField(blank=True, null=True, default=None)),
+                ('temperature', models.SmallIntegerField(blank=True, null=True, default=None)),
                 ('updated', models.DateTimeField(auto_now=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
             ],
-            options={
-                'abstract': False,
-            },
         ),
         migrations.CreateModel(
             name='SensorLog',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, verbose_name='ID', serialize=False)),
-                ('created', models.DateTimeField(auto_created=True)),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
                 ('humidity', models.SmallIntegerField()),
                 ('temperature', models.SmallIntegerField()),
+                ('created', models.DateTimeField(auto_now_add=True)),
                 ('sensor', models.ForeignKey(related_name='logs', to='sensor.Sensor')),
             ],
-            options={
-                'abstract': False,
-            },
         ),
     ]

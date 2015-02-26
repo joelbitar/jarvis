@@ -3,3 +3,4 @@ djangorestframework==3.0.4
 requests==2.5.1
 asyncio==3.4.2
 tellcore-py==1.1.0
+django-extensions

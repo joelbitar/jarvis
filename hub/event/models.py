@@ -56,5 +56,19 @@ class Signal(models.Model):
     def get_unit(self):
         return self.sender.get_unit()
 
+    # Get links between the unit and the action
+    def get_unit_action_links(self):
+        unit = self.get_unit()
+        if isinstance(unit, Button):
+            return unit.actionbutton_set.all()
+        if isinstance(unit, Sensor):
+            return unit.actionsensor_set.all()
+
+    # Propagate this signal to actions and stuff on the unit
     def propagate(self):
-        pass
+        for link in self.get_unit_action_links():
+            link.run(signal=self)
+
+
+    def __str__(self):
+        return str(self.pk)

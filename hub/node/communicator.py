@@ -12,6 +12,10 @@ class CommunicatorBase(object):
         return hasattr(mail, 'outbox')
 
     def get_response(self, url, method, data=None):
+        if self.is_in_test_mode():
+            print('In test mode, does not execute {method} request'.format(method=method), 'to', url, 'with data:', data)
+            return 200, {'fake': 'request'}
+
         request_method = getattr(requests, method)
         response = request_method(url, data=data)
 
@@ -95,7 +99,14 @@ class NodeCommunicator(CommunicatorBase):
             data={}
         )
 
-        return response is not None
+        if response == None:
+            return False
+
+        self.node.device_set.all().update(
+            written_to_conf_on_node=True
+        )
+
+        return True
 
     def restart_daemon(self):
         response = self.execute_request(
@@ -197,18 +208,42 @@ class NodeDeviceCommunicator(NodeCommunicator):
 
         return response is not None
 
-
     def turn_on(self):
-        return self.execute_device_command(
+        success = self.execute_device_command(
             'on'
         )
 
+        if not success:
+            return False
+
+        self.device.state = 1
+        self.device.save()
+
+        return True
+
     def turn_off(self):
-        return self.execute_device_command(
+        success = self.execute_device_command(
             'off'
         )
 
+        if not success:
+            return False
+
+        self.device.state = 0
+        self.device.save()
+
+        return True
+
+
     def learn(self):
-        return self.execute_device_command(
+        success = self.execute_device_command(
             'learn'
         )
+
+        if not success:
+            return False
+
+        self.device.learnt_on_node = True
+        self.device.save()
+
+        return True

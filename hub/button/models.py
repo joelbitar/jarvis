@@ -25,11 +25,14 @@ class Button(models.Model):
 
     archived = models.BooleanField(default=False)
 
-    def log(self, signal):
-        method_key = {
+    def get_method_identifier(self, signal):
+        return {
             'turnon' : Button.METHOD_ON,
             'turnoff' : Button.METHOD_OFF,
         }.get(signal.method)
+
+    def log(self, signal):
+        method_key = self.get_method_identifier(signal=signal)
 
         if method_key is None:
             raise ValueError('Event method not within choices')

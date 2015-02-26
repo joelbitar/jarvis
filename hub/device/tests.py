@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.test.client import Client
 
 from device.models import Device
-from device.models import Group
+from device.models import DeviceGroup
 from node.models import Node
 from node.models import RequestLog
 
@@ -30,7 +30,7 @@ class DeviceModelTestsBase(TestCase):
         d.node = n
         d.save()
 
-        g = Group()
+        g = DeviceGroup()
         g.name = 'Group'
         g.save()
         g.devices.add(d)
@@ -49,6 +49,24 @@ class DeviceBasicModelAttributesTests(DeviceModelTestsBase):
         self.assertEqual(
             self.device.category,
             None
+        )
+
+    def test_should_reset_learnt_on_node_if_node_changed(self):
+        self.device.learnt_on_node = True
+        self.device.save()
+
+        n2 = Node(
+            address='http://127.0.0.2',
+            name='Other node'
+        )
+
+        n2.save()
+
+        self.device.node = n2
+        self.device.save()
+
+        self.assertFalse(
+            Device.objects.get(pk=self.device.pk).learnt_on_node
         )
 
 
@@ -139,7 +157,7 @@ class DevicePropertySetterTests(TestCase):
 
 class DeviceTests(DeviceModelTestsBase):
     def test_devices_have_been_created(self):
-        self.assertEqual(1, self.device.group_set.all().count())
+        self.assertEqual(1, self.device.devicegroup_set.all().count())
 
     def test_should_set_property_iteration_on_model_after_saving_through_generate_properties_method(self):
         # Should be first if we just look at the newly created device
@@ -753,6 +771,12 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
             200
         )
 
+        device = self.refresh(self.device)
+
+        self.assertTrue(
+            device.learnt_on_node
+        )
+
     def test_send_off_command(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
@@ -932,6 +956,8 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'unit': '1',
                         'units': None,
                         'category': None,
+                        'written_to_conf_on_node': False,
+                        'learnt_on_node': False,
                     }
                 )
             )

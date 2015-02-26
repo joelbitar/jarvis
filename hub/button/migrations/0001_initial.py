@@ -7,23 +7,22 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('event', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='Button',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
                 ('created', models.DateTimeField(auto_now_add=True)),
+                ('button_type', models.PositiveSmallIntegerField(choices=[(1, 'Button'), (2, 'Motion sensor'), (3, 'Door sensor')], default=1)),
                 ('archived', models.BooleanField(default=False)),
-                ('senders', models.ManyToManyField(related_name='units', to='event.Sender')),
             ],
         ),
         migrations.CreateModel(
             name='ButtonLog',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
                 ('method', models.PositiveSmallIntegerField(choices=[(1, 'on'), (2, 'off')])),
                 ('created', models.DateTimeField(auto_now_add=True)),
             ],

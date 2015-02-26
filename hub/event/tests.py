@@ -147,25 +147,6 @@ class TestParseRawSignal(TestCase):
         self.assertEqual(e.method, 'turnon')
 
 
-class TestPropagateSignal(SignalTestsHelper):
-    def setUp(self):
-        r = Receiver()
-        self.event = r.parse_raw_event('class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;')
-
-    def test_propagate_event(self):
-        """
-        When an event comes in we should be able to propagate the event through its sender -> unit -> actions
-
-        event ->
-                 sender ->
-                            unit 1 ->
-                                        action 1
-                                        action 2
-
-        """
-        self.assertTrue(False)
-
-
 class SignalsAndUnitCreationTests(SignalTestsHelper):
     def test_when_sending_multiple_signals_from_the_same_button_only_one_button_should_be_activate(self):
         self.helper_parse_event(

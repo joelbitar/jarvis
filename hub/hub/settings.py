@@ -39,6 +39,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django_extensions',
+
     'rest_framework',
 
     'device',
@@ -47,7 +49,7 @@ INSTALLED_APPS = (
     'event',
     'button',
     'sensor',
-    #'action',
+    'action',
     #'timer',
 )
 

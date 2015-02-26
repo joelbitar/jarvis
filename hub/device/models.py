@@ -54,6 +54,8 @@ class Device(models.Model):
 
     # Current state of the device, If null, the device has never changed
     state = models.PositiveIntegerField(null=True, default=None, blank=True, help_text='Current State')
+    written_to_conf_on_node = models.BooleanField(default=False)
+    learnt_on_node = models.BooleanField(default=False)
     category = models.PositiveSmallIntegerField(choices=CATEGORY_CHOICES, null=True, blank=True, default=None)
 
     # Relations
@@ -78,26 +80,10 @@ class Device(models.Model):
         return self.name
 
 
-class Group(models.Model):
+class DeviceGroup(models.Model):
     name = models.CharField(max_length=12, help_text=_("'Kitchen', 'Driveway'"))
     devices = models.ManyToManyField(Device)
 
     def __str__(self):
         return self.name
-
-
-class Sensor(models.Model):
-    pass
-
-
-class Button(models.Model):
-    pass
-
-
-class Signal(models.Model):
-    """
-    Signal such as a email, a chat etc.
-    """
-    SIGNAL_TYPE_EMAIL = 1
-    SIGNAL_TYPE_GOOGLE_TALK = 2
 
