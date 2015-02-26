@@ -24,6 +24,13 @@ class Device(models.Model):
         (MODEL_SELFLEARNING_DIMMER, 'selflearning-dimmer'),
     )
 
+    CATEGORY_LIGHT = 1
+    CATEGORY_APPLIANCE = 2
+    CATEGORY_CHOICES = (
+        (CATEGORY_LIGHT, _('Light')),
+        (CATEGORY_APPLIANCE, _('Appliance')),
+    )
+
     protocol = models.PositiveSmallIntegerField(choices=PROTOCOL_CHOICES)
     name = models.CharField(max_length=56)
     description = models.TextField(default='', blank=True)
@@ -47,6 +54,7 @@ class Device(models.Model):
 
     # Current state of the device, If null, the device has never changed
     state = models.PositiveIntegerField(null=True, default=None, blank=True, help_text='Current State')
+    category = models.PositiveSmallIntegerField(choices=CATEGORY_CHOICES, null=True, blank=True, default=None)
 
     # Relations
     node = models.ForeignKey(Node)

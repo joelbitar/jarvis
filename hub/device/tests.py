@@ -1,4 +1,5 @@
 import json
+from django.utils.translation import gettext_lazy as _
 
 from django.test import TestCase
 from django.test.client import Client
@@ -11,6 +12,9 @@ from node.models import RequestLog
 from node.communicator import NodeDeviceCommunicator
 from device.property_generator import DevicePropertyGenerator
 from device.property_generator import PropertyValueGenerator
+
+from button.models import Button
+
 
 class DeviceModelTestsBase(TestCase):
     def setUp(self):
@@ -39,6 +43,15 @@ class DeviceModelTestsBase(TestCase):
     def refresh(self, obj):
         return obj.__class__.objects.get(pk=obj.pk)
 
+
+class DeviceBasicModelAttributesTests(DeviceModelTestsBase):
+    def test_should_have_a_blank_category_on_device(self):
+        self.assertEqual(
+            self.device.category,
+            None
+        )
+
+
 class DeviceModelTests(TestCase):
     def test_create_should_have_set_properties(self):
         n = Node()
@@ -55,7 +68,6 @@ class DeviceModelTests(TestCase):
 
         self.assertEqual(d.house, 'A')
         self.assertEqual(d.unit, 1)
-
 
     def test_should_not_re_set_properties(self):
         n = Node()
@@ -810,33 +822,52 @@ class HubDeviceOptionsTests(TestCase):
 
         response = client.get('/device/options/')
 
+        self.maxDiff = 5000
         self.assertJSONEqual(
                 response.content.decode('utf-8'),
                 json.dumps(
-                    [{
-                        'protocol' : {
-                            'id' : Device.PROTOCOL_ARCHTEC,
-                            'name' : 'arctech',
-                            'models' : [
-                                {
-                                    'id': Device.MODEL_CODESWITCH,
-                                    'name': 'Code switch',
+                    {
+                        'protocol_model_options' : [
+                            {
+                                'protocol' : {
+                                    'id' : Device.PROTOCOL_ARCHTEC,
+                                    'name' : 'arctech',
+                                    'models' : [
+                                        {
+                                            'id': Device.MODEL_CODESWITCH,
+                                            'name': 'Code switch',
+                                            },
+                                        {
+                                            'id': Device.MODEL_BELL,
+                                            'name': 'Bell',
+                                            },
+                                        {
+                                            'id': Device.MODEL_SELFLEARNING_SWITCH,
+                                            'name': 'Selflearning switch',
+                                            },
+                                        {
+                                            'id': Device.MODEL_SELFLEARNING_DIMMER,
+                                            'name': 'Selflearning dimmer',
+                                            },
+                                        ]
                                 },
-                                {
-                                    'id': Device.MODEL_BELL,
-                                    'name': 'Bell',
-                                },
-                                {
-                                    'id': Device.MODEL_SELFLEARNING_SWITCH,
-                                    'name': 'Selflearning switch',
-                                },
-                                {
-                                    'id': Device.MODEL_SELFLEARNING_DIMMER,
-                                    'name': 'Selflearning dimmer',
-                                },
-                            ]
-                        },
-                    }]
+                            },
+                        ],
+                        'button_type_options' : [
+                            {
+                                'id': Button.BUTTON_TYPE_BUTTON,
+                                'name': str(_('Button')),
+                            },
+                            {
+                                'id': Button.BUTTON_TYPE_MOTION_SENSOR,
+                                'name': str(_('Motion sensor'))
+                            },
+                            {
+                                'id': Button.BUTTON_TYPE_DOOR_SENSOR,
+                                'name': str(_('Door sensor')),
+                            },
+                        ]
+                    }
                 )
             )
 
@@ -900,6 +931,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'system': None,
                         'unit': '1',
                         'units': None,
+                        'category': None,
                     }
                 )
             )
