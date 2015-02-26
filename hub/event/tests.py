@@ -195,7 +195,7 @@ class SignalsAndUnitCreationTests(SignalTestsHelper):
         # Set up so that two senders are connected to one button
 
         duplicated_sender = Sender.objects.get(code="1010011011")
-        duplicated_button = duplicated_sender.buttons.all()[0]
+        duplicated_button = duplicated_sender.button
 
         self.assertIsInstance(
             duplicated_button,
@@ -268,14 +268,11 @@ class SignalsAndUnitCreationTests(SignalTestsHelper):
 
         # Check that both events should have the same button
         for event in events:
-            self.assertEqual(
-                event.sender.sensors.all().count(),
-                0
+            self.assertIsNone(
+                event.sender.sensor
             )
 
-            active_buttons = event.sender.buttons.filter(archived=False)
-            self.assertEqual(len(active_buttons), 1)
-            active_button = active_buttons[0]
+            active_button = event.sender.button
 
             self.assertIsInstance(
                 active_button,

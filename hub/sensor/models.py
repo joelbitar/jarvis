@@ -1,5 +1,4 @@
 from django.db import models
-from event.models import Sender
 
 
 class Sensor(models.Model):
@@ -8,8 +7,6 @@ class Sensor(models.Model):
 
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
-
-    senders = models.ManyToManyField(Sender, related_name='sensors')
 
     def log(self, signal):
         self.humidity = int(signal.humidity)

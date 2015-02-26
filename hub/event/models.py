@@ -1,4 +1,6 @@
 from django.db import models
+from button.models import Button
+from sensor.models import Sensor
 
 #class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;
 #class:command;protocol:sartano;model:codeswitch;code:1111011001;method:turnoff;
@@ -14,16 +16,15 @@ class Sender(models.Model):
 
     last_signal_received = models.DateTimeField(null=True, blank=True, default=None)
 
-    def get_unit(self):
-        try:
-            return self.buttons.all()[0]
-        except Exception:
-            pass
+    button = models.ForeignKey(Button, null=True, default=None, blank=True, related_name='senders')
+    sensor = models.ForeignKey(Sensor, null=True, default=None, blank=True, related_name='senders')
 
-        try:
-            return self.sensors.all()[0]
-        except Exception:
-            pass
+    def get_unit(self):
+        if self.button is not None:
+            return self.button
+
+        if self.sensor is not None:
+            return self.sensor
 
         return None
 
