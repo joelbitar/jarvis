@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from node.communicator import NodeCommunicator
 from node.models import Node
+from device.models import Device
 from node.models import RequestLog
 from django.test.client import Client
 
@@ -31,6 +32,41 @@ class NodeAdminTests(TestCase):
         response = client.get(reverse('node_writeconf', kwargs={'pk' : self.node.pk}))
 
         self.assertEqual(response.status_code, 200)
+
+    def test_should_mark_all_node_devices_as_written_to_conf(self):
+        client = Client()
+
+        for i in range(2):
+            d = Device(
+                node=self.node,
+                protocol=Device.PROTOCOL_ARCHTEC,
+                model=Device.MODEL_SELFLEARNING_SWITCH
+            )
+            d.save()
+
+        response = client.get(reverse('node_writeconf', kwargs={'pk' : self.node.pk}))
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            2,
+            Device.objects.all().count()
+        )
+
+        self.assertEqual(
+            2,
+            self.node.device_set.all().count()
+        )
+
+        self.assertEqual(
+            0,
+            Device.objects.filter(written_to_conf_on_node=False).count(),
+        )
+
+        self.assertEqual(
+            2,
+            Device.objects.all().filter(written_to_conf_on_node=True).count()
+        )
 
     def test_should_send_restart_command_with_ajax_to_hub(self):
         client = Client()

@@ -1,10 +1,24 @@
 # Class that receives raw events
-from event.models import Event
+from event.models import Signal
 from event.models import Sender 
 
 from django.utils import timezone
+from datetime import timedelta
+
+from button.models import Button
+from sensor.models import Sensor
+
 
 class Receiver(object):
+    __event = None
+
+    def __init__(self):
+        self.__event = None
+
+    @property
+    def event(self):
+        return self.event
+
     def get_or_create_sender(self, event):
         sender_identifiers = {}
 
@@ -28,6 +42,27 @@ class Receiver(object):
 
             return sender
 
+    def get_or_create_unit(self, event):
+        """
+        Returns a Button or Sensor event
+        :return:
+        """
+        unit = event.sender.get_unit()
+        if unit is not None:
+            return unit
+
+        if event.event_class == 'command' and event.method in ['turnoff', 'turnon']:
+            unit = Button()
+
+        if event.event_class == 'sensor' and event.model in ['temperaturehumidity']:
+            unit = Sensor()
+
+        unit.save()
+        unit.senders.add(event.sender)
+        unit.save()
+
+        return unit
+
     def sanitize_key(self, key):
         if key == 'class':
             key = 'event_class'
@@ -38,7 +73,7 @@ class Receiver(object):
         return value
 
     def parse_raw_event(self, raw_event_string):
-        event = Event(
+        signal = Signal(
             raw_command=raw_event_string
         )
 
@@ -51,13 +86,39 @@ class Receiver(object):
             key = self.sanitize_key(key)
             value = self.sanitize_value(value)
 
-            setattr(event, key, value)
+            setattr(signal, key, value)
 
-        event.sender = self.get_or_create_sender(event)
-        event.created = timezone.now()
-        event.save()
+        signal.sender = self.get_or_create_sender(signal)
+        signal.created = timezone.now()
+        signal.save()
 
-        return event
+        return signal
+
+    def act_on_raw_event_string(self, raw_event_string):
+        signal = self.parse_raw_event(raw_event_string=raw_event_string)
+
+        unit = self.get_or_create_unit(signal)
+
+        recent_senders = unit.senders.filter(
+            last_signal_received__range=[
+                timezone.now() - timedelta(seconds=1),
+                timezone.now()
+            ]
+        )
+
+        if recent_senders.count() > 0:
+            return signal, unit
+
+        # set last_signal received on Sender.
+        sender = signal.sender
+        sender.last_signal_received = timezone.now()
+        sender.save()
+
+        # Propagate event
+        signal.propagate()
+        unit.log(signal=signal)
+
+        return signal, unit
 
     def __call__(self, raw_event_string):
         pass

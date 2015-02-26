@@ -1,8 +1,10 @@
 import json
+
 import requests
 
 from django.core import mail
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework import viewsets
 from rest_framework.views import APIView
@@ -11,6 +13,7 @@ from rest_framework.response import Response
 from device.serializers import DeviceSerializer
 from device.models import Device
 from node.models import RequestLog
+from button.models import Button
 
 
 class DeviceViewSet(viewsets.ModelViewSet):
@@ -121,29 +124,46 @@ class RestartDaemonView(APIView):
 
 class DeviceOptionsView(APIView):
     def get(self, request):
-        options = [{
-                        'protocol' : {
-                            'id' : Device.PROTOCOL_ARCHTEC,
-                            'name' : 'arctech',
-                            'models' : [
-                                {
-                                    'id': Device.MODEL_CODESWITCH,
-                                    'name': 'Code switch',
-                                },
-                                {
-                                    'id': Device.MODEL_BELL,
-                                    'name': 'Bell',
-                                },
-                                {
-                                    'id': Device.MODEL_SELFLEARNING_SWITCH,
-                                    'name': 'Selflearning switch',
-                                },
-                                {
-                                    'id': Device.MODEL_SELFLEARNING_DIMMER,
-                                    'name': 'Selflearning dimmer',
-                                },
-                            ]
-                        },
-                    }]
+        protocol_model_options = [
+            {
+                'protocol' : {
+                    'id' : Device.PROTOCOL_ARCHTEC,
+                    'name' : 'arctech',
+                    'models' : [
+                        {
+                            'id': Device.MODEL_CODESWITCH,
+                            'name': 'Code switch',
+                            },
+                        {
+                            'id': Device.MODEL_BELL,
+                            'name': 'Bell',
+                            },
+                        {
+                            'id': Device.MODEL_SELFLEARNING_SWITCH,
+                            'name': 'Selflearning switch',
+                            },
+                        {
+                            'id': Device.MODEL_SELFLEARNING_DIMMER,
+                            'name': 'Selflearning dimmer',
+                            },
+                        ]
+                },
+            }
+        ]
 
-        return Response(options)
+        button_types = []
+        for id, name in Button.BUTTON_TYPE_CHOICES:
+            button_types.append(
+                {
+                    'id': id,
+                    'name': name,
+                }
+            )
+
+
+        return Response(
+            {
+                'protocol_model_options' : protocol_model_options,
+                'button_type_options' : button_types
+            }
+        )

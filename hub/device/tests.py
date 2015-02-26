@@ -1,16 +1,20 @@
 import json
+from django.utils.translation import gettext_lazy as _
 
 from django.test import TestCase
 from django.test.client import Client
 
 from device.models import Device
-from device.models import Group
+from device.models import DeviceGroup
 from node.models import Node
 from node.models import RequestLog
 
 from node.communicator import NodeDeviceCommunicator
 from device.property_generator import DevicePropertyGenerator
 from device.property_generator import PropertyValueGenerator
+
+from button.models import Button
+
 
 class DeviceModelTestsBase(TestCase):
     def setUp(self):
@@ -26,7 +30,7 @@ class DeviceModelTestsBase(TestCase):
         d.node = n
         d.save()
 
-        g = Group()
+        g = DeviceGroup()
         g.name = 'Group'
         g.save()
         g.devices.add(d)
@@ -38,6 +42,33 @@ class DeviceModelTestsBase(TestCase):
 
     def refresh(self, obj):
         return obj.__class__.objects.get(pk=obj.pk)
+
+
+class DeviceBasicModelAttributesTests(DeviceModelTestsBase):
+    def test_should_have_a_blank_category_on_device(self):
+        self.assertEqual(
+            self.device.category,
+            None
+        )
+
+    def test_should_reset_learnt_on_node_if_node_changed(self):
+        self.device.learnt_on_node = True
+        self.device.save()
+
+        n2 = Node(
+            address='http://127.0.0.2',
+            name='Other node'
+        )
+
+        n2.save()
+
+        self.device.node = n2
+        self.device.save()
+
+        self.assertFalse(
+            Device.objects.get(pk=self.device.pk).learnt_on_node
+        )
+
 
 class DeviceModelTests(TestCase):
     def test_create_should_have_set_properties(self):
@@ -55,7 +86,6 @@ class DeviceModelTests(TestCase):
 
         self.assertEqual(d.house, 'A')
         self.assertEqual(d.unit, 1)
-
 
     def test_should_not_re_set_properties(self):
         n = Node()
@@ -127,7 +157,7 @@ class DevicePropertySetterTests(TestCase):
 
 class DeviceTests(DeviceModelTestsBase):
     def test_devices_have_been_created(self):
-        self.assertEqual(1, self.device.group_set.all().count())
+        self.assertEqual(1, self.device.devicegroup_set.all().count())
 
     def test_should_set_property_iteration_on_model_after_saving_through_generate_properties_method(self):
         # Should be first if we just look at the newly created device
@@ -741,6 +771,12 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
             200
         )
 
+        device = self.refresh(self.device)
+
+        self.assertTrue(
+            device.learnt_on_node
+        )
+
     def test_send_off_command(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
@@ -810,33 +846,52 @@ class HubDeviceOptionsTests(TestCase):
 
         response = client.get('/device/options/')
 
+        self.maxDiff = 5000
         self.assertJSONEqual(
                 response.content.decode('utf-8'),
                 json.dumps(
-                    [{
-                        'protocol' : {
-                            'id' : Device.PROTOCOL_ARCHTEC,
-                            'name' : 'arctech',
-                            'models' : [
-                                {
-                                    'id': Device.MODEL_CODESWITCH,
-                                    'name': 'Code switch',
+                    {
+                        'protocol_model_options' : [
+                            {
+                                'protocol' : {
+                                    'id' : Device.PROTOCOL_ARCHTEC,
+                                    'name' : 'arctech',
+                                    'models' : [
+                                        {
+                                            'id': Device.MODEL_CODESWITCH,
+                                            'name': 'Code switch',
+                                            },
+                                        {
+                                            'id': Device.MODEL_BELL,
+                                            'name': 'Bell',
+                                            },
+                                        {
+                                            'id': Device.MODEL_SELFLEARNING_SWITCH,
+                                            'name': 'Selflearning switch',
+                                            },
+                                        {
+                                            'id': Device.MODEL_SELFLEARNING_DIMMER,
+                                            'name': 'Selflearning dimmer',
+                                            },
+                                        ]
                                 },
-                                {
-                                    'id': Device.MODEL_BELL,
-                                    'name': 'Bell',
-                                },
-                                {
-                                    'id': Device.MODEL_SELFLEARNING_SWITCH,
-                                    'name': 'Selflearning switch',
-                                },
-                                {
-                                    'id': Device.MODEL_SELFLEARNING_DIMMER,
-                                    'name': 'Selflearning dimmer',
-                                },
-                            ]
-                        },
-                    }]
+                            },
+                        ],
+                        'button_type_options' : [
+                            {
+                                'id': Button.BUTTON_TYPE_BUTTON,
+                                'name': str(_('Button')),
+                            },
+                            {
+                                'id': Button.BUTTON_TYPE_MOTION_SENSOR,
+                                'name': str(_('Motion sensor'))
+                            },
+                            {
+                                'id': Button.BUTTON_TYPE_DOOR_SENSOR,
+                                'name': str(_('Door sensor')),
+                            },
+                        ]
+                    }
                 )
             )
 
@@ -900,6 +955,9 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'system': None,
                         'unit': '1',
                         'units': None,
+                        'category': None,
+                        'written_to_conf_on_node': False,
+                        'learnt_on_node': False,
                     }
                 )
             )
