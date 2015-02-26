@@ -220,10 +220,6 @@ class SignalsAndUnitCreationTests(SignalTestsHelper):
         )
 
         # Do the REAL tests
-        print('')
-        print('')
-        print('')
-
         events = self.helper_parse_event(
             'class:command;protocol:arctech;model:selflearning;house:15190034;unit:11;group:0;method:turnon;',
             'class:command;protocol:sartano;model:codeswitch;code:1010011011;method:turnoff;',
@@ -330,6 +326,34 @@ class TestSignalEndPoints(TestCase):
         self.assertEqual(e.unit, '1')
         self.assertEqual(e.group, '0')
         self.assertEqual(e.method, 'turnon')
+
+    def test_should_create_all_required_models_when_receiving_through_web_api(self):
+        response = self.client.post(
+            reverse('event'),
+            json.dumps({
+                'raw': 'class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;',
+            }),
+            content_type='application/json'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+        self.assertEqual(
+            Sender.objects.all().count(),
+            1
+        )
+        self.assertEqual(
+            Button.objects.all().count(),
+            1
+        )
+        self.assertEqual(
+            ButtonLog.objects.all().count(),
+            1
+        )
+
+
 
 
 class TestReadSignalsTXTFileAndCheckSignalModelContent(TestCase):

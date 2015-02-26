@@ -13,10 +13,7 @@ class EventReceiverView(APIView):
             return Response(status=400)
 
         receiver = Receiver()
-
-        event = receiver.parse_raw_event(raw_event_string)
-
-        event.propagate()
+        signal, unit = receiver.act_on_raw_event_string(raw_event_string)
 
         return Response()
 
