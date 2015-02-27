@@ -50,6 +50,9 @@ INSTALLED_APPS = (
     'button',
     'sensor',
     'action',
+
+    'angular',
+    'bootstrap',
     #'timer',
 )
 
