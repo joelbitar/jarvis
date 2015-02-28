@@ -1,5 +1,6 @@
 import json
 from django.utils.translation import gettext_lazy as _
+from django.core.urlresolvers import reverse
 
 from django.test import TestCase
 from django.test.client import Client
@@ -844,7 +845,9 @@ class HubDeviceOptionsTests(TestCase):
     def test_get_options_for_device(self):
         client = Client()
 
-        response = client.get('/device/options/')
+        response = client.get(
+            reverse('device-options')
+        )
 
         self.maxDiff = 5000
         self.assertJSONEqual(
@@ -918,7 +921,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                 ).save()
         
         response = self.client.get(
-            '/devices/'.format(device_id=self.device.id)
+            reverse('device-list')
         )
 
         response_json = json.loads(response.content.decode('utf-8'))
@@ -927,7 +930,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
     def test_should_get_single_device(self):
         response = self.client.get(
-            '/devices/{device_id}/'.format(device_id=self.device.id)
+            reverse('device-detail', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -970,7 +973,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
     def test_should_get_ok_response_when_sending_create(self):
         response = self.client.put(
-            '/devices/{id}/'.format(id=self.device.pk),
+            reverse('device-detail', kwargs={'pk': self.device.pk}),
             json.dumps({
                 'name' : 'New testDevice',
                 'model': self.device.model,
@@ -1007,7 +1010,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
     def test_should_get_ok_response_when_sending_update(self):
         response = self.client.put(
-            '/devices/{id}/'.format(id=self.device.pk),
+            reverse('device-detail', kwargs={'pk': self.device.pk}),
             json.dumps({
                 'name' : 'New testDevice',
                 'model': self.device.model,
@@ -1029,7 +1032,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
     def test_should_get_ok_response_when_sending_delete(self):
         response = self.client.delete(
-                '/devices/{id}/'.format(id=self.device.pk),
+                reverse('device-detail', kwargs={'pk': self.device.pk}),
                 content_type='application/json'
         )
 
@@ -1043,7 +1046,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
     def test_should_get_ok_response_when_sending_command_learn(self):
         response = self.client.get(
-                '/devices/{id}/command/learn/'.format(id=self.device.pk),
+                reverse('device-learn', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -1055,7 +1058,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
     def test_should_get_ok_response_when_sending_command_on(self):
         response = self.client.get(
-                '/devices/{id}/command/on/'.format(id=self.device.pk),
+                reverse('device-on', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -1069,7 +1072,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
     def test_should_get_ok_response_when_sending_command_off(self):
         response = self.client.get(
-                '/devices/{id}/command/off/'.format(id=self.device.pk),
+                reverse('device-off', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)
