@@ -17,7 +17,7 @@ class RawEventHandler(object):
             return None
 
         requests.post(
-            settings.HUB_URL + '/event/',
+            settings.HUB_API_URL + 'event/',
             json.dumps({
                 'raw': raw_command
             }),

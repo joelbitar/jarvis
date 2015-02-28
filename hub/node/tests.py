@@ -20,7 +20,14 @@ class NodeAdminTests(TestCase):
     def test_should_get_all_nodes(self):
         client = Client()
 
-        response = client.get('/nodes/')
+        response = client.get(
+            reverse('node-list')
+        )
+
+        self.assertTrue(
+            reverse('node-list').startswith('/api/'),
+            'Tests that the prefix for all APIs is api/ ' + reverse('node-list')
+        )
 
         self.assertEqual(response.status_code, 200)
 
@@ -29,7 +36,7 @@ class NodeAdminTests(TestCase):
     def test_should_send_write_conf_command_with_ajax_to_hub(self):
         client = Client()
 
-        response = client.get(reverse('node_writeconf', kwargs={'pk' : self.node.pk}))
+        response = client.get(reverse('node-writeconf', kwargs={'pk' : self.node.pk}))
 
         self.assertEqual(response.status_code, 200)
 
@@ -44,7 +51,7 @@ class NodeAdminTests(TestCase):
             )
             d.save()
 
-        response = client.get(reverse('node_writeconf', kwargs={'pk' : self.node.pk}))
+        response = client.get(reverse('node-writeconf', kwargs={'pk' : self.node.pk}))
 
         self.assertEqual(response.status_code, 200)
 
@@ -71,7 +78,7 @@ class NodeAdminTests(TestCase):
     def test_should_send_restart_command_with_ajax_to_hub(self):
         client = Client()
 
-        response = client.get(reverse('node_restartdaemon', kwargs={'pk' : self.node.pk}))
+        response = client.get(reverse('node-restartdaemon', kwargs={'pk' : self.node.pk}))
 
         self.assertEqual(response.status_code, 200)
 
