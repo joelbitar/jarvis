@@ -17,3 +17,6 @@ class RequestLog(models.Model):
     # Timestamp
     request_sent = models.DateTimeField(auto_now_add=True)
     response_received = models.DateTimeField(null=True, default=None, blank=True)
+
+    class Meta:
+        app_label = 'node'

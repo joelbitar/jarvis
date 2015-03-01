@@ -43,6 +43,8 @@ INSTALLED_APPS = (
 
     'rest_framework',
 
+    'rest_router',
+
     'device',
     'node',
 
@@ -65,6 +67,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+
+    'rest_router.middleware.settings_middleware.SettingsMiddleware',
 )
 
 ROOT_URLCONF = 'hub.urls'
@@ -117,3 +121,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# If we should use an alternate URL to hub. Specify the absolute URL to hub and Django will try to proxy the url
+MAIN_HUB_URL = None
+MAIN_HUB_URL = 'http://127.0.0.1:9999/'
+
+try:
+    from secret import *
+except ImportError:
+    print('Could not find secret.py :(')

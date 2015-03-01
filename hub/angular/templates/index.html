@@ -29,10 +29,11 @@
 
       <!-- <script type="text/javascript" src="{% static "js/controllers/user.js" %}"></script> -->
 
-      <script type="text/javascript">
+      <script type="text/javascript" id="settings">
           var django = {
-              base_ng_template_url : "{{ STATIC_URL }}ng-templates/",
-              csrf_token : "{{ csrf_token }}"
+              "base_ng_template_url" : "{{ STATIC_URL }}ng-templates/",
+              "csrf_token" : "{{ csrf_token }}",
+              "proxy_url" : {% if not MAIN_PROXY_URL %}""{% else %}"{% url 'hub-proxy' %}"{% endif %}
           };
       </script>
   </body>
