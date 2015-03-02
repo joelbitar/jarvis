@@ -124,9 +124,9 @@ STATIC_URL = '/static/'
 
 # If we should use an alternate URL to hub. Specify the absolute URL to hub and Django will try to proxy the url
 MAIN_HUB_URL = None
-MAIN_HUB_URL = 'http://127.0.0.1:9999/'
+#MAIN_HUB_URL = 'http://127.0.0.1:9999/'
 
 try:
-    from secret import *
+    from hub.secret import *
 except ImportError:
     print('Could not find secret.py :(')
