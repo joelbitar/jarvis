@@ -12,12 +12,12 @@ class Action(models.Model):
     and a bunch of devices that it can control.
     """
     name = models.CharField(max_length=256)
-    buttons = models.ManyToManyField(Button, through='ActionButton', related_name='actions')
-    sensors = models.ManyToManyField(Sensor, through='ActionSensor', related_name='actions')
+    trigger_buttons = models.ManyToManyField(Button, through='ActionButton', related_name='actions')
+    trigger_sensors = models.ManyToManyField(Sensor, through='ActionSensor', related_name='actions')
 
     # Gets controlled
-    devices = models.ManyToManyField(Device)
-    device_groups = models.ManyToManyField(DeviceGroup)
+    action_devices = models.ManyToManyField(Device)
+    action_device_groups = models.ManyToManyField(DeviceGroup)
 
 
 class ActionUnitBase(models.Model):
@@ -80,9 +80,9 @@ class ActionButton(ActionUnitBase):
             return None
 
         # Get all communicators and run on them.
-        self.execute_method(self.action.devices.all(), method_key)
+        self.execute_method(self.action.action_devices.all(), method_key)
 
-        for group in self.action.device_groups.all():
+        for group in self.action.action_device_groups.all():
             self.execute_method(group.devices.all(), method_key)
 
         return True

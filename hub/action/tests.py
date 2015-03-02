@@ -39,7 +39,7 @@ class TestPropagateSignal(SignalTestsHelper):
         )
         action.save()
 
-        action.devices.add(
+        action.action_devices.add(
             self.device
         )
 
@@ -151,7 +151,7 @@ class TestPropagateSignal(SignalTestsHelper):
         group.save()
         group.devices.add(device_2)
 
-        self.action.device_groups.add(group)
+        self.action.action_device_groups.add(group)
         self.action.save()
 
         self.signal.propagate()
