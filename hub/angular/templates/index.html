@@ -11,8 +11,21 @@
   </head>
   <body>
       <!-- Page Content -->
-      <h1>JARVIS</h1>
       <div class="container">
+          <div class="row">
+              <div class="col-xs-12">
+                  <h1>JARVIS</h1>
+              </div>
+          </div>
+
+          {% comment %}
+          {# Menu #}
+          <div class="row">
+              <div class="col-xs-12">
+
+              </div>
+          </div>
+          {% endcomment %}
           <div ng-view></div>
       </div>
 
@@ -25,15 +38,17 @@
       <script type="text/javascript" src="{% static "js/lib/lodash.min.js" %}"></script>
       <script type="text/javascript" src="{% static "js/lib/restangular.min.js" %}"></script>
 
-      <script type="text/javascript" src="{% static "js/app.js" %}"></script>
+      {# Controllers #}
+      <script type="text/javascript" src="{% static "js/startpage.js" %}"></script>
 
-      <!-- <script type="text/javascript" src="{% static "js/controllers/user.js" %}"></script> -->
+      <script type="text/javascript" src="{% static "js/app.js" %}"></script>
 
       <script type="text/javascript" id="settings">
           var django = {
-              "base_ng_template_url" : "{{ STATIC_URL }}ng-templates/",
+              "base_ng_template_url" : "{% static 'ng-templates' %}/",
+              "base_static_url" : "{% static '' %}",
               "csrf_token" : "{{ csrf_token }}",
-              "proxy_url" : {% if not MAIN_PROXY_URL %}""{% else %}"{% url 'hub-proxy' %}"{% endif %}
+              "proxy_url" : {% if not MAIN_PROXY_URL %}""{% else %}"{{ PROXY_URL }}"{% endif %}
           };
       </script>
   </body>

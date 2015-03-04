@@ -1,3 +1,14 @@
 from django.contrib import admin
+from action.models import Action, ActionButton, ActionSensor
 
-# Register your models here.
+@admin.register(Action)
+class ActionAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(ActionButton)
+class ActionButtonAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(ActionSensor)
+class ActionSensorAdmin(admin.ModelAdmin):
+    pass

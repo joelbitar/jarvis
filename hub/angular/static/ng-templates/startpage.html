@@ -1,0 +1,15 @@
+<div class="row">
+    Temperaturer
+</div>
+<div class="row">
+    Prognoser
+</div>
+<div class="row" ng-controller="StartpageDeviceController">
+    <div class="col-xs-4" ng-repeat="device in devices">
+        <h4><a href="#/device/{{ device.id }}/">{{ device.name }}</a></h4>
+        <img  static-src="img/light_on.png" />
+        <img  static-src="img/light_off.png" />
+        <div ng-if="device.state">
+        </div>
+    </div>
+</div>

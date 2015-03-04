@@ -38,9 +38,11 @@ class DjangoRestRouterSettings(DjangoSettingsTestsBase):
 
         d = self.helper_get_client_side_django_settings()
 
+        u = reverse('hub-proxy').lstrip('/')
+
         self.assertEqual(
             d['proxy_url'],
-            reverse('hub-proxy')
+            u
         )
 
     def test_should_have_none_as_proxy_url_if_none_is_set_in_settings(self):
