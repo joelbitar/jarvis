@@ -1,0 +1,5 @@
+<h4>{{ device.name }}</h4>
+<span ng-click="toggleDevice(device);">
+    <img ng-if="!device.state" static-src="img/light_off.png" />
+    <img ng-if="device.state" static-src="img/light_on.png" />
+</span>

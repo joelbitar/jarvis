@@ -18,7 +18,6 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute', 'restangul
         });
 
         $scope.toggleDevice = function(device){
-            console.log('test', device);
             device.state = !device.state;
-        }
+        };
 }]);

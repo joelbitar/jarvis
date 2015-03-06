@@ -34,7 +34,7 @@ gss.directive("include", function ($http, $templateCache, $compile) {
         restrict: 'A',
         link: function (scope, element, attributes) {
             // The static template URL
-            var templateUrl = django.template_url + scope.$eval(attributes.include);
+            var templateUrl = django.base_ng_template_url + attributes.include;
 
             $http.get(templateUrl, {cache: $templateCache}).success(
                 function (tplContent) {

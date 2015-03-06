@@ -6,10 +6,6 @@
 </div>
 <div class="row" ng-controller="StartpageDeviceController">
     <div class="col-xs-2" ng-repeat="device in devices">
-        <h4><a href="#/device/{{ device.id }}/">{{ device.name }}</a></h4>
-        <span ng-click="toggleDevice(device);">
-            <img ng-if="!device.state" static-src="img/light_off.png" />
-            <img ng-if="device.state" static-src="img/light_on.png" />
-        </span>
+        <div include="device-tiny.html"></div>
     </div>
 </div>
