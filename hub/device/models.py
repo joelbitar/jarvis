@@ -70,6 +70,12 @@ class Device(models.Model):
     def model_string(self):
         return dict(self.MODEL_CHOICES).get(self.model)
 
+    @property
+    def is_dimmable(self):
+        return self.model in [
+            self.MODEL_SELFLEARNING_DIMMER,
+        ]
+
     def get_communicator(self):
         return NodeDeviceCommunicator(device=self)
 

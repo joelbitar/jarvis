@@ -961,6 +961,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'category': None,
                         'written_to_conf_on_node': False,
                         'learnt_on_node': False,
+                        'is_dimmable': False,
                     }
                 )
             )

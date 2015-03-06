@@ -1,5 +1,14 @@
-<h4>{{ device.name }}</h4>
-<span ng-click="toggleDevice(device);">
-    <img ng-if="!device.state" static-src="img/light_off.png" />
-    <img ng-if="device.state" static-src="img/light_on.png" />
-</span>
+<div ng-controller="DeviceController">
+    <h4>{{ device.name }}</h4>
+    <span ng-if="!device.is_dimmable" ng-click="toggleDevice(device);">
+        <img ng-if="!device.state" static-src="img/light_off.png" />
+        <img ng-if="device.state" static-src="img/light_on.png" />
+    </span>
+
+    <span ng-if="device.is_dimmable" ng-click="toggleDevice(device);">
+        <div class="device dimmable">
+            <img style="opacity: {{ device.state / 100 }};" ng-if="device.state" static-src="img/light_on.png" />
+        </div>
+        <span>{{ device.state }}</span>
+    </span>
+</div>

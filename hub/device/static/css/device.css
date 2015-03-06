@@ -1,0 +1,6 @@
+div.device.dimmable{
+    background-image: url("../img/light_off.png");
+    background-repeat: no-repeat;
+}
+div.device.dimmable img{
+}
