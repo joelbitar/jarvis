@@ -1,11 +1,11 @@
-<div class="row">
+<div layout="row" layout-align="space-around center">
     Temperaturer
 </div>
-<div class="row">
+<div layout="row" layout-align="space-around center">
     Prognoser
 </div>
-<div class="row" ng-controller="StartpageDeviceController">
-    <div class="col-xs-2" ng-repeat="device in devices">
+<div layout="row" layout-align="center" layout-wrap ng-controller="StartpageDeviceController">
+    <div flex="20" ng-repeat="device in devices">
         <div include="device-tiny.html"></div>
     </div>
 </div>

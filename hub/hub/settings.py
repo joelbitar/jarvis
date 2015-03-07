@@ -54,7 +54,7 @@ INSTALLED_APPS = (
     'action',
 
     'angular',
-    'bootstrap',
+    'material',
     #'timer',
 )
 
