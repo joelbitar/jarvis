@@ -1,14 +1,18 @@
 <div ng-controller="DeviceController" layout="column">
-    <h4>{{ device.name }}</h4>
-    <span ng-if="!device.is_dimmable" ng-click="toggleDevice(device);">
-        <img ng-if="!device.state" static-src="img/light_off.png" />
-        <img ng-if="device.state" static-src="img/light_on.png" />
-    </span>
+    <div layout="column" layout-align="start center">
+        <h4>{{ device.name }}</h4>
 
-    <div layout="column" ng-if="device.is_dimmable">
-        <div class="device dimmable">
-            <img style="opacity: {{ device.state / 100 }};" ng-if="device.state" static-src="img/light_on.png" />
+        <div ng-if="!device.is_dimmable" ng-click="toggleDevice(device);">
+            <img ng-if="!device.state" static-src="img/light_off.png" />
+            <img ng-if="device.state" static-src="img/light_on.png" />
         </div>
-        <md-slider flex ng-model="device.state" min="0" max="100"></md-slider>
+
+        <div ng-if="device.is_dimmable" class="device dimmable" ng-click="toggleDevice(device);">
+            <img style="opacity: {{ device.state / 100 }};" static-src="img/light_on.png" />
+        </div>
+    </div>
+
+    <div flex="100" layout="column" ng-if="device.is_dimmable">
+        <md-slider flex ng-model="device.state" min="0" max="100" aria-label="Brightness"></md-slider>
     </div>
 </div>
