@@ -2,7 +2,6 @@
 var gss = angular.module('jarvis',
     [
         'restangular',
-        'ui.bootstrap',
 
         'jarvis.startpage',
         'jarvis.device'

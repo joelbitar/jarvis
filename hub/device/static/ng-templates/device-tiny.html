@@ -1,4 +1,4 @@
-<div ng-controller="DeviceController">
+<div ng-controller="DeviceController" layout="column">
     <h4>{{ device.name }}</h4>
     <span ng-if="!device.is_dimmable" ng-click="toggleDevice(device);">
         <img ng-if="!device.state" static-src="img/light_off.png" />
@@ -10,6 +10,8 @@
             <img style="opacity: {{ device.state / 100 }};" ng-if="device.state" static-src="img/light_on.png" />
         </div>
         <span>{{ device.state }}</span>
-      </md-slider>
     </span>
+    <div layout ng-if="device.is_dimmable">
+
+        </div>
 </div>
