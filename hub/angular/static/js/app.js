@@ -1,36 +1,13 @@
 /* Basic Angular structure, the public probably does not need the entire app, When we need to we can always use the gss-app.js file instead */
-var gss = angular.module('jarvis',
-    [
-        'restangular',
-        'ui.bootstrap',
+var app = angular.module('jarvis', [
+    'restangular',
+    'ngMaterial',
 
-        'jarvis.startpage',
-        'jarvis.device'
-    ]
-);
+    'jarvis.startpage',
+    'jarvis.device'
+]);
 
-gss.config(['$sceDelegateProvider', function($sceDelegateProvider) {
-    $sceDelegateProvider.resourceUrlWhitelist([
-        // Allow same origin resource loads.
-        'self',
-        // Allow loading from our assets domain.  Notice the difference between * and **.
-        //'http://*.teebovirtualbox.lc/**',
-        //'http://*.teebo.se/**'
-        django.static_url + '**'
-    ]
-    );
-}]);
-
-gss.config(['$httpProvider', function($httpProvider){
-    // Set the initial CSRF Token from Django view.
-    $httpProvider.defaults.headers.common['X-CSRFToken'] = django.csrf_token;
-
-    // Set CSRF Token on all requests that come back from the server.
-    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
-    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
-}]);
-
-gss.directive("include", function ($http, $templateCache, $compile) {
+app.directive("include", function ($http, $templateCache, $compile) {
     return {
         restrict: 'A',
         link: function (scope, element, attributes) {
@@ -46,7 +23,7 @@ gss.directive("include", function ($http, $templateCache, $compile) {
     };
 });
 
-gss.directive("staticSrc", function () {
+app.directive("staticSrc", function () {
     return {
         compile: function(elm, attr){
             elm.attr('src', django.base_static_url + elm.attr('static-src'));
@@ -55,12 +32,15 @@ gss.directive("staticSrc", function () {
     }
 });
 
-gss.directive('myCustomer', function() {
-  return {
-    template: 'Name: {{customer.name}} Address: {{customer.address}}'
-  };
+app.config(function($mdThemingProvider) {
+  $mdThemingProvider.theme('default')
+    .primaryPalette('pink')
+    .accentPalette('blue');
 });
 
+
+
+/* Global functions */
 var template_url = function(template_name){
     return django.base_ng_template_url + template_name
 };
@@ -72,3 +52,5 @@ var api_url = function(path){
         return 'api/' + path;
     }
 };
+
+
