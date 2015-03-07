@@ -1,51 +1,14 @@
 {% load static i18n %}
 
-<html ng-app="jarvis">
+<html lang="en" ng-app="jarvis">
   <head>
-      {% block page_title %}<title>JARVIS</title>{% endblock %}
-
-      <link rel="stylesheet" href="{% static "css/loading-bar.css" %}" />
-      <link rel="stylesheet" href="{% static "css/device.css" %}" />
-
-      {# Material design, google all-in BABY! #}
-      <link href="{% static "css/angular-material.min.css" %}" type="text/css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static "css/angular-material.min.css" %}">
   </head>
-  <body>
-      <!-- Page Content -->
-      <div layout="column">
-          <div layout="row" layout-align="center">
-              <h1>JARVIS</h1>
-          </div>
+  <body layout="column">
+    <div ng-view></div>
 
-          {% comment %}
-          {# Menu #}
-          <div class="row">
-              <div class="col-xs-12">
 
-              </div>
-          </div>
-          {% endcomment %}
-          <div ng-view></div>
-
-      </div>
-
-      <script type="text/javascript" src="{% static "js/angularjs/angular.min.js" %}"></script>
-      <script type="text/javascript" src="{% static "js/angularjs/angular-route.min.js" %}"></script>
-      <script type="text/javascript" src="{% static "js/angularjs/angular-resource.min.js" %}"></script>
-
-      <script type="text/javascript" src="{% static "js/angular-material.min.js" %}"></script>
-
-      <script type="text/javascript" src="{% static "js/lib/loading-bar.js" %}"></script>
-      <script type="text/javascript" src="{% static "js/lib/lodash.min.js" %}"></script>
-      <script type="text/javascript" src="{% static "js/lib/restangular.min.js" %}"></script>
-
-      {# Controllers #}
-      <script type="text/javascript" src="{% static "js/startpage.js" %}"></script>
-      <script type="text/javascript" src="{% static "js/device.js" %}"></script>
-
-      <script type="text/javascript" src="{% static "js/app.js" %}"></script>
-
-      <script type="text/javascript" id="settings">
+    <script type="text/javascript" id="settings">
           var django = {
               "base_ng_template_url" : "{% static 'ng-templates' %}/",
               "base_static_url" : "{% static '' %}",
@@ -53,5 +16,20 @@
               "proxy_url" : {% if not MAIN_PROXY_URL %}""{% else %}"{{ PROXY_URL }}"{% endif %}
           };
       </script>
+    <!-- Angular Material Dependencies -->
+    <script src="{% static "js/angularjs/angular.min.js" %}"></script>
+    <script src="{% static "js/angularjs/angular-animate.min.js" %}"></script>
+    <script src="{% static "js/angularjs/angular-aria.min.js" %}"></script>
+    <script src="{% static "js/angularjs/angular-route.min.js" %}"></script>
+
+    <script src="{% static "js/lib/lodash.min.js" %}"></script>
+    <script src="{% static "js/lib/restangular.min.js" %}"></script>
+
+    <script src="{% static "js/angular-material.min.js" %}"></script>
+
+    <script src="{% static "js/startpage.js" %}"></script>
+    <script src="{% static "js/device.js" %}"></script>
+
+    <script src="{% static "js/app.js" %}"></script>
   </body>
 </html>

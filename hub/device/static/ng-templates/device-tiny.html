@@ -5,13 +5,10 @@
         <img ng-if="device.state" static-src="img/light_on.png" />
     </span>
 
-    <span ng-if="device.is_dimmable" ng-click="toggleDevice(device);">
+    <div layout="column" ng-if="device.is_dimmable">
         <div class="device dimmable">
             <img style="opacity: {{ device.state / 100 }};" ng-if="device.state" static-src="img/light_on.png" />
         </div>
-        <span>{{ device.state }}</span>
-    </span>
-    <div layout ng-if="device.is_dimmable">
-
-        </div>
+        <md-slider flex ng-model="device.state" min="0" max="100"></md-slider>
+    </div>
 </div>
