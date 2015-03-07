@@ -1,6 +1,6 @@
 <div ng-controller="DeviceController" layout="column">
     <div layout="column" layout-align="start center">
-        <h4>{{ device.name }}</h4>
+        <h4><a href="#/device/{{ device.id }}/">{{ device.name }}</a></h4>
 
         <div ng-if="!device.is_dimmable" ng-click="toggleDevice(device);">
             <img ng-if="!device.state" static-src="img/light_off.png" />
@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    <div flex="100" layout="column" ng-if="device.is_dimmable">
-        <md-slider flex ng-model="device.state" min="0" max="100" aria-label="Brightness"></md-slider>
+    <div layout="row" layout-align="center center" ng-if="device.is_dimmable">
+        <md-slider flex="80" ng-model="device.state" min="0" max="100" aria-label="Brightness"></md-slider>
     </div>
 </div>

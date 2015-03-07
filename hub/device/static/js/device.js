@@ -5,6 +5,7 @@
 
 var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
 .controller('DeviceController', ['$scope', 'Restangular', function($scope, Restangular){
+
         $scope.toggleDevice = function(device){
             if(device.is_dimmable == false){
                 device.state = !device.state;
