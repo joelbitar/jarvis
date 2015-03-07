@@ -19,6 +19,8 @@ class Button(models.Model):
         (BUTTON_TYPE_DOOR_SENSOR, _('Door sensor')),
     )
 
+    name = models.CharField(max_length=56, default='', blank=True)
+
     created = models.DateTimeField(auto_now_add=True)
 
     button_type = models.PositiveSmallIntegerField(choices=BUTTON_TYPE_CHOICES, default=BUTTON_TYPE_BUTTON)

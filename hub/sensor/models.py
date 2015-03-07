@@ -2,6 +2,8 @@ from django.db import models
 
 
 class Sensor(models.Model):
+    name = models.CharField(max_length=56, default='', blank=True)
+
     humidity = models.SmallIntegerField(null=True, default=None, blank=True)
     temperature = models.SmallIntegerField(null=True, default=None, blank=True)
 
@@ -22,6 +24,19 @@ class Sensor(models.Model):
         log.save()
 
         return log
+
+    def __str__(self):
+        if self.name:
+            return str(self.name)
+
+        return str(self.pk)
+
+    def __unicode__(self):
+        if self.name:
+            return self.name
+
+        return str(self.pk)
+
 
 
 class SensorLog(models.Model):

@@ -1,10 +1,16 @@
-<div layout="row" layout-align="space-around center">
-    Temperaturer
+<div layout="row" layout-align="space-between center" ng-controller="StartpageSensorController">
+    <div flex="20" ng-repeat="sensor in sensors">
+        <div include="sensor-teaser.html"></div>
+    </div>
 </div>
-<div layout="row" layout-align="space-around center">
+
+<!--
+<div layout="row" layout-align="space-between center">
     Prognoser
 </div>
-<div layout="row" layout-align="center" layout-wrap ng-controller="StartpageDeviceController">
+-->
+
+<div layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageDeviceController">
     <div flex="20" ng-repeat="device in devices">
         <div include="device-tiny.html"></div>
     </div>

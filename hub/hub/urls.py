@@ -18,6 +18,8 @@ from node.views import NodeRestartDaemonView
 
 from event.views import EventReceiverView
 
+from sensor.views import SensorViewSet
+
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -35,6 +37,7 @@ router.register(r'devices', DeviceViewSet)
 router.register(r'nodes', NodeViewSet)
 router.register(r'devices/(?P<pk>[0-9]+)/$', device_detail, base_name='devices')
 router.register(r'nodes/(?P<pk>[0-9]+)/$', node_detail, base_name='nodes')
+router.register(r'sensors', SensorViewSet)
 #router.register(r'devices/(?P<pk>[0-9]+)/command/on/$', DeviceCommandOnView.as_view(), base_name='device_command')
 
 rest_patterns = patterns('',
