@@ -50,10 +50,15 @@ class DeviceCommandViewBase(APIView):
         response = requests.post(
             url,
             json.dumps(data),
-            content_type='application/json'
+            headers={
+                'content_type': 'application/json'
+            }
         )
 
-        return response.status_code, response.json()
+        print(response.status_code)
+        response_json = {}
+
+        return response.status_code, response_json
 
 
     def get(self, request, pk, format=None):
