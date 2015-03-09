@@ -45,11 +45,6 @@ class DeviceModelTestsBase(TestCase):
         return obj.__class__.objects.get(pk=obj.pk)
 
 
-class FailTests(TestCase):
-    def test_failiure(self):
-        self.assertTrue(False)
-
-
 class DeviceBasicModelAttributesTests(DeviceModelTestsBase):
     def test_should_have_a_blank_category_on_device(self):
         self.assertEqual(
