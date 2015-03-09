@@ -13,7 +13,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         while True:
-            print('waiting...')
             if not DeviceCommand.objects.filter(executed=None).exists():
                 sleep(0.2)
                 continue
