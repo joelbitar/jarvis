@@ -7,6 +7,8 @@ from device.conf import TellstickConfig
 from django.conf import settings
 import json
 
+from device.models import DeviceCommand
+
 # Create your tests here.
 
 class BasicDeviceTest(TestCase):
@@ -187,6 +189,33 @@ class DeviceRestCrud(BasicDeviceTest):
         )
 
 
+class DeviceCommandTests(BasicDeviceTest):
+    def test_should_set_excuted_after_execution(self):
+        client = Client()
+
+        url = reverse('device-command', kwargs={'pk' : self.device.pk})
+
+        response = client.post(
+            url,
+            {
+                'command' : 'on'
+            }
+        )
+
+        dc = DeviceCommand.objects.get(pk=1)
+        self.assertIsNone(
+            dc.executed
+        )
+
+        dc.execute()
+
+        dc = DeviceCommand.objects.get(pk=dc.pk)
+
+        self.assertIsNotNone(
+            dc.executed
+        )
+
+
 class DeviceRestCalls(BasicDeviceTest):
     def test_send_on_command(self):
         client = Client()
@@ -201,6 +230,31 @@ class DeviceRestCalls(BasicDeviceTest):
         )
 
         self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            DeviceCommand.objects.all().count(),
+            1
+        )
+
+        dc = DeviceCommand.objects.all()[0]
+
+        self.assertEqual(
+            dc.command_name,
+            'on'
+        )
+
+        self.assertIsNotNone(
+            dc.command_data_json
+        )
+        self.assertEqual(
+            dc.command_data_json,
+            '{}'
+        )
+
+        self.assertEqual(
+            dc.command_data,
+            {}
+        )
 
     def test_should_receive_a_ok_when_sending_dim_command(self):
         client = Client()
@@ -219,6 +273,38 @@ class DeviceRestCalls(BasicDeviceTest):
         )
 
         self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            DeviceCommand.objects.all().count(),
+            1
+        )
+
+        dc = DeviceCommand.objects.all()[0]
+
+        self.assertEqual(
+            dc.command_name,
+            'dim'
+        )
+
+        self.assertIsNotNone(
+            dc.command_data_json
+        )
+
+        self.assertJSONEqual(
+            dc.command_data_json,
+            json.dumps(
+                {
+                    'dimlevel' : 50,
+                }
+            )
+        )
+
+        self.assertEqual(
+            dc.command_data,
+            {
+                'dimlevel' : 50
+            }
+        )
 
 
     def test_should_not_be_able_to_send_command_that_does_not_exist(self):
@@ -257,6 +343,7 @@ class DeviceRestCalls(BasicDeviceTest):
         )
 
         self.assertEqual(response.status_code, 404)
+
 
 class DeviceRestTests(BasicDeviceTest):
     def test_should_be_able_to_update_a_device(self):

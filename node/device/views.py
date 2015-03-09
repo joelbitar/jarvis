@@ -4,8 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from device.serializers import DeviceSerializer
 from device.commands import CommandError
+from device.models import DeviceCommand
 from device.conf import TellstickConfigWriter
-from device.conf import RestartTelldusDaemon 
+from device.conf import RestartTelldusDaemon
+from device.commands import CommandDispatcher
+
+import json
 
 
 class DeviceViewSet(viewsets.ModelViewSet):
@@ -26,10 +30,16 @@ class DeviceCommandView(APIView):
         except Device.DoesNotExist:
             return Response(status=404)
 
-        try:
-            device.commands.execute_command(command_name, **command_data)
-        except CommandError as command_error:
-            return Response(data={'error': str(command_error)}, status=400)
+        if not command_name in CommandDispatcher.COMMAND_NAME_WHITE_LIST:
+            return Response(data={'error': 'command not in list'}, status=400)
+
+        # Create command.
+        device_command = DeviceCommand(
+            command_name=command_name,
+            device=device,
+            command_data=command_data
+        )
+        device_command.save()
 
         return Response()
 
