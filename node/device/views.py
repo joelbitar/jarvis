@@ -19,6 +19,7 @@ class DeviceCommandView(APIView):
 
     def post(self, request, pk, format=None):
         command_name = request.data.get('command')
+        command_data = request.data.get('data') or {}
 
         try:
             device = Device.objects.get(pk=pk)
@@ -26,7 +27,7 @@ class DeviceCommandView(APIView):
             return Response(status=404)
 
         try:
-            device.commands.execute_command(command_name)
+            device.commands.execute_command(command_name, **command_data)
         except CommandError as command_error:
             return Response(data={'error': str(command_error)}, status=400)
 

@@ -182,7 +182,7 @@ class DeviceRestCrud(BasicDeviceTest):
                 'system': self.device.system,
                 'units': self.device.units,
                 'fade': self.device.fade,
-		'written_to_conf': self.device.written_to_conf,
+		        'written_to_conf': self.device.written_to_conf,
             })
         )
 
@@ -201,6 +201,25 @@ class DeviceRestCalls(BasicDeviceTest):
         )
 
         self.assertEqual(response.status_code, 200)
+
+    def test_should_receive_a_ok_when_sending_dim_command(self):
+        client = Client()
+
+        url = reverse('device-command', kwargs={'pk' : self.device.pk})
+
+        response = client.post(
+            url,
+            json.dumps({
+                'command': 'dim',
+                'data': {
+                    'dimlevel' : 50
+                }
+            }),
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
 
     def test_should_not_be_able_to_send_command_that_does_not_exist(self):
         client = Client()
