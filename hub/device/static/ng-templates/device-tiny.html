@@ -13,7 +13,7 @@
     </div>
 
     <div layout="row" layout-align="center center">
-        <md-slider ng-if="device.is_dimmable" flex="80" ng-model="device.state" min="0" max="255" aria-label="Brightness" ng-change="test(device);"></md-slider>
-        <md-switch ng-if="!device.is_dimmable" ng-model="device.state" ng-true-value="1" ng-false-value="0" aria-label="State"  ng-change="test(device);"></md-switch>
+        <md-slider ng-if="device.is_dimmable" flex="80" ng-model="device.state" min="0" max="255" aria-label="Brightness" ng-change="changeBrightness(device);"></md-slider>
+        <md-switch ng-if="!device.is_dimmable" ng-model="device.state" ng-true-value="1" ng-false-value="0" aria-label="State"  ng-change="toggleDevice(device);"></md-switch>
     </div>
 </div>
