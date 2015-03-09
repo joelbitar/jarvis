@@ -9,3 +9,4 @@ install:
 # command to run tests
 script:
   - python hub/manage.py test 
+  - python node/manage.py test 
