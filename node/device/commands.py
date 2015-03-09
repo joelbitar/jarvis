@@ -17,6 +17,7 @@ class BaseCommand(object):
 
 
 class CommandDispatcher(BaseCommand):
+    COMMAND_NAME_WHITE_LIST = ['on', 'off', 'learn', 'dim']
     __device = None
     __send_commands = True
 
@@ -35,7 +36,7 @@ class CommandDispatcher(BaseCommand):
         return self.__device
 
     def execute_command(self, command_name, **kwargs):
-        if command_name not in ['on', 'off', 'learn', 'dim']:
+        if command_name not in self.COMMAND_NAME_WHITE_LIST:
             raise CommandError('command name "{command_name}" is not in white list'.format(command_name=command_name))
 
         # Command name
@@ -55,6 +56,8 @@ class CommandDispatcher(BaseCommand):
             call(command)
         else:
             print('Does not call command, in test mode. $ ' + " ".join(command))
+
+        return True
 
     def learn(self):
         self.execute_command('learn')
