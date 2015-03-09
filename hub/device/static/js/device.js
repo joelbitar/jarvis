@@ -14,9 +14,10 @@ var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
 
 
             if(lc.iteration > 1 && current_time - lc.timestamp > timeout){
-                console.log('NO CHANGE in a while...');
+                // Delete in last_change
                 delete last_change[device.id];
 
+                // Call callback
                 callback();
 
                 return undefined;
@@ -44,7 +45,6 @@ var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
 
             if(lc === undefined){
                 last_change[device.id]['first_timestamp'] = current_time;
-                
                 wait_for_no_change_timeout(device, timeout, callback);
             }
 
@@ -52,7 +52,9 @@ var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
 
         $scope.toggleDevice = function(device){
             if(device.is_dimmable == false){
+                // Switch states
                 device.state = device.state ? 0 : 1;
+
             }else{
                 if(device.state > 80){
                     device.state = 0;
@@ -60,13 +62,34 @@ var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
                     device.state = 255;
                 }
             }
+
+            $scope.sendDeviceState(device);
         };
 
-        $scope.changeBrightness = function(device){
+        $scope.sendDeviceState = function(device){
+            console.info('Send device state');
+
+            if(device.is_dimmable === false){
+                console.log(device.state);
+
+                var command_verb = device.state ? 'on' : 'off';
+
+                Restangular.one('devices', device.id).one('command').one(command_verb + '/').get().then(
+                    function(response){
+                        console.log(response);
+                    }
+                );
+            }else{
+
+            }
+        };
+
+        $scope.brightnessSliderChange = function(device){
             wait_for_no_change(device, 500, function(){
                 console.log('Change bright ness for real on device', device);
+                $scope.sendDeviceState(device);
             });
-        }
+        };
 
 
 }]);
