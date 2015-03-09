@@ -10,3 +10,6 @@ install:
 script:
   - python hub/manage.py test 
   - python node/manage.py test 
+notifications:
+  email:
+    - jarvis.travis-ci@joelbitar.se
