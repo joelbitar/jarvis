@@ -4,3 +4,7 @@ div.device.dimmable{
 }
 div.device.dimmable img{
 }
+
+div.device{
+    cursor: pointer;
+}

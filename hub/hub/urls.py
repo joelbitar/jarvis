@@ -11,6 +11,7 @@ from device.views import DeviceOptionsView
 from device.views import DeviceCommandOnView
 from device.views import DeviceCommandOffView
 from device.views import DeviceCommandLearnView
+from device.views import DeviceCommandDimView
 
 from node.views import NodeViewSet
 from node.views import NodeWriteConfView
@@ -43,6 +44,7 @@ router.register(r'sensors', SensorViewSet)
 rest_patterns = patterns('',
     url(r'^', include(router.urls)),
     url(r'^device/options/', DeviceOptionsView.as_view(), name='device-options'),
+    url(r'^devices/(?P<pk>[0-9]+)/command/dim/(?P<dimlevel>\d+)/$', DeviceCommandDimView.as_view(), name="device-dim"),
     url(r'^devices/(?P<pk>[0-9]+)/command/on/$', DeviceCommandOnView.as_view(), name="device-on"),
     url(r'^devices/(?P<pk>[0-9]+)/command/off/$', DeviceCommandOffView.as_view(), name="device-off"),
     url(r'^devices/(?P<pk>[0-9]+)/command/learn/$', DeviceCommandLearnView.as_view(), name="device-learn"),

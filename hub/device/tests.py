@@ -1063,11 +1063,34 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
         self.assertEqual(response.status_code, 200)
-        
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            1
+        )
 
         self.assertEqual(
             1,
             RequestLog.objects.all().count()
+        )
+
+    def test_should_get_ok_response_when_sending_command_dimm_with_values_within_range(self):
+        response = self.client.get(
+                reverse('device-dim', kwargs={'pk': self.device.pk, 'dimlevel' : 50}),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            1,
+            RequestLog.objects.all().count()
+        )
+
+        d = self.refresh(self.device)
+
+        self.assertEqual(
+            d.state,
+            50
         )
 
 
@@ -1077,7 +1100,12 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
         self.assertEqual(response.status_code, 200)
-        
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            0
+        )
+
         self.assertEqual(
             1,
             RequestLog.objects.all().count()

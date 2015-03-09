@@ -38,7 +38,13 @@ app.config(function($mdThemingProvider) {
     .accentPalette('blue');
 });
 
-
+app.config(function(RestangularProvider){
+    if(django.proxy_url == ""){
+        RestangularProvider.setBaseUrl('/' + django.proxy_url);
+    }else{
+        RestangularProvider.setBaseUrl('/api/');
+    }
+});
 
 /* Global functions */
 var template_url = function(template_name){

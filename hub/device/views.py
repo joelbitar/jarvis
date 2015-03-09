@@ -34,8 +34,11 @@ class DeviceCommandViewBase(APIView):
         else:
             return False
 
-    def command_data(self):
+    def command_data(self, **kwargs):
         raise NotImplementedError()
+
+    def on_success(self, **kwargs):
+        pass
 
     def build_url(self):
         return '{node_url}/devices/{device_pk}/execute/'.format(
@@ -45,25 +48,29 @@ class DeviceCommandViewBase(APIView):
 
     def execute_request(self, url, data):
         if self.is_in_test_mode():
+            print('In test mode, does not execute request to', url, data)
             return 200, {}
 
         response = requests.post(
             url,
             json.dumps(data),
-            content_type='application/json'
+            headers={
+                'content_type': 'application/json'
+            }
         )
 
-        return response.status_code, response.json()
+        print(response.status_code)
+        response_json = {}
 
+        return response.status_code, response_json
 
-    def get(self, request, pk, format=None):
+    def get(self, request, pk, **kwargs):
         try:
             self.__device = Device.objects.get(pk=pk)
         except Device.DoesNotExist:
             return Response(status_code=404)
 
-
-        url, data = self.command_data()
+        url, data = self.command_data(**kwargs)
 
         request_log_object = RequestLog(
             url=url,
@@ -81,26 +88,61 @@ class DeviceCommandViewBase(APIView):
         request_log_object.save()
 
         if status_code not in [200]:
-            return Response(status_code=400)
-        
+            return Response(
+                {
+                    'node_status_code': status_code,
+                    'node_response': json_response
+                },
+                status=400
+            )
+
+        self.on_success(
+            **kwargs
+        )
+
         return Response()
+
 
 class DeviceCommandOnView(DeviceCommandViewBase):
     def command_data(self):
         url = self.build_url()
         data = {
-                'command': 'on',
+            'command': 'on',
         }
         return url, data
+
+    def on_success(self):
+        self.device.state = 1
+        self.device.save()
 
 
 class DeviceCommandOffView(DeviceCommandViewBase):
     def command_data(self):
         url = self.build_url()
         data = {
-                'command': 'off',
+            'command': 'off',
         }
         return url, data
+
+    def on_success(self):
+        self.device.state = 0
+        self.device.save()
+
+
+class DeviceCommandDimView(DeviceCommandViewBase):
+    def command_data(self, dimlevel):
+        url = self.build_url()
+        data = {
+            'command': 'dim',
+            'data': {
+                'dimlevel': dimlevel
+            }
+        }
+        return url, data
+
+    def on_success(self, dimlevel):
+        self.device.state = dimlevel
+        self.device.save()
 
 
 class DeviceCommandLearnView(DeviceCommandViewBase):
@@ -159,7 +201,6 @@ class DeviceOptionsView(APIView):
                     'name': name,
                 }
             )
-
 
         return Response(
             {
