@@ -48,6 +48,7 @@ class DeviceCommandViewBase(APIView):
 
     def execute_request(self, url, data):
         if self.is_in_test_mode():
+            print('In test mode, does not execute request to', url, data)
             return 200, {}
 
         response = requests.post(
@@ -106,7 +107,7 @@ class DeviceCommandOnView(DeviceCommandViewBase):
     def command_data(self):
         url = self.build_url()
         data = {
-                'command': 'on',
+            'command': 'on',
         }
         return url, data
 
@@ -119,7 +120,7 @@ class DeviceCommandOffView(DeviceCommandViewBase):
     def command_data(self):
         url = self.build_url()
         data = {
-                'command': 'off',
+            'command': 'off',
         }
         return url, data
 
@@ -200,7 +201,6 @@ class DeviceOptionsView(APIView):
                     'name': name,
                 }
             )
-
 
         return Response(
             {

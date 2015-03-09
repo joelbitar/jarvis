@@ -80,7 +80,11 @@ var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
                     }
                 );
             }else{
-
+                Restangular.one('devices', device.id).one('command').one('dim').one(device.state + '/').get().then(
+                    function(response){
+                        console.log(response);
+                    }
+                );
             }
         };
 
