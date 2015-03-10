@@ -39,7 +39,7 @@ app.config(function($mdThemingProvider) {
 });
 
 app.config(function(RestangularProvider){
-    if(django.proxy_url == ""){
+    if(django.proxy_url != ""){
         RestangularProvider.setBaseUrl('/' + django.proxy_url);
     }else{
         RestangularProvider.setBaseUrl('/api/');

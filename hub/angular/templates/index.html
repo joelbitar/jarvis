@@ -14,7 +14,7 @@
               "base_ng_template_url" : "{% static 'ng-templates' %}/",
               "base_static_url" : "{% static '' %}",
               "csrf_token" : "{{ csrf_token }}",
-              "proxy_url" : {% if not MAIN_PROXY_URL %}""{% else %}"{{ PROXY_URL }}"{% endif %}
+              "proxy_url" : {% if USE_PROXY %}"{{ PROXY_URL }}"{% else %}""{% endif %}
           };
       </script>
     <!-- Angular Material Dependencies -->

@@ -8,7 +8,7 @@ class SettingsMiddleware(object):
         # Add settings stuff to template
 
         if response.context_data:
-            response.context_data['MAIN_PROXY_URL'] = settings.MAIN_HUB_URL
+            response.context_data['USE_PROXY'] = settings.MAIN_HUB_URL is not None
             response.context_data['PROXY_URL'] = reverse('hub-proxy').lstrip('/')
 
         return response
