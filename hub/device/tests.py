@@ -760,7 +760,7 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/devices/{node_device_pk}/command/'.format(node_device_pk=self.device.node_device_pk)
+            self.node.address + '/devices/{node_device_pk}/execute/'.format(node_device_pk=self.device.node_device_pk)
         )
 
         self.assertIsNotNone(
@@ -797,7 +797,7 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/devices/{node_device_pk}/command/'.format(node_device_pk=self.device.node_device_pk)
+            self.node.address + '/devices/{node_device_pk}/execute/'.format(node_device_pk=self.device.node_device_pk)
         )
 
         self.assertIsNotNone(
@@ -829,7 +829,7 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/devices/{node_device_pk}/command/'.format(node_device_pk=self.device.node_device_pk)
+            self.node.address + '/devices/{node_device_pk}/execute/'.format(node_device_pk=self.device.node_device_pk)
         )
 
         self.assertIsNotNone(
@@ -1059,7 +1059,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
     def test_should_get_ok_response_when_sending_command_on(self):
         response = self.client.get(
-                reverse('device-on', kwargs={'pk': self.device.pk}),
+             reverse('device-on', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)

@@ -4,8 +4,6 @@ from django.contrib import admin
 from rest_framework import routers
 
 from device.views import DeviceViewSet
-from device.views import RestartDaemonView
-from device.views import WriteConfigView
 from device.views import DeviceOptionsView
 
 from device.views import DeviceCommandOnView

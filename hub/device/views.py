@@ -34,40 +34,8 @@ class DeviceCommandViewBase(APIView):
         else:
             return False
 
-    def command_data(self, **kwargs):
+    def execute_request(self, request, **kwargs):
         raise NotImplementedError()
-
-    def on_success(self, **kwargs):
-        pass
-
-    def build_url(self):
-        return '{node_url}/devices/{device_pk}/execute/'.format(
-                node_url=self.device.node.address,
-                device_pk=self.device.pk
-            )
-
-    def execute_request(self, url, data):
-        if self.is_in_test_mode():
-            print('In test mode, does not execute request to', url, data)
-            return 200, {}
-
-        response_json = {}
-        try:
-            response = requests.post(
-                url,
-                json.dumps(data),
-                headers={
-                    'content-type': 'application/json'
-                }
-            )
-        except requests.ConnectionError:
-            return 503, {
-                'error': 'connection_error',
-                'message': 'Could not connect to node, perhaps not running?',
-                'url': url
-            }
-
-        return response.status_code, response_json
 
     def get(self, request, pk, **kwargs):
         try:
@@ -75,98 +43,47 @@ class DeviceCommandViewBase(APIView):
         except Device.DoesNotExist:
             return Response(status=404)
 
-        url, data = self.command_data(**kwargs)
-
-        request_log_object = RequestLog(
-            url=url,
-            request_data=json.dumps(data)
-        )
-        request_log_object.save()
-
-        status_code, json_response = self.execute_request(
-            url, data
-        )
-
-        request_log_object.response_status_code = status_code
-        request_log_object.response_data = json.dumps(data) 
-        request_log_object.response_received = timezone.now()
-        request_log_object.save()
-
-        if status_code not in [200]:
-            return Response(
-                {
-                    'node_status_code': status_code,
-                    'node_response': json_response
-                },
-                status=400
-            )
-
-        self.on_success(
+        ## HERE, change to using communicator
+        success = self.execute_request(
+            request,
             **kwargs
         )
+
+        if not success:
+            return Response(
+                status=400
+            )
 
         return Response()
 
 
 class DeviceCommandOnView(DeviceCommandViewBase):
-    def command_data(self):
-        url = self.build_url()
-        data = {
-            'command': 'on',
-        }
-        return url, data
-
-    def on_success(self):
-        self.device.state = 1
-        self.device.save()
+    def execute_request(self, request, **kwargs):
+        print('in execute request')
+        communicator = self.device.get_communicator()
+        if communicator.turn_on():
+            return Response()
 
 
 class DeviceCommandOffView(DeviceCommandViewBase):
-    def command_data(self):
-        url = self.build_url()
-        data = {
-            'command': 'off',
-        }
-        return url, data
-
-    def on_success(self):
-        self.device.state = 0
-        self.device.save()
+    def execute_request(self, request, **kwargs):
+        communicator = self.device.get_communicator()
+        if communicator.turn_off():
+            return Response()
 
 
 class DeviceCommandDimView(DeviceCommandViewBase):
-    def command_data(self, dimlevel):
-        url = self.build_url()
-        data = {
-            'command': 'dim',
-            'data': {
-                'dimlevel': dimlevel
-            }
-        }
-        return url, data
-
-    def on_success(self, dimlevel):
-        self.device.state = dimlevel
-        self.device.save()
+    def execute_request(self, request, **kwargs):
+        communicator = self.device.get_communicator()
+        if communicator.dim(dimlevel=int(kwargs.get('dimlevel', 0))):
+            return Response()
 
 
 class DeviceCommandLearnView(DeviceCommandViewBase):
-    def command_data(self):
-        url = self.build_url()
-        data = {
-                'command': 'learn',
-        }
-        return url, data
-
-
-class WriteConfigView(APIView):
-    def post(self, request):
-        pass
-
-
-class RestartDaemonView(APIView):
-    def post(self, request):
-        pass
+    def execute_request(self, request, **kwargs):
+        communicator = self.device.get_communicator()
+        if communicator.learn():
+            return Response()
 
 
 class DeviceOptionsView(APIView):

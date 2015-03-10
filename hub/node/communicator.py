@@ -16,8 +16,21 @@ class CommunicatorBase(object):
             print('In test mode, does not execute {method} request'.format(method=method), 'to', url, 'with data:', data)
             return 200, {'fake': 'request'}
 
+        headers = None
+        if method in ['post', 'put']:
+            headers = {
+                'content-type': 'application/json',
+            }
+
         request_method = getattr(requests, method)
-        response = request_method(url, data=data)
+        try:
+            response = request_method(url, data=data, headers=headers)
+        except requests.ConnectionError:
+            return 503, {
+                'error': 'connection_error',
+                'message': 'Could not connect to node, perhaps not running?',
+                'url': url
+            }
 
         try:
             response_json = response.json()
@@ -66,7 +79,7 @@ class CommunicatorBase(object):
         if status_code not in [200, 201]:
             return None
 
-        return response_json
+        return status_code, response_json
 
 
 class NodeCommunicator(CommunicatorBase):
@@ -93,13 +106,13 @@ class NodeCommunicator(CommunicatorBase):
         pass
 
     def write_conf(self):
-        response = self.execute_request(
+        status_code, response_json = self.execute_request(
             self.build_url('conf/write/'),
             method='post',
             data={}
         )
 
-        if response == None:
+        if status_code not in [200]:
             return False
 
         self.node.device_set.all().update(
@@ -109,13 +122,13 @@ class NodeCommunicator(CommunicatorBase):
         return True
 
     def restart_daemon(self):
-        response = self.execute_request(
+        status_code, response_json = self.execute_request(
             self.build_url('conf/restart-daemon/'),
             method='post',
             data={}
         )
 
-        return response is not None
+        return status_code in [200]
 
 
 class NodeDeviceCommunicator(NodeCommunicator):
@@ -140,7 +153,7 @@ class NodeDeviceCommunicator(NodeCommunicator):
         )
 
     def get_device_command_url(self):
-        return self.get_device_url() + 'command/'
+        return self.get_device_url() + 'execute/'
 
     def execute_device_command(self, command_name, command_data=None):
         data = {
@@ -151,14 +164,13 @@ class NodeDeviceCommunicator(NodeCommunicator):
         if command_data is not None:
             data['data'] = command_data
 
-        response = self.execute_request(
+        status_code, json_response = self.execute_request(
             self.get_device_command_url(),
             method='post',
             data=data
         )
 
-        return response is not None
-
+        return status_code in [200, 201]
 
     def serialize_device(self):
         return {
@@ -177,16 +189,16 @@ class NodeDeviceCommunicator(NodeCommunicator):
         }
 
     def create(self):
-        response = self.execute_request(
+        status_code, response_json = self.execute_request(
             self.build_url('devices/'),
             'post',
             data=self.serialize_device()
         )
 
-        if response is None:
+        if status_code not in [200, 201]:
             return False
 
-        self.device.node_device_pk = response['id']
+        self.device.node_device_pk = response_json['id']
         self.device.save()
 
         return True
@@ -234,7 +246,6 @@ class NodeDeviceCommunicator(NodeCommunicator):
 
         return True
 
-
     def learn(self):
         success = self.execute_device_command(
             'learn'
@@ -247,3 +258,20 @@ class NodeDeviceCommunicator(NodeCommunicator):
         self.device.save()
 
         return True
+
+    def dim(self, dimlevel):
+        success = self.execute_device_command(
+            'dim',
+            command_data={
+                'dimlevel': dimlevel
+            }
+        )
+
+        if not success:
+            return False
+
+        self.device.state = dimlevel
+        self.device.save()
+
+        return True
+
