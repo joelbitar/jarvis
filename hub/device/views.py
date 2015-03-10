@@ -59,7 +59,6 @@ class DeviceCommandViewBase(APIView):
 
 class DeviceCommandOnView(DeviceCommandViewBase):
     def execute_request(self, request, **kwargs):
-        print('in execute request')
         communicator = self.device.get_communicator()
         if communicator.turn_on():
             return Response()

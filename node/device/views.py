@@ -21,6 +21,7 @@ class DeviceCommandView(APIView):
     def get(self, request, pk, format=None):
         return Response()
 
+    # /execute/
     def post(self, request, pk, format=None):
         command_name = request.data.get('command')
         command_data = request.data.get('data') or {}
@@ -41,7 +42,9 @@ class DeviceCommandView(APIView):
         )
         device_command.save()
 
-        return Response()
+        return Response(
+            {}
+        )
 
 
 class WriteConfigView(APIView):

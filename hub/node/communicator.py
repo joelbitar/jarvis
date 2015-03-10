@@ -16,15 +16,16 @@ class CommunicatorBase(object):
             print('In test mode, does not execute {method} request'.format(method=method), 'to', url, 'with data:', data)
             return 200, {'fake': 'request'}
 
-        headers = None
-        if method in ['post', 'put']:
-            headers = {
-                'content-type': 'application/json',
-            }
-
         request_method = getattr(requests, method)
         try:
-            response = request_method(url, data=data, headers=headers)
+            if method in ['post', 'put']:
+                response = request_method(url, data=json.dumps(data), headers={
+                    'content-type': 'application/json',
+                }
+            )
+            else:
+                response = request_method(url)
+
         except requests.ConnectionError:
             return 503, {
                 'error': 'connection_error',
@@ -75,9 +76,6 @@ class CommunicatorBase(object):
             response_status_code=status_code,
             response_json=response_json,
         )
-
-        if status_code not in [200, 201]:
-            return None
 
         return status_code, response_json
 
@@ -164,8 +162,10 @@ class NodeDeviceCommunicator(NodeCommunicator):
         if command_data is not None:
             data['data'] = command_data
 
+        print(self.get_device_command_url(), command_data, data)
+
         status_code, json_response = self.execute_request(
-            self.get_device_command_url(),
+            url=self.get_device_command_url(),
             method='post',
             data=data
         )

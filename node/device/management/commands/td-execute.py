@@ -18,4 +18,5 @@ class Command(BaseCommand):
                 continue
 
             for device_command in DeviceCommand.objects.filter(executed=None):
+                print('executing...')
                 device_command.execute()
