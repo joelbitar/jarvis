@@ -128,5 +128,8 @@ MAIN_HUB_URL = None
 
 try:
     from hub.secret import *
+    if MAIN_HUB_URL is not None:
+        if not MAIN_HUB_URL.endswith('/'):
+            raise ValueError('MAIN_HUB_URL does not end with slash, exiting')
 except ImportError:
     print('Could not find secret.py :(')
