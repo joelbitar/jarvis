@@ -73,7 +73,7 @@ class DeviceCommandViewBase(APIView):
         try:
             self.__device = Device.objects.get(pk=pk)
         except Device.DoesNotExist:
-            return Response(status_code=404)
+            return Response(status=404)
 
         url, data = self.command_data(**kwargs)
 
