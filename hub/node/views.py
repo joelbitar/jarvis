@@ -29,11 +29,13 @@ class NodeCommandViewBase(APIView):
 class NodeWriteConfView(NodeCommandViewBase):
     def execute_request(self, node):
         communicator = NodeCommunicator(node=node)
-        return communicator.write_conf()
+        if communicator.write_conf():
+            return Response()
 
 class NodeRestartDaemonView(NodeCommandViewBase):
     def execute_request(self, node):
         communicator = NodeCommunicator(node=node)
-        return communicator.restart_daemon()
+        if communicator.restart_daemon():
+            return Response()
 
 
