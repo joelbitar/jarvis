@@ -51,16 +51,21 @@ class DeviceCommandViewBase(APIView):
             print('In test mode, does not execute request to', url, data)
             return 200, {}
 
-        response = requests.post(
-            url,
-            json.dumps(data),
-            headers={
-                'content_type': 'application/json'
-            }
-        )
-
-        print(response.status_code)
         response_json = {}
+        try:
+            response = requests.post(
+                url,
+                json.dumps(data),
+                headers={
+                    'content-type': 'application/json'
+                }
+            )
+        except requests.ConnectionError:
+            return 503, {
+                'error': 'connection_error',
+                'message': 'Could not connect to node, perhaps not running?',
+                'url': url
+            }
 
         return response.status_code, response_json
 
