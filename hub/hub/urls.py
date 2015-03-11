@@ -19,6 +19,9 @@ from event.views import EventReceiverView
 
 from sensor.views import SensorViewSet
 
+from authentication.views import CurrentUserView
+from authentication.views import LoginUserView
+from authentication.views import LogoutUserView
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -41,6 +44,9 @@ router.register(r'sensors', SensorViewSet)
 
 rest_patterns = patterns('',
     url(r'^', include(router.urls)),
+    url(r'^auth/current/', CurrentUserView.as_view(), name='current-user'),
+    url(r'^auth/login/', LoginUserView.as_view(), name='login'),
+    url(r'^auth/logout/', LogoutUserView.as_view(), name='logout'),
     url(r'^device/options/', DeviceOptionsView.as_view(), name='device-options'),
     url(r'^devices/(?P<pk>[0-9]+)/command/dim/(?P<dimlevel>\d+)/$', DeviceCommandDimView.as_view(), name="device-dim"),
     url(r'^devices/(?P<pk>[0-9]+)/command/on/$', DeviceCommandOnView.as_view(), name="device-on"),

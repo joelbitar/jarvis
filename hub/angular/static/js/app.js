@@ -4,7 +4,8 @@ var app = angular.module('jarvis', [
     'ngMaterial',
 
     'jarvis.startpage',
-    'jarvis.device'
+    'jarvis.device',
+    'jarvis.auth'
 ]);
 
 app.directive("include", function ($http, $templateCache, $compile) {
