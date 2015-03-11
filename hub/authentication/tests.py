@@ -53,7 +53,8 @@ class UserAPITests(TestCase):
                 {
                     'pk': self.user.pk,
                     'first_name': self.user.first_name,
-                    'last_name': self.user.last_name
+                    'last_name': self.user.last_name,
+                    'auth_token': self.user.auth_token.key,
                 }
             )
         )

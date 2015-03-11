@@ -25,6 +25,15 @@ class CurrentUserView(APIView):
             auth_model_serializer.data
         )
 
+        return Response(
+            {
+                'id': request.user.pk,
+                'first_name': request.user.first_name,
+                'last_name': request.user.last_name,
+                'auth_token': request.user.auth_token.key,
+            }
+        )
+
 
 class LogoutUserView(APIView):
     def post(self, request):
