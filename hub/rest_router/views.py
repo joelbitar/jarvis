@@ -11,6 +11,7 @@ class RestRouterView(View):
         return self.execute_method(request, path, 'get')
 
     def post(self, request, path):
+        print('PO_ST')
         return self.execute_method(request, path, 'post')
 
     def put(self, request, path):
@@ -25,8 +26,28 @@ class RestRouterView(View):
     def execute_method(self, request, path, method):
         url = settings.MAIN_HUB_URL + path
 
-        #print('URL', url)
+        request_headers = {}
 
+        header_properties_map = (
+            ('HTTP_X_CSRFTOKEN',),
+            ('CONTENT_TYPE', 'content-type'),
+            ('COOKIE', 'cookie')
+        )
+
+        for header_property_name in ('HTTP_X_CSRFTOKEN', 'CONTENT_TYPE'):
+            requests_header_key = header_property_name[0]
+            request_meta_key = requests_header_key
+
+            if len(header_property_name) == 2:
+                requests_header_key = header_property_name[1]
+
+            request_headers[requests_header_key] = request.META.get(request_meta_key)
+
+
+        for hn in request.META.keys():
+            print(hn)
+
+        print(request_headers)
 
         """
         request_headers = None
@@ -42,7 +63,9 @@ class RestRouterView(View):
         ).__call__(
             url,
             data=request.body,
-            #headers=request_headers
+            headers={
+                'content-type': 'application/json'
+            }
         )
 
         r = HttpResponse(

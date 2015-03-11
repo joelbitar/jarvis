@@ -8,6 +8,33 @@ var app = angular.module('jarvis', [
     'jarvis.auth'
 ]);
 
+app.config(['$httpProvider', '$locationProvider', function($httpProvider, $locationProvider){
+    $httpProvider.interceptors.push(function($q, $location){
+        return {
+            'response' : function(response){
+                return response || $q.when(response);
+            },
+            'responseError' : function(rejection){
+                // If we run in to a Not authorized 401, redirect to login view.
+                if(rejection.status === 401 || rejection.status === 403){
+                    $location.url('/login/');
+                }
+
+                return $q.reject(rejection);
+            }
+        }
+    });
+}]);
+
+app.config(['$httpProvider', function($httpProvider){
+    // Set the initial CSRF Token from Django view.
+    $httpProvider.defaults.headers.common['X-CSRFToken'] = django.csrf_token;
+
+    // Set CSRF Token on all requests that come back from the server.
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+}]);
+
 app.directive("include", function ($http, $templateCache, $compile) {
     return {
         restrict: 'A',
@@ -53,7 +80,7 @@ var template_url = function(template_name){
 };
 
 var api_url = function(path){
-    if(django.proxy_url == ""){
+    if(django.proxy_url != ""){
         return django.proxy_url + path;
     }else{
         return 'api/' + path;

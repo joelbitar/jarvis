@@ -48,13 +48,13 @@ jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http', '$lo
     // Register the login() function
     $scope.login = function(){
         $scope.login_disabled = true;
-        $http.post('/api/auth/login/', {
+        $http.post(api_url('auth/login/'), {
             username: $scope.username,
             password: $scope.password
         }
     ).success(function(user){
         // No error: authentication OK
-
+                console.log('success login')
         $scope.login_disabled = false;
         User.data.current = user;
         $rootScope.$broadcast('loggedIn');
@@ -69,7 +69,7 @@ jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http', '$lo
 
 //authControllers.controller('LogoutController',)
 jarvis_auth.controller('LogoutController', ['$scope', '$rootScope', '$location', '$http', 'User', function($scope, $rootScope, $location, $http, User){
-    $http.get('/api/auth/logout/', {}).success(
+    $http.get(api_url('auth/logout/'), {}).success(
         function(response){
             User.data.current = false;
             $rootScope.$broadcast('loggedOut');

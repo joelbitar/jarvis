@@ -6,7 +6,7 @@
 
     <md-input-container>
         <label>Lösenord</label>
-        <input type="password" ng-model="password"/>
+        <input ng-keyup="$event.keyCode == 13 && login()" type="password" ng-model="password"/>
     </md-input-container>
 
     <md-button class="md-raised md-primary" ng-click="login()">Primary</md-button>
