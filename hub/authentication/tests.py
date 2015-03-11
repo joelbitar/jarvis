@@ -115,3 +115,29 @@ class UserAPITests(TestCase):
         )
 
         self.assertNotIn('_auth_user_id', c.session)
+
+    def test_should_be_able_to_authenticate_with_tokens(self):
+        c = Client(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+
+        r = c.get(
+            reverse('device-list'),
+        )
+
+        self.assertEqual(
+            r.status_code,
+            200
+        )
+
+    def test_should_not_be_able_to_get_without_tokens(self):
+        c = Client()
+
+        r = c.get(
+            reverse('device-list')
+        )
+
+        self.assertEqual(
+            r.status_code,
+            403
+        )

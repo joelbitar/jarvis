@@ -49,22 +49,25 @@ jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http', '$lo
     $scope.login = function(){
         $scope.login_disabled = true;
         $http.post(api_url('auth/login/'), {
-            username: $scope.username,
-            password: $scope.password
-        }
-    ).success(function(user){
-        // No error: authentication OK
+                username: $scope.username,
+                password: $scope.password
+            }
+        ).success(function(user){
+                // No error: authentication OK
                 console.log('success login')
-        $scope.login_disabled = false;
-        User.data.current = user;
-        $rootScope.$broadcast('loggedIn');
-        $location.url('/');
-    }).error(function(){
-         // Error: authentication failed
-        $scope.login_disabled = false;
-        $rootScope.loginErrorMessage = "Lösenord och/eller användarnamn stämmde inte :(";
-    });
-  };
+                $scope.login_disabled = false;
+                User.data.current = user;
+                $rootScope.$broadcast('loggedIn');
+                $location.url('/');
+
+            }
+        ).error(function(){
+                // Error: authentication failed
+                $scope.login_disabled = false;
+                $rootScope.loginErrorMessage = "Lösenord och/eller användarnamn stämmde inte :(";
+            }
+        );
+    };
 }]);
 
 //authControllers.controller('LogoutController',)
