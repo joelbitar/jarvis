@@ -1,5 +1,6 @@
 import json
 import requests
+from django.conf import settings
 from datetime import datetime
 from django.core import mail
 from django.utils import timezone
@@ -9,6 +10,9 @@ from node.models import RequestLog
 
 class CommunicatorBase(object):
     def is_in_test_mode(self):
+        if settings.TEST_MODE is not None:
+            return settings.TEST_MODE
+
         return hasattr(mail, 'outbox')
 
     def get_response(self, url, method, data=None):

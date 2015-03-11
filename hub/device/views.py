@@ -9,6 +9,8 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 
 from device.serializers import DeviceSerializer
 from device.models import Device
@@ -51,7 +53,7 @@ class DeviceCommandViewBase(APIView):
 
         if not success:
             return Response(
-                status=400
+                status=500
             )
 
         return Response()
@@ -79,6 +81,8 @@ class DeviceCommandDimView(DeviceCommandViewBase):
 
 
 class DeviceCommandLearnView(DeviceCommandViewBase):
+    permission_classes = (IsAdminUser, )
+
     def execute_request(self, request, **kwargs):
         communicator = self.device.get_communicator()
         if communicator.learn():

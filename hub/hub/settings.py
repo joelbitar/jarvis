@@ -45,6 +45,8 @@ INSTALLED_APPS = (
 
     'rest_router',
 
+    'authentication',
+
     'device',
     'node',
 
@@ -122,6 +124,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+
+TEST_MODE = None
 # If we should use an alternate URL to hub. Specify the absolute URL to hub and Django will try to proxy the url
 MAIN_HUB_URL = None
 #MAIN_HUB_URL = 'http://127.0.0.1:9999/'
