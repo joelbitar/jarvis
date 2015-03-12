@@ -55,5 +55,35 @@ class DjangoRestRouterSettings(DjangoSettingsTestsBase):
             ''
         )
 
+
 class HttpProxyTests(TestCase):
-    pass
+    def test_should_get_pretty_json_error_when_no_backend_available(self):
+        settings.TEST_MODE = False
+        settings.MAIN_HUB_URL = 'http://127.0.0.1:9090/nothihng/'
+
+        c = Client()
+
+        r = c.get(
+            reverse('hub-proxy', kwargs={
+                'path': 'auth/current/'
+            })
+        )
+
+        self.assertEqual(
+            r.status_code,
+            502
+        )
+
+        self.assertJSONEqual(
+            r.content.decode('utf-8'),
+            json.dumps(
+                {
+                    'error': 'connection-error',
+                    'message': 'Could not connect to main hub',
+                }
+            )
+        )
+
+
+
+
