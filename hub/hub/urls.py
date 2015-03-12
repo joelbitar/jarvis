@@ -11,6 +11,10 @@ from device.views import DeviceCommandOffView
 from device.views import DeviceCommandLearnView
 from device.views import DeviceCommandDimView
 
+from device.views import DeviceGroupViewSet
+from device.views import DeviceGroupCommandOnView
+from device.views import DeviceGroupCommandOffView
+
 from node.views import NodeViewSet
 from node.views import NodeWriteConfView
 from node.views import NodeRestartDaemonView
@@ -37,6 +41,7 @@ device_detail = DeviceViewSet.as_view({
 router = routers.DefaultRouter()
 router.register(r'devices', DeviceViewSet)
 router.register(r'nodes', NodeViewSet)
+router.register(r'groups', DeviceGroupViewSet)
 router.register(r'devices/(?P<pk>[0-9]+)/$', device_detail, base_name='devices')
 router.register(r'nodes/(?P<pk>[0-9]+)/$', node_detail, base_name='nodes')
 router.register(r'sensors', SensorViewSet)
@@ -48,10 +53,16 @@ rest_patterns = patterns('',
     url(r'^auth/login/', LoginUserView.as_view(), name='login'),
     url(r'^auth/logout/', LogoutUserView.as_view(), name='logout'),
     url(r'^device/options/', DeviceOptionsView.as_view(), name='device-options'),
+
     url(r'^devices/(?P<pk>[0-9]+)/command/dim/(?P<dimlevel>\d+)/$', DeviceCommandDimView.as_view(), name="device-dim"),
     url(r'^devices/(?P<pk>[0-9]+)/command/on/$', DeviceCommandOnView.as_view(), name="device-on"),
     url(r'^devices/(?P<pk>[0-9]+)/command/off/$', DeviceCommandOffView.as_view(), name="device-off"),
     url(r'^devices/(?P<pk>[0-9]+)/command/learn/$', DeviceCommandLearnView.as_view(), name="device-learn"),
+
+    # Group commands
+    url(r'^groups/(?P<pk>[0-9]+)/command/on/$', DeviceGroupCommandOnView.as_view(), name="devicegroup-on"),
+    url(r'^groups/(?P<pk>[0-9]+)/command/off/$', DeviceGroupCommandOffView.as_view(), name="devicegroup-off"),
+
     url(r'^nodes/(?P<pk>[0-9]+)/writeconf/$', NodeWriteConfView.as_view(), name="node-writeconf"),
     url(r'^nodes/(?P<pk>[0-9]+)/restartdaemon/$', NodeRestartDaemonView.as_view(), name="node-restartdaemon"),
     url(r'^event/$', EventReceiverView.as_view(), name="event"),

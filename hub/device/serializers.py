@@ -2,6 +2,7 @@ __author__ = 'joel'
 
 from rest_framework import serializers
 from device.models import Device
+from device.models import DeviceGroup
 
 
 class DeviceSerializer(serializers.ModelSerializer):
@@ -11,3 +12,17 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Device
+
+
+class DeviceGroupDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Device
+        fields = ('id', 'name',)
+
+
+class DeviceGroupSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=255)
+    devices = DeviceGroupDeviceSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = DeviceGroup

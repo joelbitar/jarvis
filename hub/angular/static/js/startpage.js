@@ -15,7 +15,10 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
 .controller('StartpageSensorController', ['$scope', 'Restangular',  function($scope, Restangular) {
         Restangular.all('sensors').getList().then(function(sensors){
             $scope.sensors = sensors;
-            console.log(sensors)
+        });
+}]).controller('StartpageDeviceGroupController', ['$scope', 'Restangular',  function($scope, Restangular) {
+        Restangular.all('groups').getList().then(function(sensors){
+            $scope.groups = groups;
         });
 }]);
 
