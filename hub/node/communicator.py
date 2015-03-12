@@ -228,6 +228,10 @@ class NodeDeviceCommunicator(NodeCommunicator):
         return response is not None
 
     def turn_on(self):
+        # If is dimmer, set dimer to 255
+        if self.device.is_dimmable:
+            return self.dim(255)
+
         success = self.execute_device_command(
             'on'
         )

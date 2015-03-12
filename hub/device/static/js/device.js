@@ -4,7 +4,7 @@
  */
 
 var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
-.controller('DeviceController', ['$scope', '$timeout', 'Restangular', function($scope, $timeout, Restangular){
+.controller('DeviceController', ['$scope', '$rootScope', '$timeout', 'Restangular', function($scope, $rootScope, $timeout, Restangular){
         var last_change = {};
 
         var wait_for_no_change_timeout = function(device, timeout, callback){
@@ -77,12 +77,14 @@ var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
                 Restangular.one('devices', device.id).one('command').one(command_verb + '/').get().then(
                     function(response){
                         console.log(response);
+                        $rootScope.$broadcast('refresh-groups');
                     }
                 );
             }else{
                 Restangular.one('devices', device.id).one('command').one('dim').one(device.state + '/').get().then(
                     function(response){
                         console.log(response);
+                        $rootScope.$broadcast('refresh-groups');
                     }
                 );
             }

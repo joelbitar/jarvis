@@ -43,6 +43,20 @@ class DeviceModelTestsBase(TestCase):
         self.device = d
         self.group = g
 
+        self.user = User.objects.create_user(
+            username='test',
+            password='test'
+        )
+
+        client = Client()
+        client.login(
+            username='test',
+            password='test'
+        )
+
+        self.maxDiff = 5000
+        self.logged_in_client = client
+
     def refresh(self, obj):
         return obj.__class__.objects.get(pk=obj.pk)
 
@@ -843,6 +857,7 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
             200
         )
 
+
 class HubDeviceOptionsTests(TestCase):
     def test_get_options_for_device(self):
         self.user = User.objects.create_user(
@@ -919,17 +934,6 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.device.node_device_pk = 1001
         self.device.save()
 
-        self.user = User.objects.create_user(
-            username='test',
-            password='test'
-        )
-
-        self.client = Client()
-        self.client.login(
-            username='test',
-            password='test'
-        )
-
     def test_should_get_all_devices(self):
         for i in range(10):
             Device(
@@ -940,7 +944,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                     node=self.node
                 ).save()
         
-        response = self.client.get(
+        response = self.logged_in_client.get(
             reverse('device-list')
         )
 
@@ -949,7 +953,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.assertEqual(len(response_json), Device.objects.all().count())
 
     def test_should_get_single_device(self):
-        response = self.client.get(
+        response = self.logged_in_client.get(
             reverse('device-detail', kwargs={'pk': self.device.pk}),
         )
 
@@ -993,7 +997,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
     def test_should_get_ok_response_when_sending_create(self):
-        response = self.client.put(
+        response = self.logged_in_client.put(
             reverse('device-detail', kwargs={'pk': self.device.pk}),
             json.dumps({
                 'name' : 'New testDevice',
@@ -1030,7 +1034,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
 
     def test_should_get_ok_response_when_sending_update(self):
-        response = self.client.put(
+        response = self.logged_in_client.put(
             reverse('device-detail', kwargs={'pk': self.device.pk}),
             json.dumps({
                 'name' : 'New testDevice',
@@ -1052,7 +1056,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
 
     def test_should_get_ok_response_when_sending_delete(self):
-        response = self.client.delete(
+        response = self.logged_in_client.delete(
                 reverse('device-detail', kwargs={'pk': self.device.pk}),
                 content_type='application/json'
         )
@@ -1068,7 +1072,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.assertFalse(
             self.user.is_superuser
         )
-        response = self.client.get(
+        response = self.logged_in_client.get(
             reverse('device-learn', kwargs={'pk': self.device.pk}),
         )
 
@@ -1104,7 +1108,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
     def test_should_get_ok_response_when_sending_command_on(self):
-        response = self.client.get(
+        response = self.logged_in_client.get(
              reverse('device-on', kwargs={'pk': self.device.pk}),
         )
 
@@ -1121,7 +1125,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
     def test_should_get_ok_response_when_sending_command_dimm_with_values_within_range(self):
-        response = self.client.get(
+        response = self.logged_in_client.get(
                 reverse('device-dim', kwargs={'pk': self.device.pk, 'dimlevel' : 50}),
         )
 
@@ -1139,10 +1143,9 @@ class HubDeviceRestTests(DeviceModelTestsBase):
             50
         )
 
-
     def test_should_get_ok_response_when_sending_command_off(self):
-        response = self.client.get(
-                reverse('device-off', kwargs={'pk': self.device.pk}),
+        response = self.logged_in_client.get(
+            reverse('device-off', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -1156,4 +1159,198 @@ class HubDeviceRestTests(DeviceModelTestsBase):
             1,
             RequestLog.objects.all().count()
         )
+
+
+class DeviceGroupAPITests(DeviceModelTestsBase):
+    def setUp(self):
+        super(DeviceGroupAPITests, self).setUp()
+
+        self.device.node_device_pk = 666
+        self.device.save()
+
+    def test_should_get_groups(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-list')
+        )
+
+        self.assertJSONEqual(
+            response.content.decode('utf-8'),
+            json.dumps(
+                [
+                    {
+                        'id': self.group.pk,
+                        'name': self.group.name,
+                        'state': 0,
+                        'devices': [
+                            {
+                                'id': self.device.pk,
+                                'name': self.device.name,
+                            },
+                        ]
+                    },
+                ]
+            )
+        )
+
+    def test_should_get_ok_response_when_set_group_to_on(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-on', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+    def test_should_get_ok_response_when_set_group_to_off(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-off', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+    def test_should_set_device_states_when_set_group_to_on(self):
+        self.assertIsNone(
+            self.device.state
+        )
+        response = self.logged_in_client.get(
+            reverse('devicegroup-on', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            1
+        )
+
+    def test_should_set_device_states_when_set_group_to_off(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-off', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            0
+        )
+
+
+class DeviceGroupStateTests(DeviceModelTestsBase):
+    def setUp(self):
+        super(DeviceGroupStateTests, self).setUp()
+
+        self.device.node_device_pk = 666
+        self.device.save()
+
+        self.device2 = Device(
+            name='device2',
+            protocol=Device.PROTOCOL_ARCHTEC,
+            model=Device.MODEL_SELFLEARNING_DIMMER,
+            node=self.node,
+        )
+        self.device2.save()
+
+        self.device3 = Device(
+            name='device3',
+            protocol=Device.PROTOCOL_ARCHTEC,
+            model=Device.MODEL_SELFLEARNING_SWITCH,
+            node=self.node,
+        )
+        self.device3.save()
+
+        self.group.devices.add(self.device2)
+        self.group.devices.add(self.device3)
+
+        self.assertEqual(
+            self.group.devices.all().count(),
+            3
+        )
+
+        Device.objects.all().update(
+            node_device_pk=666
+        )
+
+    def helper_get_device_group_state(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-list')
+        )
+
+        return json.loads(response.content.decode('utf-8'))[0]['state']
+
+    def test_should_have_device_group_state_false_if_all_devices_are_none(self):
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            0
+        )
+
+    def test_should_have_state_true_if_all_devices_are_on(self):
+        Device.objects.all().update(
+            state=1
+        )
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+    def test_should_have_state_true_if_one_device_is_on(self):
+        self.device.state = 1
+        self.device.save()
+
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+    def test_should_have_state_true_if_only_one_device_dimmer_is_not_off(self):
+        self.device2.state = 33
+        self.device2.save()
+
+        self.assertEqual(
+            self.group.state,
+            1
+        )
+
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+    def test_should_have_state_false_if_all_devices_are_off(self):
+        Device.objects.all().update(
+            state=0
+        )
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            0
+        )
+
+    def test_should_not_have_state_true_if_there_is_no_devices(self):
+        Device.objects.all().delete()
+        self.assertNotEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+
+    def test_should_set_dimmer_to_full_effect_when_sending_to_command_on_on_group(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-on', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            self.refresh(self.device2).state,
+            255
+        )
+
 
