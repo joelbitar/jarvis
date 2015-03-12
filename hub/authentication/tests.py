@@ -53,7 +53,8 @@ class UserAPITests(TestCase):
                 {
                     'pk': self.user.pk,
                     'first_name': self.user.first_name,
-                    'last_name': self.user.last_name
+                    'last_name': self.user.last_name,
+                    'auth_token': self.user.auth_token.key,
                 }
             )
         )
@@ -73,6 +74,18 @@ class UserAPITests(TestCase):
         self.assertEqual(
             r.status_code,
             200
+        )
+
+        self.assertJSONEqual(
+            r.content.decode('utf-8'),
+            json.dumps(
+                {
+                    'pk': self.user.pk,
+                    'first_name': self.user.first_name,
+                    'last_name': self.user.last_name,
+                    'auth_token': self.user.auth_token.key,
+                }
+            )
         )
 
         self.assertIn('_auth_user_id', c.session)
@@ -114,3 +127,34 @@ class UserAPITests(TestCase):
         )
 
         self.assertNotIn('_auth_user_id', c.session)
+
+    def test_should_be_able_to_authenticate_with_tokens(self):
+        c = Client(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+
+        r = c.get(
+            reverse('device-list'),
+        )
+
+        self.assertEqual(
+            r.status_code,
+            200
+        )
+
+        r = c.get(
+            reverse('current-user'),
+        )
+
+
+    def test_should_not_be_able_to_get_without_tokens(self):
+        c = Client()
+
+        r = c.get(
+            reverse('device-list')
+        )
+
+        self.assertEqual(
+            r.status_code,
+            403
+        )

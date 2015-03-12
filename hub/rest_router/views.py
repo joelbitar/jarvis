@@ -28,13 +28,15 @@ class RestRouterView(View):
 
         request_headers = {}
 
+        # Map from To, if no second entry in set, just copy.
         header_properties_map = (
             ('HTTP_X_CSRFTOKEN',),
             ('CONTENT_TYPE', 'content-type'),
-            ('COOKIE', 'cookie')
+            ('COOKIE', 'cookie'),
+            ('HTTP_AUTHORIZATION', 'Authorization',),
         )
 
-        for header_property_name in ('HTTP_X_CSRFTOKEN', 'CONTENT_TYPE'):
+        for header_property_name in header_properties_map:
             requests_header_key = header_property_name[0]
             request_meta_key = requests_header_key
 
@@ -43,29 +45,12 @@ class RestRouterView(View):
 
             request_headers[requests_header_key] = request.META.get(request_meta_key)
 
-
-        for hn in request.META.keys():
-            print(hn)
-
-        print(request_headers)
-
-        """
-        request_headers = None
-        if request.META.get('CONTENT_TYPE', None) is not None:
-            request_headers = {}
-            request_content_type = request.META.get('CONTENT_TYPE')
-
-            request_headers['content-type'] = request_content_type
-        """
-
         response = getattr(
             requests, method
         ).__call__(
             url,
             data=request.body,
-            headers={
-                'content-type': 'application/json'
-            }
+            headers=request_headers
         )
 
         r = HttpResponse(

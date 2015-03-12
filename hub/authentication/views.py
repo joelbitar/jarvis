@@ -53,4 +53,9 @@ class LoginUserView(APIView):
 
         login(request=request, user=user)
 
-        return Response()
+        auth_model_serializer = AuthModelSerializer(user)
+
+        return Response(
+            auth_model_serializer.data
+        )
+
