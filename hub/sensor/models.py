@@ -1,5 +1,8 @@
 from django.db import models
 
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+
 
 class Sensor(models.Model):
     name = models.CharField(max_length=56, default='', blank=True)
@@ -15,15 +18,7 @@ class Sensor(models.Model):
         self.temperature = int(signal.humidity)
         self.save()
 
-        log = SensorLog(
-            humidity=self.humidity,
-            temperature=self.temperature,
-            sensor=self
-        )
-
-        log.save()
-
-        return log
+        return True
 
     def __str__(self):
         if self.name:
@@ -38,13 +33,24 @@ class Sensor(models.Model):
         return str(self.pk)
 
 
-
 class SensorLog(models.Model):
-    humidity = models.SmallIntegerField()
-    temperature = models.SmallIntegerField()
+    humidity = models.SmallIntegerField(null=True, blank=True, default=None)
+    temperature = models.SmallIntegerField(null=True, blank=True, default=None)
 
     sensor = models.ForeignKey(Sensor, related_name='logs')
     created = models.DateTimeField(auto_now_add=True)
 
 
+@receiver(post_save, sender=Sensor)
+def log_sensor(sender, instance, **kwargs):
+    if instance.humidity is None and instance.temperature is None:
+        return None
+
+    log = SensorLog(
+        humidity=instance.humidity,
+        temperature=instance.temperature,
+        sensor=instance
+    )
+
+    log.save()
 
