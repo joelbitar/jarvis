@@ -1,4 +1,6 @@
 import json
+
+from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django.core.urlresolvers import reverse
 
@@ -843,7 +845,16 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
 
 class HubDeviceOptionsTests(TestCase):
     def test_get_options_for_device(self):
+        self.user = User.objects.create_user(
+            username='test',
+            password='test'
+        )
+
         client = Client()
+        client.login(
+            username='test',
+            password='test'
+        )
 
         response = client.get(
             reverse('device-options')
@@ -908,7 +919,16 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.device.node_device_pk = 1001
         self.device.save()
 
+        self.user = User.objects.create_user(
+            username='test',
+            password='test'
+        )
+
         self.client = Client()
+        self.client.login(
+            username='test',
+            password='test'
+        )
 
     def test_should_get_all_devices(self):
         for i in range(10):
@@ -1044,10 +1064,36 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
         self.assertEqual(Device.objects.all().count(), 0)
 
-
-    def test_should_get_ok_response_when_sending_command_learn(self):
+    def test_should_get_forbidden_if_not_admin_response_when_sending_command_learn(self):
+        self.assertFalse(
+            self.user.is_superuser
+        )
         response = self.client.get(
-                reverse('device-learn', kwargs={'pk': self.device.pk}),
+            reverse('device-learn', kwargs={'pk': self.device.pk}),
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+        self.assertEqual(
+            0,
+            RequestLog.objects.all().count()
+        )
+
+    def test_should_get_ok_response_when_sending_command_learn_when_admin(self):
+        user = User.objects.create_superuser(
+            username='admin',
+            password='admin',
+            email='admin@example.com'
+        )
+
+        client = Client()
+        client.login(
+            username='admin',
+            password='admin'
+        )
+
+        response = client.get(
+            reverse('device-learn', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)

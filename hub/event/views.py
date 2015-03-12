@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from event.receiver import Receiver
 
 
-# Create your views here.
 class EventReceiverView(APIView):
+    permission_classes = ()
+
     def post(self, request):
         raw_event_string = request.data.get('raw')
 

@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from node.communicator import NodeCommunicator
 from node.models import Node
+from django.contrib.auth.models import User
 from device.models import Device
 from node.models import RequestLog
 from django.test.client import Client
@@ -17,10 +18,19 @@ class NodeAdminTests(TestCase):
 
         self.node.save()
 
-    def test_should_get_all_nodes(self):
-        client = Client()
+        self.user = User.objects.create_user(
+            username='test',
+            password='test'
+        )
 
-        response = client.get(
+        self.logged_in_client = Client()
+        self.logged_in_client.login(
+            username='test',
+            password='test'
+        )
+
+    def test_should_get_all_nodes(self):
+        response = self.logged_in_client.get(
             reverse('node-list')
         )
 
@@ -34,15 +44,11 @@ class NodeAdminTests(TestCase):
         self.assertEqual(len(json.loads(response.content.decode('utf-8'))), Node.objects.all().count())
 
     def test_should_send_write_conf_command_with_ajax_to_hub(self):
-        client = Client()
-
-        response = client.get(reverse('node-writeconf', kwargs={'pk' : self.node.pk}))
+        response = self.logged_in_client.get(reverse('node-writeconf', kwargs={'pk' : self.node.pk}))
 
         self.assertEqual(response.status_code, 200)
 
     def test_should_mark_all_node_devices_as_written_to_conf(self):
-        client = Client()
-
         for i in range(2):
             d = Device(
                 node=self.node,
@@ -51,7 +57,7 @@ class NodeAdminTests(TestCase):
             )
             d.save()
 
-        response = client.get(reverse('node-writeconf', kwargs={'pk' : self.node.pk}))
+        response = self.logged_in_client.get(reverse('node-writeconf', kwargs={'pk' : self.node.pk}))
 
         self.assertEqual(response.status_code, 200)
 
@@ -76,9 +82,7 @@ class NodeAdminTests(TestCase):
         )
 
     def test_should_send_restart_command_with_ajax_to_hub(self):
-        client = Client()
-
-        response = client.get(reverse('node-restartdaemon', kwargs={'pk' : self.node.pk}))
+        response = self.logged_in_client.get(reverse('node-restartdaemon', kwargs={'pk' : self.node.pk}))
 
         self.assertEqual(response.status_code, 200)
 

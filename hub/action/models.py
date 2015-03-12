@@ -31,10 +31,16 @@ class ActionUnitBase(models.Model):
 
 
 class ActionSensor(ActionUnitBase):
+    """
+    Sensors like humidity and temperature sensors
+    """
     sensor = models.ForeignKey(Sensor)
 
 
 class ActionButton(ActionUnitBase):
+    """
+    This can also be motion sensors, door-sensors (and more?)
+    """
     COMMAND_FILTER_NONE = 1
     COMMAND_FILTER_ON = 2
     COMMAND_FILTER_OFF = 3

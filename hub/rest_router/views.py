@@ -1,3 +1,5 @@
+import json
+
 import requests
 
 from django.conf import settings
@@ -45,18 +47,31 @@ class RestRouterView(View):
 
             request_headers[requests_header_key] = request.META.get(request_meta_key)
 
-        response = getattr(
-            requests, method
-        ).__call__(
-            url,
-            data=request.body,
-            headers=request_headers
-        )
+        response_status_code = 500
+        response_content = {}
 
-        r = HttpResponse(
-            content=response.content.decode('utf-8'),
-            status=response.status_code,
+        try:
+            # Get the method form 'requests' lib and execute it
+            response = getattr(
+                requests, method
+            ).__call__(
+                url,
+                data=request.body,
+                headers=request_headers
+            )
+
+            response_content = response.content.decode('utf-8')
+            response_status_code = response.status_code
+        except requests.ConnectionError:
+            # If there was a connection-error, communicate this.
+            response_status_code = 502
+            response_content = json.dumps({
+                'error': 'connection-error',
+                'message': 'Could not connect to main hub',
+            })
+
+        return HttpResponse(
+            content=response_content,
+            status=response_status_code,
             content_type='application/json',
         )
-
-        return r
