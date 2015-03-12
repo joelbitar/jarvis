@@ -34,7 +34,7 @@ jarvis_auth.config(['$routeProvider', function($routeProvider){
     )
 }]);
 
-jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http', '$location', 'User', function($scope, $rootScope, $http, $location, User) {
+jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http','$location', 'User', function($scope, $rootScope, $http, $location, User) {
     // This object will be filled by the form
 
     // Set current user to nothing and lazy logout the user if we reach this.
@@ -60,9 +60,12 @@ jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http', '$lo
                 $rootScope.$broadcast('loggedIn');
                 $location.url('/');
 
+                $http.defaults.headers.common['Authorization'] = 'Token ' + user.auth_token;
+
             }
         ).error(function(){
                 // Error: authentication failed
+                delete $http.defaults.headers.common['Authorization'];
                 $scope.login_disabled = false;
                 $rootScope.loginErrorMessage = "Lösenord och/eller användarnamn stämmde inte :(";
             }
@@ -75,6 +78,7 @@ jarvis_auth.controller('LogoutController', ['$scope', '$rootScope', '$location',
     $http.get(api_url('auth/logout/'), {}).success(
         function(response){
             User.data.current = false;
+            delete $http.defaults.headers.common['Authorization'];
             $rootScope.$broadcast('loggedOut');
             $location.url('/login');
         }
