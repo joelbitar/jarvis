@@ -1180,6 +1180,7 @@ class DeviceGroupAPITests(DeviceModelTestsBase):
                     {
                         'id': self.group.pk,
                         'name': self.group.name,
+                        'state': 0,
                         'devices': [
                             {
                                 'id': self.device.pk,
@@ -1241,3 +1242,115 @@ class DeviceGroupAPITests(DeviceModelTestsBase):
             self.refresh(self.device).state,
             0
         )
+
+
+class DeviceGroupStateTests(DeviceModelTestsBase):
+    def setUp(self):
+        super(DeviceGroupStateTests, self).setUp()
+
+        self.device.node_device_pk = 666
+        self.device.save()
+
+        self.device2 = Device(
+            name='device2',
+            protocol=Device.PROTOCOL_ARCHTEC,
+            model=Device.MODEL_SELFLEARNING_DIMMER,
+            node=self.node,
+        )
+        self.device2.save()
+
+        self.device3 = Device(
+            name='device3',
+            protocol=Device.PROTOCOL_ARCHTEC,
+            model=Device.MODEL_SELFLEARNING_SWITCH,
+            node=self.node,
+        )
+        self.device3.save()
+
+        self.group.devices.add(self.device2)
+        self.group.devices.add(self.device3)
+
+        self.assertEqual(
+            self.group.devices.all().count(),
+            3
+        )
+
+        Device.objects.all().update(
+            node_device_pk=666
+        )
+
+    def helper_get_device_group_state(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-list')
+        )
+
+        return json.loads(response.content.decode('utf-8'))[0]['state']
+
+    def test_should_have_device_group_state_false_if_all_devices_are_none(self):
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            0
+        )
+
+    def test_should_have_state_true_if_all_devices_are_on(self):
+        Device.objects.all().update(
+            state=1
+        )
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+    def test_should_have_state_true_if_one_device_is_on(self):
+        self.device.state = 1
+        self.device.save()
+
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+    def test_should_have_state_true_if_only_one_device_dimmer_is_not_off(self):
+        self.device2.state = 33
+        self.device2.save()
+
+        self.assertEqual(
+            self.group.state,
+            1
+        )
+
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+    def test_should_have_state_false_if_all_devices_are_off(self):
+        Device.objects.all().update(
+            state=0
+        )
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            0
+        )
+
+    def test_should_not_have_state_true_if_there_is_no_devices(self):
+        Device.objects.all().delete()
+        self.assertNotEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+
+    def test_should_set_dimmer_to_full_effect_when_sending_to_command_on_on_group(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-on', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            self.refresh(self.device2).state,
+            255
+        )
+
+

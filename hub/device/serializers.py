@@ -24,5 +24,7 @@ class DeviceGroupSerializer(serializers.ModelSerializer):
     name = serializers.CharField(max_length=255)
     devices = DeviceGroupDeviceSerializer(many=True, read_only=True)
 
+    state = serializers.NullBooleanField(read_only=True)
+
     class Meta:
         model = DeviceGroup

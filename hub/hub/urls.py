@@ -60,8 +60,8 @@ rest_patterns = patterns('',
     url(r'^devices/(?P<pk>[0-9]+)/command/learn/$', DeviceCommandLearnView.as_view(), name="device-learn"),
 
     # Group commands
-    url(r'^groups/(?P<pk>[0-9]+)/command/on/$', DeviceGroupCommandOnView.as_view(), name="devicegroup-on"),
-    url(r'^groups/(?P<pk>[0-9]+)/command/off/$', DeviceGroupCommandOffView.as_view(), name="devicegroup-off"),
+    url(r'^devicegroups/(?P<pk>[0-9]+)/command/on/$', DeviceGroupCommandOnView.as_view(), name="devicegroup-on"),
+    url(r'^devicegroups/(?P<pk>[0-9]+)/command/off/$', DeviceGroupCommandOffView.as_view(), name="devicegroup-off"),
 
     url(r'^nodes/(?P<pk>[0-9]+)/writeconf/$', NodeWriteConfView.as_view(), name="node-writeconf"),
     url(r'^nodes/(?P<pk>[0-9]+)/restartdaemon/$', NodeRestartDaemonView.as_view(), name="node-restartdaemon"),
