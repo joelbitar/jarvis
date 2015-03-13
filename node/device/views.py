@@ -31,6 +31,15 @@ class DeviceCommandView(APIView):
         except Device.DoesNotExist:
             return Response(status=404)
 
+        if not device.written_to_conf:
+            return Response(
+                {
+                    'error': 'not-written-to-conf',
+                    'message' : 'Device is NOT written to conf, and thus it is not usefull to execute commands on them'
+                },
+                status=409
+            )
+
         if not command_name in CommandDispatcher.COMMAND_NAME_WHITE_LIST:
             return Response(data={'error': 'command not in list'}, status=400)
 
@@ -43,7 +52,8 @@ class DeviceCommandView(APIView):
         device_command.save()
 
         return Response(
-            {}
+            {},
+            status=202
         )
 
 

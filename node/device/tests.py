@@ -227,6 +227,9 @@ class DeviceRestCrud(BasicDeviceTest):
 
 class DeviceCommandTests(BasicDeviceTest):
     def test_should_set_excuted_after_execution(self):
+        self.device.written_to_conf = True
+        self.device.save()
+
         url = reverse('device-command', kwargs={'pk' : self.device.pk})
 
         response = self.logged_in_client.post(
@@ -250,7 +253,40 @@ class DeviceCommandTests(BasicDeviceTest):
         )
 
 
-class DeviceRestCalls(BasicDeviceTest):
+class DeviceRestNotWritten(BasicDeviceTest):
+    def setUp(self):
+        super(DeviceRestNotWritten, self).setUp()
+        self.device.written_to_conf = False
+        self.device.save()
+
+    def test_should_return_conflict_if_not_written(self):
+        url = reverse('device-command', kwargs={'pk' : self.device.pk})
+
+        for command_name in ['on', 'off', 'learn']:
+            response = self.logged_in_client.post(
+                url,
+                {
+                    'command': command_name
+                }
+            )
+
+            self.assertEqual(
+                response.status_code,
+                409
+            )
+
+        self.assertEqual(
+            0,
+            DeviceCommand.objects.all().count()
+        )
+
+
+class DeviceRestCallTests(BasicDeviceTest):
+    def setUp(self):
+        super(DeviceRestCallTests, self).setUp()
+        self.device.written_to_conf = True
+        self.device.save()
+
     def test_send_on_command(self):
         url = reverse('device-command', kwargs={'pk' : self.device.pk})
 
@@ -261,7 +297,7 @@ class DeviceRestCalls(BasicDeviceTest):
             }
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 202)
 
         self.assertEqual(
             DeviceCommand.objects.all().count(),
@@ -302,7 +338,7 @@ class DeviceRestCalls(BasicDeviceTest):
             content_type='application/json'
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 202)
 
         self.assertEqual(
             DeviceCommand.objects.all().count(),
