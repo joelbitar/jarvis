@@ -17,6 +17,7 @@ from device.views import DeviceGroupCommandOffView
 
 from node.views import NodeViewSet
 from node.views import NodeWriteConfView
+from node.views import NodeSyncView
 from node.views import NodeRestartDaemonView
 
 from event.views import EventReceiverView
@@ -63,6 +64,7 @@ rest_patterns = patterns('',
     url(r'^devicegroups/(?P<pk>[0-9]+)/command/on/$', DeviceGroupCommandOnView.as_view(), name="devicegroup-on"),
     url(r'^devicegroups/(?P<pk>[0-9]+)/command/off/$', DeviceGroupCommandOffView.as_view(), name="devicegroup-off"),
 
+    url(r'^nodes/(?P<pk>[0-9]+)/sync/$', NodeSyncView.as_view(), name="node-sync"),
     url(r'^nodes/(?P<pk>[0-9]+)/writeconf/$', NodeWriteConfView.as_view(), name="node-writeconf"),
     url(r'^nodes/(?P<pk>[0-9]+)/restartdaemon/$', NodeRestartDaemonView.as_view(), name="node-restartdaemon"),
     url(r'^event/$', EventReceiverView.as_view(), name="event"),
