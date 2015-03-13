@@ -54,6 +54,34 @@ class NodeRestTests(NodeTestsBase):
             0
         )
 
+    def test_should_not_change_node_device_pk_when_syncing(self):
+        Device.objects.all().update(
+            node_device_pk=123
+        )
+
+        d1 = Device.objects.get(pk=1)
+        d1.node_device_pk =  None
+        d1.save()
+
+        response = self.superuser_client.get(
+            reverse('node-sync', kwargs={'pk': self.node.pk})
+        )
+
+        self.assertEqual(
+            Device.objects.filter(node_device_pk=None).count(),
+            0
+        )
+
+        self.assertEqual(
+            Device.objects.get(pk=d1.pk).node_device_pk,
+            666
+        )
+
+        self.assertEqual(
+            Device.objects.filter(node_device_pk=123).count(),
+            4
+        )
+
 
 class NodeAdminTests(HasLoggedInClientBase):
     def setUp(self):
