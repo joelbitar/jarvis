@@ -15,7 +15,7 @@ class CommunicatorBase(object):
 
         return hasattr(mail, 'outbox')
 
-    def get_response(self, url, method, data=None):
+    def get_response(self, url, method, data=None, auth_token=None):
         if not method:
             raise ValueError('Method "{method}" is not valie'.format(method=method))
 
@@ -23,15 +23,19 @@ class CommunicatorBase(object):
             print('In test mode, does not execute {method} request'.format(method=method), 'to', url, 'with data:', data)
             return 200, {'fake': 'request'}
 
+        request_headers = {}
+        if auth_token is not None:
+            request_headers['Authorization'] = 'Token ' + auth_token
+
         request_method = getattr(requests, method)
         try:
+            request_headers['content-type'] = 'application/json'
+
             if method in ['post', 'put']:
-                response = request_method(url, data=json.dumps(data), headers={
-                    'content-type': 'application/json',
-                }
+                response = request_method(url, data=json.dumps(data), headers=request_headers
             )
             else:
-                response = request_method(url)
+                response = request_method(url, headers=request_headers)
 
         except requests.ConnectionError:
             return 503, {
@@ -74,10 +78,10 @@ class CommunicatorBase(object):
             #raise exception
             pass
 
-    def execute_request(self, url, method, data=None):
+    def execute_request(self, url, method, data=None, auth_token=None):
         request_log_object = self.create_request_log(url, method, data)
 
-        status_code, response_json = self.get_response(url, method, data)
+        status_code, response_json = self.get_response(url, method, data, auth_token)
         self.update_request_log_with_response(
             request_log_object=request_log_object,
             response_status_code=status_code,
@@ -105,6 +109,14 @@ class NodeCommunicator(CommunicatorBase):
         return '{node_url}/{path}'.format(
             node_url=self.node_url,
             path=path.format(**kwargs)
+        )
+
+    def execute_request(self, url, method, data=None, auth_token=None):
+        return super(NodeCommunicator, self).execute_request(
+            url=url,
+            method=method,
+            data=data,
+            auth_token=auth_token or self.node.auth_token
         )
 
     def get_all_devices(self):

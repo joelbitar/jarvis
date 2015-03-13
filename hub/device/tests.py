@@ -610,7 +610,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
     def test_create_device_on_node_rest_call(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(*args, **kwargs):
             return 201, {
                 'id' : 1001
             }
@@ -665,7 +665,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
     def test_delete_device_on_node_rest_call(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(*args, **kwargs):
             return 200, {}
 
         nd.get_response = fake_get_response
@@ -708,7 +708,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
     def test_update_device_on_node_rest_call(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(*args, **kwargs):
             return 200, {}
 
         nd.get_response = fake_get_response
@@ -759,7 +759,7 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
     def test_send_learn_command(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(url, method, data, auth_token):
             if data != {'command': 'learn'}:
                 print(data)
                 raise ValueError()
@@ -797,7 +797,7 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
     def test_send_off_command(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(url, method, data, auth_token):
             if data != {'command': 'off'}:
                 raise ValueError()
             return 200, {}
@@ -828,7 +828,7 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
     def test_send_on_command(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(url, method, data, auth_token):
             if data != {'command': 'on'}:
                 print(data)
                 raise ValueError()

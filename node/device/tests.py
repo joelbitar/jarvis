@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
@@ -9,7 +10,6 @@ import json
 
 from device.models import DeviceCommand
 
-# Create your tests here.
 
 class BasicDeviceTest(TestCase):
     def setUp(self):
@@ -21,6 +21,20 @@ class BasicDeviceTest(TestCase):
             unit="1",
         )
         self.device.save()
+
+        self.user = User.objects.create_user(
+            username='test',
+            password='test'
+        )
+
+        client = Client()
+        client.login(
+            username='test',
+            password='test'
+        )
+
+        self.maxDiff = 5000
+        self.logged_in_client = client
 
 
 class DeviceConfigTests(BasicDeviceTest):
@@ -63,8 +77,26 @@ class TellstickTestSwitchCommands(BasicDeviceTest):
         self.device.commands.learn()
 
 
-class DevicesListCall(TestCase):
+class TestCaseWithLoggedInClient(TestCase):
     def setUp(self):
+        self.user = User.objects.create_user(
+            username='test',
+            password='test'
+        )
+
+        client = Client()
+        client.login(
+            username='test',
+            password='test'
+        )
+
+        self.logged_in_client = client
+
+
+class DevicesListCall(TestCaseWithLoggedInClient):
+    def setUp(self):
+        super(DevicesListCall, self).setUp()
+
         for i in range(10):
             d = Device(
                 name="Device {i}".format(i=i),
@@ -75,13 +107,19 @@ class DevicesListCall(TestCase):
             )
             d.save()
 
+        self.maxDiff = 5000
+
     def test_get_device_list_should_get_all_devices(self):
-        client = Client()
-        response = client.get(
-            '/devices/'
+        response = self.logged_in_client.get(
+            reverse('device-list')
         )
 
         j = json.loads(response.content.decode('utf-8'))
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
 
         self.assertEqual(
             len(j),
@@ -89,11 +127,9 @@ class DevicesListCall(TestCase):
         )
 
 
-class DeviceRestCreateDevice(TestCase):
+class DeviceRestCreateDevice(TestCaseWithLoggedInClient):
     def test_create_device_should_return_device_info(self):
-        client = Client()
-
-        response = client.post(
+        response = self.logged_in_client.post(
             '/devices/',
             {
                 'name': 'testDevice',
@@ -116,7 +152,7 @@ class DeviceRestCreateDevice(TestCase):
 class DeviceRestCrud(BasicDeviceTest):
     def setUp(self):
         super(DeviceRestCrud, self).setUp()
-        self.client = Client()
+        self.client = self.logged_in_client
 
     def test_delete_device_should_remove_device(self):
         self.client.delete(
@@ -191,11 +227,9 @@ class DeviceRestCrud(BasicDeviceTest):
 
 class DeviceCommandTests(BasicDeviceTest):
     def test_should_set_excuted_after_execution(self):
-        client = Client()
-
         url = reverse('device-command', kwargs={'pk' : self.device.pk})
 
-        response = client.post(
+        response = self.logged_in_client.post(
             url,
             {
                 'command' : 'on'
@@ -218,11 +252,9 @@ class DeviceCommandTests(BasicDeviceTest):
 
 class DeviceRestCalls(BasicDeviceTest):
     def test_send_on_command(self):
-        client = Client()
-
         url = reverse('device-command', kwargs={'pk' : self.device.pk})
 
-        response = client.post(
+        response = self.logged_in_client.post(
             url,
             {
                 'command' : 'on'
@@ -257,11 +289,9 @@ class DeviceRestCalls(BasicDeviceTest):
         )
 
     def test_should_receive_a_ok_when_sending_dim_command(self):
-        client = Client()
-
         url = reverse('device-command', kwargs={'pk' : self.device.pk})
 
-        response = client.post(
+        response = self.logged_in_client.post(
             url,
             json.dumps({
                 'command': 'dim',
@@ -308,11 +338,9 @@ class DeviceRestCalls(BasicDeviceTest):
 
 
     def test_should_not_be_able_to_send_command_that_does_not_exist(self):
-        client = Client()
-
         url = reverse('device-command', kwargs={'pk' : self.device.pk})
 
-        response = client.post(
+        response = self.logged_in_client.post(
             url,
             {
                 'command' : 'asdf'
@@ -321,7 +349,7 @@ class DeviceRestCalls(BasicDeviceTest):
 
         self.assertEqual(response.status_code, 400)
 
-        response = client.post(
+        response = self.logged_in_client.post(
             url,
             {
                 'not_spelled_correctly' : 'on'
@@ -331,11 +359,9 @@ class DeviceRestCalls(BasicDeviceTest):
         self.assertEqual(response.status_code, 400)
 
     def test_should_receive_a_not_found_if_the_id_of_a_device_does_not_exist(self):
-        client = Client()
-
         url = reverse('device-command', kwargs={'pk' : 666})
 
-        response = client.post(
+        response = self.logged_in_client.post(
             url,
             {
                 'command' : 'on'
@@ -347,9 +373,7 @@ class DeviceRestCalls(BasicDeviceTest):
 
 class DeviceRestTests(BasicDeviceTest):
     def test_should_be_able_to_update_a_device(self):
-        client = Client()
-
-        response = client.put(
+        response = self.logged_in_client.put(
                 '/devices/' + str(self.device.pk) + '/',
                 json.dumps({
                     'name' : 'New name',
@@ -364,11 +388,9 @@ class DeviceRestTests(BasicDeviceTest):
 
 class WriteConfigRESTTest(BasicDeviceTest):
     def test_should_respond_with_ok_when_trying_to_write_conf(self):
-        client = Client()
-
         self.assertEqual(1, Device.objects.filter(written_to_conf=False).count())
 
-        response = client.post(
+        response = self.logged_in_client.post(
                 '/conf/write/', {}
             )
 
@@ -377,11 +399,9 @@ class WriteConfigRESTTest(BasicDeviceTest):
         self.assertEqual(0, Device.objects.filter(written_to_conf=False).count())
 
 
-class RestartTelldusRESTTest(TestCase):
+class RestartTelldusRESTTest(BasicDeviceTest):
     def test_should_respond_with_ok_when_trying_restart_daemon(self):
-        client = Client()
-
-        response = client.post(
+        response = self.logged_in_client.post(
                 '/conf/restart-daemon/', {}
             )
 
