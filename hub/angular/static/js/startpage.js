@@ -8,9 +8,22 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         )
 }])
 .controller('StartpageDeviceController', ['$scope', '$rootScope', 'Restangular',  function($scope, $rootScope, Restangular) {
+        // Update device without setting everything again.
+        $scope.updateDevice = function(device){
+            $scope.devices.forEach(function(d){
+                if(d.id == device.id){
+                    d.state = device.state;
+                }
+            });
+        };
+
         $scope.$on('refresh-devices', function(){
             Restangular.all('devices').getList().then(function(devices){
-                $scope.devices = devices;
+                if($scope.devices !== undefined){
+                    devices.forEach($scope.updateDevice);
+                }else{
+                    $scope.devices = devices;
+                }
             });
         });
         $scope.$broadcast('refresh-devices');
