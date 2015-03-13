@@ -1,10 +1,10 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
+
 from node.models import Node
-
 from node.serializers import NodeSerializer
-
 from node.communicator import NodeCommunicator
 
 
@@ -14,6 +14,8 @@ class NodeViewSet(viewsets.ModelViewSet):
 
 
 class NodeCommandViewBase(APIView):
+    permission_classes = (IsAdminUser, )
+
     def execute_request(self, node):
         raise NotImplementedError()
 
@@ -39,3 +41,9 @@ class NodeRestartDaemonView(NodeCommandViewBase):
             return Response()
 
 
+class NodeSyncView(NodeCommandViewBase):
+    def execute_request(self, node):
+        for device in node.device_set.filter(node_device_pk=None):
+            device.get_communicator().create()
+
+        return True

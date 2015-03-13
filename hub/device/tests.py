@@ -19,8 +19,41 @@ from device.property_generator import PropertyValueGenerator
 from button.models import Button
 
 
-class DeviceModelTestsBase(TestCase):
+class HasLoggedInClientBase(TestCase):
     def setUp(self):
+        self.user = User.objects.create_user(
+            username='test',
+            password='test'
+        )
+
+        client = Client()
+        client.login(
+            username='test',
+            password='test'
+        )
+
+        self.maxDiff = 5000
+        self.logged_in_client = client
+
+        superuser_client = Client()
+
+        self.admin_user = User.objects.create_superuser(
+            username='admin',
+            password='admin',
+            email='admin@example.com',
+        )
+
+        superuser_client.login(
+            username='admin',
+            password='admin',
+        )
+
+        self.superuser_client = superuser_client
+
+
+class DeviceModelTestsBase(HasLoggedInClientBase):
+    def setUp(self):
+        super(DeviceModelTestsBase, self).setUp()
         n = Node()
         n.address = 'address'
         n.name = 'Test Node'
@@ -43,19 +76,6 @@ class DeviceModelTestsBase(TestCase):
         self.device = d
         self.group = g
 
-        self.user = User.objects.create_user(
-            username='test',
-            password='test'
-        )
-
-        client = Client()
-        client.login(
-            username='test',
-            password='test'
-        )
-
-        self.maxDiff = 5000
-        self.logged_in_client = client
 
     def refresh(self, obj):
         return obj.__class__.objects.get(pk=obj.pk)
@@ -1084,19 +1104,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
     def test_should_get_ok_response_when_sending_command_learn_when_admin(self):
-        user = User.objects.create_superuser(
-            username='admin',
-            password='admin',
-            email='admin@example.com'
-        )
-
-        client = Client()
-        client.login(
-            username='admin',
-            password='admin'
-        )
-
-        response = client.get(
+        response = self.superuser_client.get(
             reverse('device-learn', kwargs={'pk': self.device.pk}),
         )
 

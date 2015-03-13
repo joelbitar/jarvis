@@ -21,7 +21,7 @@ class CommunicatorBase(object):
 
         if self.is_in_test_mode():
             print('In test mode, does not execute {method} request'.format(method=method), 'to', url, 'with data:', data)
-            return 200, {'fake': 'request'}
+            return 200, {'fake': 'response', 'id': 666}
 
         request_headers = {}
         if auth_token is not None:
@@ -213,6 +213,8 @@ class NodeDeviceCommunicator(NodeCommunicator):
             'post',
             data=self.serialize_device()
         )
+
+        print(status_code, response_json)
 
         if status_code not in [200, 201]:
             return False
