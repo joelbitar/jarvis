@@ -206,22 +206,24 @@ class DeviceRestCrud(BasicDeviceTest):
 
         self.assertJSONEqual(
             response.content.decode('utf-8'),
-            json.dumps({
-                'id' : self.device.pk,
-                'name': self.device.name,
-                'model': self.device.model,
-                'protocol' : self.device.protocol,
-                'code': self.device.code,
-                'controller': self.device.controller,
-                'description' : self.device.description,
-                'devices': self.device.devices,
-                'house': self.device.house,
-                'unit': self.device.unit,
-                'system': self.device.system,
-                'units': self.device.units,
-                'fade': self.device.fade,
-		        'written_to_conf': self.device.written_to_conf,
-            })
+            json.dumps(
+                {
+                    'id': self.device.pk,
+                    'name': self.device.name,
+                    'model': self.device.model,
+                    'protocol' : self.device.protocol,
+                    'code': self.device.code,
+                    'controller': self.device.controller,
+                    'description' : self.device.description,
+                    'devices': self.device.devices,
+                    'house': self.device.house,
+                    'unit': self.device.unit,
+                    'system': self.device.system,
+                    'units': self.device.units,
+                    'fade': self.device.fade,
+                    'written_to_conf': self.device.written_to_conf,
+                }
+            )
         )
 
 
