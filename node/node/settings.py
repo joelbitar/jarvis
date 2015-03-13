@@ -40,8 +40,11 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'rest_framework.authtoken',
 
     'django_extensions',
+
+    'authentication',
 
     'device',
 )
@@ -102,6 +105,15 @@ USE_L10N = True
 
 USE_TZ = True
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -116,3 +128,11 @@ TELLSTICK_RESTART_DAEMON_SCRIPT_PATH = os.path.join(BASE_DIR, 'scripts', 'restar
 
 HUB_URL = 'http://127.0.0.1:8099'
 HUB_API_URL = HUB_URL + '/api/'
+
+try:
+    from hub.secret import *
+    if HUB_URL is not None:
+        if not HUB_API_URL.endswith('/'):
+            raise ValueError('MAIN_HUB_URL does not end with slash, exiting')
+except ImportError:
+    print('Could not find secret.py :(')

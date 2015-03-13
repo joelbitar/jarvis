@@ -89,7 +89,7 @@ class NodeAdminTests(TestCase):
     def test_should_send_write_conf_command_and_receive_a_ok(self):
         c = NodeCommunicator(node=self.node)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(url, method, data, auth_token):
             return 200, {}
 
         c.get_response = fake_get_response
@@ -119,7 +119,7 @@ class NodeAdminTests(TestCase):
     def test_should_send_restart_daemon_command_and_receive_a_ok(self):
         c = NodeCommunicator(node=self.node)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(url, method, data, auth_token):
             return 200, {}
 
         c.get_response = fake_get_response
