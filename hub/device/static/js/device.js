@@ -96,6 +96,29 @@ var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
                 $scope.sendDeviceState(device);
             });
         };
+}]);
 
+jarvis_device.controller('DeviceDetailController', ['$scope', '$routeParams', 'Restangular', function($scope, $routeParams, Restangular){
+    console.log($routeParams.id)
+    $scope.sendDeviceLearnCommand = function(device){
+          Restangular.one('devices', device.id).one('command').one('learn/').get().then(
+              function(response){
+              }
+          );
+    };
 
+    Restangular.one('devices', $routeParams.id).get().then(
+        function(device){
+            $scope.device = device;
+        }
+    )
+}]);
+
+jarvis_device.config(['$routeProvider', function($routeProvider){
+    $routeProvider.when(
+        '/device/:id/', {
+            templateUrl: template_url('device-detail.html'),
+            controller: 'DeviceDetailController'
+        }
+    )
 }]);
