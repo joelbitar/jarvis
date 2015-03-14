@@ -1,0 +1,23 @@
+<div layout="column" class="layout-content">
+    <div include="device-tiny.html"></div>
+    <div layout="row" layout-align="center start">
+        <div flex="50">
+            <div layout="column">
+                <md-list>
+                    <md-item>
+                        Lampa
+                    </md-item>
+                </md-list>
+            </div>
+        </div>
+        <div flex="50">
+            <div layout="column" layout-align="end end">
+                <h3>Skicka kommandon</h3>
+                <md-button class="md-raised" ng-click="sendDeviceLearnCommand(device);">Inlärningsläge</md-button>
+            </div>
+        </div>
+    </div>
+    <div layout="row" layout="end start">
+        <md-button ng-href="#/device/{{ device.id }}/edit/">Redigera</md-button>
+    </div>
+</div>
