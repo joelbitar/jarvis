@@ -1,5 +1,5 @@
 <div layout="row" layout-align="space-between center" ng-controller="StartpageSensorController">
-    <div flex="20" ng-repeat="sensor in sensors">
+    <div flex ng-repeat="sensor in sensors">
         <div include="sensor-teaser.html"></div>
     </div>
 </div>
@@ -18,6 +18,6 @@
 
 <div layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageDeviceGroupController">
     <div flex="20" ng-repeat="group in groups">
-        <div include="device-group-tiny.html"></div>
+        <div include="device-group-teaser.html"></div>
     </div>
 </div>

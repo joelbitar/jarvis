@@ -64,7 +64,7 @@ app.directive("staticSrc", function () {
 
 app.config(function($mdThemingProvider) {
   $mdThemingProvider.theme('default')
-    .primaryPalette('pink')
+    .primaryPalette('deep-purple')
     .accentPalette('blue');
 });
 

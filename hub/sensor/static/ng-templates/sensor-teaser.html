@@ -1,9 +1,13 @@
-<div layout="column" layout-align="start center">
-    <h4>
-        {{ sensor.name }}
-    </h4>
+<md-card>
+    <md-card-content>
+        <div layout="column" layout-align="start center">
+            <h4>
+                {{ sensor.name }}
+            </h4>
 
-    <div>
-        <span>{{ sensor.temperature }}°C</span> <span>{{ sensor.humidity }}%</span>
-    </div>
-</div>
+            <div>
+                <span>{{ sensor.temperature }}°C</span> <span>{{ sensor.humidity }}%</span>
+            </div>
+        </div>
+    </md-card-content>
+</md-card>
