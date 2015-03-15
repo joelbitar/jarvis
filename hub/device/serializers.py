@@ -14,6 +14,18 @@ class DeviceSerializer(serializers.ModelSerializer):
         model = Device
 
 
+class DeviceDetailNodeSerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        return {
+            'id': value.pk,
+            'name': value.name,
+        }
+
+
+class DeviceDetailSerializer(DeviceSerializer):
+    node = DeviceDetailNodeSerializer(read_only=True)
+
+
 class DeviceGroupDeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device

@@ -107,7 +107,7 @@ jarvis_device.controller('DeviceDetailController', ['$scope', '$routeParams', 'R
           );
     };
 
-    Restangular.one('devices', $routeParams.id).get().then(
+    Restangular.one('devices', $routeParams.id).one('details/').get().then(
         function(device){
             $scope.device = device;
         }

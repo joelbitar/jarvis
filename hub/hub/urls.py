@@ -5,6 +5,7 @@ from rest_framework import routers
 
 from device.views import DeviceViewSet
 from device.views import DeviceOptionsView
+from device.views import DeviceDetailedView
 
 from device.views import DeviceCommandOnView
 from device.views import DeviceCommandOffView
@@ -55,6 +56,7 @@ rest_patterns = patterns('',
     url(r'^auth/logout/', LogoutUserView.as_view(), name='logout'),
     url(r'^device/options/', DeviceOptionsView.as_view(), name='device-options'),
 
+    url(r'^devices/(?P<pk>[0-9]+)/details/$', DeviceDetailedView.as_view(), name="device-detail"),
     url(r'^devices/(?P<pk>[0-9]+)/command/dim/(?P<dimlevel>\d+)/$', DeviceCommandDimView.as_view(), name="device-dim"),
     url(r'^devices/(?P<pk>[0-9]+)/command/on/$', DeviceCommandOnView.as_view(), name="device-on"),
     url(r'^devices/(?P<pk>[0-9]+)/command/off/$', DeviceCommandOffView.as_view(), name="device-off"),
