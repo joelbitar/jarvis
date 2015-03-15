@@ -1,6 +1,12 @@
 from django.test import TestCase
 
+from django.core.urlresolvers import reverse
+
 from sensor.models import Sensor, SensorLog
+from device.tests import HasLoggedInClientBase
+
+import json
+
 
 # Create your tests here.
 class SensorModelTests(TestCase):
@@ -72,3 +78,30 @@ class SensorModelTests(TestCase):
                 SensorLog.objects.all().count(),
                 i
             )
+
+
+class TestSensorAPI(HasLoggedInClientBase):
+    def setUp(self):
+        super(TestSensorAPI, self).setUp()
+
+        self.sensor = Sensor.objects.create(
+            name='test'
+        )
+
+    def test_should_have_log_entries_in_json(self):
+        self.sensor.temperature = 22
+        self.sensor.humidity = 44
+        self.sensor.save()
+
+        r = self.logged_in_client.get(
+            reverse('sensorlog-list', kwargs={
+                'sensor_pk': self.sensor.pk
+            })
+        )
+
+        self.assertEqual(
+            len(json.loads(r.content.decode('utf-8'))),
+            1
+        )
+
+

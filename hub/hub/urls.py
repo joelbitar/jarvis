@@ -25,6 +25,7 @@ from node.views import NodeDetailView
 from event.views import EventReceiverView
 
 from sensor.views import SensorViewSet
+from sensor.views import SensorLogView
 
 from authentication.views import CurrentUserView
 from authentication.views import LoginUserView
@@ -71,7 +72,10 @@ rest_patterns = patterns('',
     url(r'^nodes/(?P<pk>[0-9]+)/sync/$', NodeSyncView.as_view(), name="node-sync"),
     url(r'^nodes/(?P<pk>[0-9]+)/writeconf/$', NodeWriteConfView.as_view(), name="node-writeconf"),
     url(r'^nodes/(?P<pk>[0-9]+)/restartdaemon/$', NodeRestartDaemonView.as_view(), name="node-restartdaemon"),
+
     url(r'^event/$', EventReceiverView.as_view(), name="event"),
+
+    url(r'^sensors/(?P<sensor_pk>\d+)/logs/$', SensorLogView.as_view(), name='sensorlog-list')
 )
 
 urlpatterns = patterns('',
