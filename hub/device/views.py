@@ -7,12 +7,14 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import viewsets
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import IsAdminUser
 
 from device.serializers import DeviceSerializer
+from device.serializers import DeviceDetailSerializer
 from device.serializers import DeviceGroupSerializer
 from device.models import Device
 from device.models import DeviceGroup
@@ -23,6 +25,11 @@ from button.models import Button
 class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
+
+
+class DeviceDetailedView(generics.RetrieveAPIView):
+    queryset = Device.objects.all()
+    serializer_class = DeviceDetailSerializer
 
 
 class CommandViewBase(APIView):

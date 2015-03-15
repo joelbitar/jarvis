@@ -994,7 +994,10 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'house': 'A',
                         'model': self.device.model,
                         'name': 'TestDevice',
-                        'node': self.device.node.pk,
+                        'node': {
+                            'id': self.device.node.pk,
+                            'name': self.device.node.name,
+                        },
                         'node_device_pk': 1001,
                         'property_iteration': 1,
                         'protocol': self.device.protocol,

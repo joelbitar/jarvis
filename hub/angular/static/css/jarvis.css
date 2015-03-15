@@ -1,3 +1,7 @@
 /*
 4a203b
 */
+div.layout-content{
+    max-width: 864px;
+    margin: auto;
+}
