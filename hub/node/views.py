@@ -1,16 +1,23 @@
 from rest_framework import viewsets
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 
 from node.models import Node
 from node.serializers import NodeSerializer
+from node.serializers import NodeDetailsSerializer
 from node.communicator import NodeCommunicator
 
 
 class NodeViewSet(viewsets.ModelViewSet):
     queryset = Node.objects.all()
-    serializer_class = NodeSerializer 
+    serializer_class = NodeSerializer
+
+
+class NodeDetailView(generics.RetrieveAPIView):
+    queryset = Node.objects.all()
+    serializer_class = NodeDetailsSerializer
 
 
 class NodeCommandViewBase(APIView):
@@ -25,7 +32,9 @@ class NodeCommandViewBase(APIView):
         if not self.execute_request(node):
             return Response(status=500)
 
-        return Response()
+        return Response(
+            {}
+        )
 
 
 class NodeWriteConfView(NodeCommandViewBase):

@@ -974,7 +974,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
     def test_should_get_single_device(self):
         response = self.logged_in_client.get(
-            reverse('device-detail', kwargs={'pk': self.device.pk}),
+            reverse('device-extra', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)

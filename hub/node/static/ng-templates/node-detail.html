@@ -1,0 +1,13 @@
+<div layout="column">
+    <div layout="column" layout-align="start center">
+        <h2>
+            {{ node.name }}
+        </h2>
+    </div>
+
+    <div layout="row" layout-align="center center">
+        <md-button class="md-raised" ng-click="sendNodeCommand('writeconf');">Skriv konfigurationsfil</md-button>
+        <md-button class="md-raised" ng-click="sendNodeCommand('sync');">Synca enheter</md-button>
+        <md-button class="md-raised" ng-click="sendNodeCommand('restartdaemon');">Starta om tellstick</md-button>
+    </div>
+</div>

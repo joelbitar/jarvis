@@ -20,6 +20,7 @@ from node.views import NodeViewSet
 from node.views import NodeWriteConfView
 from node.views import NodeSyncView
 from node.views import NodeRestartDaemonView
+from node.views import NodeDetailView
 
 from event.views import EventReceiverView
 
@@ -56,7 +57,7 @@ rest_patterns = patterns('',
     url(r'^auth/logout/', LogoutUserView.as_view(), name='logout'),
     url(r'^device/options/', DeviceOptionsView.as_view(), name='device-options'),
 
-    url(r'^devices/(?P<pk>[0-9]+)/details/$', DeviceDetailedView.as_view(), name="device-detail"),
+    url(r'^devices/(?P<pk>[0-9]+)/details/$', DeviceDetailedView.as_view(), name="device-extra"),
     url(r'^devices/(?P<pk>[0-9]+)/command/dim/(?P<dimlevel>\d+)/$', DeviceCommandDimView.as_view(), name="device-dim"),
     url(r'^devices/(?P<pk>[0-9]+)/command/on/$', DeviceCommandOnView.as_view(), name="device-on"),
     url(r'^devices/(?P<pk>[0-9]+)/command/off/$', DeviceCommandOffView.as_view(), name="device-off"),
@@ -66,6 +67,7 @@ rest_patterns = patterns('',
     url(r'^devicegroups/(?P<pk>[0-9]+)/command/on/$', DeviceGroupCommandOnView.as_view(), name="devicegroup-on"),
     url(r'^devicegroups/(?P<pk>[0-9]+)/command/off/$', DeviceGroupCommandOffView.as_view(), name="devicegroup-off"),
 
+    url(r'^nodes/(?P<pk>[0-9]+)/details/$', NodeDetailView.as_view(), name="node-extra"),
     url(r'^nodes/(?P<pk>[0-9]+)/sync/$', NodeSyncView.as_view(), name="node-sync"),
     url(r'^nodes/(?P<pk>[0-9]+)/writeconf/$', NodeWriteConfView.as_view(), name="node-writeconf"),
     url(r'^nodes/(?P<pk>[0-9]+)/restartdaemon/$', NodeRestartDaemonView.as_view(), name="node-restartdaemon"),
