@@ -7,6 +7,7 @@ var app = angular.module('jarvis', [
     'jarvis.device',
     'jarvis.devicegroup',
     'jarvis.node',
+    'jarvis.sensor',
     'jarvis.auth'
 ]);
 
