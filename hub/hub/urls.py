@@ -27,6 +27,9 @@ from event.views import EventReceiverView
 from sensor.views import SensorViewSet
 from sensor.views import SensorLogView
 
+from forecast.views import ForecastViewSet
+from forecast.views import LatestForecastView
+
 from authentication.views import CurrentUserView
 from authentication.views import LoginUserView
 from authentication.views import LogoutUserView
@@ -49,6 +52,7 @@ router.register(r'groups', DeviceGroupViewSet)
 router.register(r'devices/(?P<pk>[0-9]+)/$', device_detail, base_name='devices')
 router.register(r'nodes/(?P<pk>[0-9]+)/$', node_detail, base_name='nodes')
 router.register(r'sensors', SensorViewSet)
+router.register(r'forecasts', ForecastViewSet, base_name='forecasts')
 #router.register(r'devices/(?P<pk>[0-9]+)/command/on/$', DeviceCommandOnView.as_view(), base_name='device_command')
 
 rest_patterns = patterns('',
@@ -74,6 +78,8 @@ rest_patterns = patterns('',
     url(r'^nodes/(?P<pk>[0-9]+)/restartdaemon/$', NodeRestartDaemonView.as_view(), name="node-restartdaemon"),
 
     url(r'^event/$', EventReceiverView.as_view(), name="event"),
+
+    url(r'^forecast/$', LatestForecastView.as_view(), name="latest-forecast"),
 
     url(r'^sensors/(?P<sensor_pk>\d+)/logs/$', SensorLogView.as_view(), name='sensorlog-list')
 )

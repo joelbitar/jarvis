@@ -55,6 +55,7 @@ INSTALLED_APPS = (
     'button',
     'sensor',
     'action',
+    'forecast',
 
     'angular',
     'material',
