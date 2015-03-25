@@ -1,0 +1,19 @@
+<div layout="column" layout-align="start center">
+    <div layout="row" ng-if="forecast.valid_time">
+        {{ forecast.valid_time | date : "HH:mm" }}
+    </div>
+    <div layout="column" ng-if="forecast.valid_time__min">
+        {{ forecast.valid_time__min | date : "HH" }} - {{ forecast.valid_time__max | date : "HH" }}
+    </div>
+
+    <div layout="row">
+        <i class="wi wi-thermometer"></i>
+        &nbsp;
+            <span>
+                {{ forecast.t }}°C
+            </span>
+        &nbsp;
+        {{ forecast.pit }} mm
+    </div>
+</div>
+

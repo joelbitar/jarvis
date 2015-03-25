@@ -13,3 +13,7 @@ a, a:visited{
 a:hover{
     text-decoration: underline;
 }
+
+i.wi{
+    font-size: 18px;
+}

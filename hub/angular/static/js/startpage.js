@@ -27,6 +27,16 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
             });
         });
         $scope.$broadcast('refresh-devices');
+}]).controller('StartpageForecastController', ['$scope', 'Restangular',  function($scope, Restangular) {
+        console.log('startpageforecastctrl');
+
+        Restangular.all('forecast/short').getList().then(function(forecasts){
+            $scope.forecasts = [];
+
+            forecasts.forEach(function(forecast_group){
+                $scope.forecasts = $scope.forecasts.concat(forecast_group);
+            });
+        });
 }])
 .controller('StartpageSensorController', ['$scope', 'Restangular',  function($scope, Restangular) {
         Restangular.all('sensors').getList().then(function(sensors){

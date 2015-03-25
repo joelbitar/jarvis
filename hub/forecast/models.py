@@ -55,6 +55,7 @@ class ForecastBase(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['valid_time']
 
 
 class Forecast(ForecastBase):

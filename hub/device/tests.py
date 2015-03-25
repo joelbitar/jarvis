@@ -50,6 +50,19 @@ class HasLoggedInClientBase(TestCase):
 
         self.superuser_client = superuser_client
 
+    def get_json_response(self, url_name, kwargs=Node):
+        r = self.logged_in_client.get(
+            reverse(url_name,kwargs=kwargs or {})
+        )
+
+        try:
+            return json.loads(r.content.decode('utf-8'))
+        except Exception:
+            print(r.status_code, r.content)
+            print('Request error')
+            raise Exception('Error')
+
+
 
 class DeviceModelTestsBase(HasLoggedInClientBase):
     def setUp(self):
