@@ -1,4 +1,3 @@
-
 var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
 .config(['$routeProvider', function($routeProvider){
         $routeProvider.when(
@@ -8,6 +7,7 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         )
 }])
 .controller('StartpageDeviceController', ['$scope', '$rootScope', 'Restangular',  function($scope, $rootScope, Restangular) {
+    console.log('test');
         // Update device without setting everything again.
         $scope.updateDevice = function(device){
             $scope.devices.forEach(function(d){
