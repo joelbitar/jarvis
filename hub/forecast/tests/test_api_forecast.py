@@ -50,4 +50,29 @@ class TestForecastNowApi(MockedSMHIFetcherBase):
                 'Should not be empty'
             )
 
+class TestForecastDetailedApi(MockedSMHIFetcherBase):
+    def setUp(self):
+        super(TestForecastDetailedApi, self).setUp()
+        self.fetcher.create_entries()
+
+    def test_should_get_detailed_forecast(self):
+        r = self.get_json_response(
+                'forecast-detailed',
+                kwargs={
+                    'date': '2015-03-15T15:00:00'
+                }
+            )
+
+        for fg in r:
+            print('.')
+            for f in fg:
+                if 'valid_time' in f.keys():
+                    print('valid time')
+                    print(f['valid_time'])
+                else:
+                    print(f['valid_time__min'], '-', f['valid_time__max'])
+
+        self.assertTrue(False)
+
+
 

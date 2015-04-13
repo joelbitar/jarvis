@@ -9,6 +9,7 @@ var app = angular.module('jarvis', [
     'jarvis.node',
     'jarvis.sensor',
     'jarvis.settings',
+    'jarvis.weather',
     'jarvis.auth'
 ]);
 

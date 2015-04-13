@@ -65,7 +65,7 @@ class NowForecastView(viewsets.generics.ListAPIView):
 
             grouped_forecasts = Forecast.objects.filter(
                 valid_time__gte=valid_time_from,
-                valid_time__lt=start + timedelta(hours=(runs + 1) * group_span)
+                valid_time__lte=start + timedelta(hours=(runs + 1) * group_span)
             ).aggregate(
                 Avg('t'), Avg('tcc'), Avg('tstm'), Avg('r'), Avg('gust'), Avg('pcat'), Avg('ws'), Avg('wd'), Sum('pit'), Sum('pis'), Min('valid_time'), Max('valid_time')
             )
@@ -138,18 +138,49 @@ class LatestForecastView(viewsets.generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         return Response(
             self.get_serializer(
-                instance=Forecast.objects.all().order_by(
-                    'valid_time'
-                )[:71],
+                instance=Forecast.objects.filter(
+                    valid_time__gte=timezone.now()
+                ),
                 many=True
             ).data
         )
 
+class DetailedForecastView(NowForecastView):
+    def get_forecast(self, date):
+        current_day = datetime.datetime(date.year, date.month, date.day) 
+
+        return Response(
+            self.serialize_forecasts(
+                Forecast.objects.filter(
+                    valid_time__gte=date,
+                    valid_time__lt=current_day + timedelta(days=1) - timedelta(hours=12)
+                ),
+                Forecast.objects.filter(
+                    valid_time__gte=current_day + timedelta(days=1),
+                    valid_time__lt=current_day + timedelta(days=1, hours=12)
+                ),
+                Forecast.objects.filter(
+                    valid_time__gte=current_day + timedelta(days=1, hours=12),
+                    valid_time__lt=current_day + timedelta(days=2)
+                ),
+                self.get_grouped_forecasts(3, current_day + timedelta(days=2), 8),
+                self.get_grouped_forecasts(6, current_day + timedelta(days=3), 4),
+                self.get_grouped_forecasts(6, current_day + timedelta(days=4), 4),
+                self.get_grouped_forecasts(6, current_day + timedelta(days=5), 4),
+                self.get_grouped_forecasts(12, current_day + timedelta(days=6), 8),
+                #self.get_grouped_forecasts(12, current_day + timedelta(days=7), 2),
+                #self.get_grouped_forecasts(12, current_day + timedelta(days=8), 2),
+                #self.get_grouped_forecasts(12, current_day + timedelta(days=9), 2),
+            )
+        )
+
+
+        
+                
+
 
 class ForecastViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
-        return Forecast.objects.all().order_by(
-            'valid_time'
-        )
+        return Forecast.objects.all()
 
     serializer_class = ForecastSerializer

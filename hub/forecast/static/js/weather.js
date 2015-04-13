@@ -11,9 +11,9 @@ var jarvis_weather = angular.module('jarvis.weather', ['ngRoute'])
             }
         )
 }]).controller('WeatherController', ['$scope', 'Restangular', function($scope, Restangular){
-    Restangular.all('forecasts').getList().then(function(forecasts){
+    Restangular.all('forecast/detailed/').getList().then(function(forecasts){
         console.log(forecasts);
-        $scope.forecasts = forecasts;
+        $scope.forecast_groups = forecasts;
     });
 }]);
 
