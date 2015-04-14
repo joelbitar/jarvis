@@ -49,12 +49,11 @@ class TestPropagateSignal(SignalTestsHelper):
         )
         button_action.save()
 
-        self.button_action = button_action;
+        self.button_action = button_action
 
         action.save()
 
         self.action = action
-
 
     def test_propagate_event(self):
         """
