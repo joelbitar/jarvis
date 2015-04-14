@@ -3,30 +3,18 @@ from django.db import models
 
 
 class Timer(models.Model):
-    DAY_OF_WEEK_MONDAY = 1
-    DAY_OF_WEEK_TUESDAY = 2
-    DAY_OF_WEEK_WEDNESDAY = 3
-    DAY_OF_WEEK_THURSDAY = 4
-    DAY_OF_WEEK_FRIDAY = 5
-    DAY_OF_WEEK_SATURDAY = 6
-    DAY_OF_WEEK_SUNDAY = 7
-
-    DAY_OF_WEEK_CHOICES = (
-        (DAY_OF_WEEK_MONDAY, _('Monday')),
-        (DAY_OF_WEEK_TUESDAY, _('Tuesday')),
-        (DAY_OF_WEEK_WEDNESDAY, _('Wednesday')),
-        (DAY_OF_WEEK_THURSDAY, _('Thursday')),
-        (DAY_OF_WEEK_FRIDAY, _('Friday')),
-        (DAY_OF_WEEK_SATURDAY, _('Saturday')),
-        (DAY_OF_WEEK_SUNDAY, _('Sunday'))
-    )
-
-    day_of_week = models.PositiveSmallIntegerField(max_length=1, choices=DAY_OF_WEEK_CHOICES, null=True, blank=True, default=None)
+    dow_monday = models.BooleanField(default=False, verbose_name='monday', help_text=_('Monday'))
+    dow_tuesday = models.BooleanField(default=False, verbose_name='tuesday', help_text=_('Tuesday'))
+    dow_wednesday = models.BooleanField(default=False, verbose_name='wednesday', help_text=_('Wednesday'))
+    dow_thursday = models.BooleanField(default=False, verbose_name='thursday', help_text=_('Thursday'))
+    dow_friday = models.BooleanField(default=False, verbose_name='friday', help_text=_('Friday'))
+    dow_saturday = models.BooleanField(default=False, verbose_name='saturday', help_text=_('Saturday'))
+    dow_sunday = models.BooleanField(default=False, verbose_name='sunday', help_text=_('Sunday'))
 
 
 class TimerTimeIntervals(models.Model):
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.TimeField(blank=True, null=True)
+    end_time = models.TimeField(blank=True, null=True)
 
     timer = models.ForeignKey(Timer, related_name='intervals')
 
