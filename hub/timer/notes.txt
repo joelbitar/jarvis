@@ -1,0 +1,6 @@
+Ska kunna ställa in.
+
+Veckodag, mån-sön, multi-select.
+
+Välja tider, 0 eller fler tidsspann.
+

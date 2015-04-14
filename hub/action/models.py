@@ -8,16 +8,25 @@ from device.models import DeviceGroup
 
 class Action(models.Model):
     """
-    an action has none or several buttons and sensors
+    an action has none or more triggers (buttons, sensors, times, sun-events etc)
+    todo: an action should have conditions
     and a bunch of devices that it can control.
     """
     name = models.CharField(max_length=256)
     trigger_buttons = models.ManyToManyField(Button, through='ActionButton', related_name='actions')
     trigger_sensors = models.ManyToManyField(Sensor, through='ActionSensor', related_name='actions')
 
+    # condition_timer =...
+
     # Gets controlled
     action_devices = models.ManyToManyField(Device)
     action_device_groups = models.ManyToManyField(DeviceGroup)
+
+"""
+class ActionHistory(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    action = models.ForeignKey(Action)
+"""
 
 
 class ActionUnitBase(models.Model):
