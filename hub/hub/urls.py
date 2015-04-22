@@ -29,6 +29,9 @@ from sensor.views import SensorLogView
 
 from forecast.views import ForecastViewSet
 from forecast.views import LatestForecastView
+from forecast.views import NowForecastView
+from forecast.views import ShortForecastView
+from forecast.views import DetailedForecastView
 
 from authentication.views import CurrentUserView
 from authentication.views import LoginUserView
@@ -80,6 +83,11 @@ rest_patterns = patterns('',
     url(r'^event/$', EventReceiverView.as_view(), name="event"),
 
     url(r'^forecast/$', LatestForecastView.as_view(), name="latest-forecast"),
+    url(r'^forecast/detailed/$', DetailedForecastView.as_view(), name="forecast-detailed"),
+    url(r'^forecast/detailed/(?P<date>.*)$', DetailedForecastView.as_view(), name="forecast-detailed"),
+    url(r'^forecast/now/$', NowForecastView.as_view(), name="forecast-now"),
+    url(r'^forecast/short/$', ShortForecastView.as_view(), name="forecast-now"),
+    url(r'^forecast/now/(?P<date>.*)/$', NowForecastView.as_view(), name="forecast-now"),
 
     url(r'^sensors/(?P<sensor_pk>\d+)/logs/$', SensorLogView.as_view(), name='sensorlog-list')
 )
