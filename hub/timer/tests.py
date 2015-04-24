@@ -24,6 +24,15 @@ class TimerFinderTestsHelper(TestCase):
                 len([f for f in TimerFinder(lookup_datetime=datetime(year=2015, month=4, day=i, hour=10, minute=0)).find()]), 0
             )
 
+class TimerModelTests(TestCase):
+    def test_when_setting_no_day_of_week_weekday_dependent_should_be_false(self):
+        timer = Timer()
+        timer.save()
+
+        self.assertFalse(
+            timer.weekday_dependent
+        )
+
 
 class TimerFinderTestsBase(TimerFinderTestsHelper):
     def setUp(self):

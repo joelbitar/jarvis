@@ -100,29 +100,25 @@ class TimerFinder(FinderBase):
         dow_attribute_name = days_of_week.get(
             self.lookup_datetime.weekday()
         )
-        print(self.lookup_datetime, dow_attribute_name)
 
-        timers = Timer.objects.filter(
-            Q(
-                Q(intervals__start_time=self.lookup_time) |
-                Q(intervals__end_time=self.lookup_time)
-            )
+        interval_query = Q(
+            Q(intervals__start_time=self.lookup_time) |
+            Q(intervals__end_time=self.lookup_time)
         )
 
-        print(timers.query)
-
-        for t in Timer.objects.all():
-            print('Timer')
-            print(t.intervals.all())
-
-        for timer in timers:
-            if timer.weekday_dependent:
-                if not getattr(timer, dow_attribute_name):
-                    continue
-
-            yield timer
-
-        return
-
-        return timers
+        return Timer.objects.filter(
+            Q(
+                Q(weekday_dependent=False),
+                interval_query
+            ) |
+            Q(
+                Q(weekday_dependent=True),
+                Q(
+                    **{
+                        dow_attribute_name: True
+                    }
+                ),
+                interval_query
+            )
+        )
 
