@@ -13,15 +13,15 @@ class TimerFinderTestsHelper(TestCase):
             datetime(year=year, month=month, day=day, hour=hour, minute=minute)
         )
 
-        return finder.find()
+        return [f for f in finder.find()]
 
     def helper_should_find_on_lookup_day(self, day, count=1):
         self.assertEqual(
-            len(TimerFinder(lookup_time=datetime(year=2015, month=4, day=day, hour=10, minute=0)).find()), 1
+            len([f for f in TimerFinder(lookup_datetime=datetime(year=2015, month=4, day=day, hour=10, minute=0)).find()]), 1
         )
-        for i in range(day, day+7):
+        for i in range(day+1, day+7):
             self.assertEqual(
-                len(TimerFinder(lookup_time=datetime(year=2015, month=4, day=i, hour=10, minute=0)).find()), 0
+                len([f for f in TimerFinder(lookup_datetime=datetime(year=2015, month=4, day=i, hour=10, minute=0)).find()]), 0
             )
 
 
@@ -34,6 +34,8 @@ class TimerFinderTestsBase(TimerFinderTestsHelper):
         interval = TimerTimeIntervals()
         interval.start_time = time(hour=10, minute=0)
         interval.end_time = time(hour=12, minute=0)
+        interval.timer = self.timer
+        interval.save()
 
 
 class TimerFinderTests(TimerFinderTestsBase):
@@ -46,7 +48,7 @@ class TimerFinderTests(TimerFinderTestsBase):
 
     def test_should_find_timer_if_we_look_at_the_start_and_end_minutes(self):
         self.assertEqual(
-            len(self.helper_find_timers()),
+            len(self.helper_find_timers(hour=10)),
             1
         )
         self.assertEqual(
@@ -94,7 +96,7 @@ class TimerFinderTests(TimerFinderTestsBase):
         self.timer.dow_saturday = True
         self.timer.save()
 
-        self.helper_should_find_on_lookup_day(19)
+        self.helper_should_find_on_lookup_day(18)
 
     def test_should_find_on_sunday(self):
         self.timer.dow_sunday = True
@@ -107,14 +109,14 @@ class TimerShouldKnowIfItIsStartOrEnd(TimerFinderTestsBase):
     def test_lookup_at_first_minute_and_should_know_that_it_is_start(self):
         r = self.helper_find_timers(hour=10)[0]
         self.assertEqual(
-            r.start(),
+            r.is_start,
             True
         )
 
     def test_lookup_at_last_and_should_know_that_it_is_end(self):
-        r = self.helper_find_timers(hour=10)[0]
+        r = self.helper_find_timers(hour=12)[0]
         self.assertEqual(
-            r.end(),
+            r.is_end,
             True
         )
 
