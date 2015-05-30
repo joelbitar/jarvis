@@ -11,6 +11,13 @@ and add
 
 joel ALL = NOPASSWD: /home/joel/projects/jarvis/node/scripts/restart_daemon.sh
 
+## Python installation ## (grab 3.3.x)
+cd ~
+wget http://www.python.org/ftp/python/3.3.2/Python-3.3.2.tar.bz2
+tar jxf ./Python-3.3.2.tar.bz2
+cd ./Python-3.3.2
+./configure --prefix=/opt/python3.3.2
+make && sudo make install
 
 
 ## Tellcore Installation ##
