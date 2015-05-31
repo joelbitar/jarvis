@@ -32,4 +32,5 @@ class Command(BaseCommand):
         callbacks = []
         callbacks.append(core.register_raw_device_event(raw_event))
 
+        print('Staring to listen...')
         loop.run_forever()
