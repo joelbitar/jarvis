@@ -28,6 +28,7 @@ class RawEventHandler(object):
                     'content-type': 'application/json'
                 }
             )
+            print('success', raw_command)
         except Exception:
             print('COULD NOT send to hub')
             print('... log:')
