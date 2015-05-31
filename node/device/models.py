@@ -46,6 +46,14 @@ class Device(models.Model):
     written_to_conf = models.BooleanField(default=False)
 
     @property
+    def model_string(self):
+        return self.model
+
+    @property
+    def protocol_string(self):
+        return self.protocol
+
+    @property
     def config_id(self):
         return str(self.pk)
 
