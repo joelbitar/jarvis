@@ -16,14 +16,23 @@ class RawEventHandler(object):
             print(raw_command)
             return None
 
-        requests.post(
-            settings.HUB_API_URL + 'event/',
-            json.dumps({
-                'raw': raw_command
-            }),
-            headers={
-                'content-type': 'application/json'
-            }
-        )
+        endpoint_url = settings.HUB_API_URL + 'event/'
+
+        try:
+            requests.post(
+                endpoint_url,
+                json.dumps({
+                    'raw': raw_command
+                }),
+                headers={
+                    'content-type': 'application/json'
+                }
+            )
+        except Exception:
+            print('COULD NOT send to hub')
+            print('... log:')
+            print('API url', settings.HUB_API_URL)
+            print('Endpoint url:', endpoint_url)
+            print('Raw command', raw_command)
 
         return True
