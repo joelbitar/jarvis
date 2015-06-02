@@ -29,9 +29,11 @@ class DeviceCommandView(APIView):
         try:
             device = Device.objects.get(pk=pk)
         except Device.DoesNotExist:
+            print('could not find device id', pk)
             return Response(status=404)
 
         if not device.written_to_conf:
+            print('device not written to conf')
             return Response(
                 {
                     'error': 'not-written-to-conf',
@@ -41,6 +43,7 @@ class DeviceCommandView(APIView):
             )
 
         if not command_name in CommandDispatcher.COMMAND_NAME_WHITE_LIST:
+            print('command not in white list')
             return Response(data={'error': 'command not in list'}, status=400)
 
         # Create command.
