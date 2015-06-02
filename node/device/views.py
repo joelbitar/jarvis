@@ -56,7 +56,7 @@ class DeviceCommandView(APIView):
 
         return Response(
             {},
-            status=202
+            status=201
         )
 
 
