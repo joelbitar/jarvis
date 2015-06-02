@@ -7,7 +7,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         fetcher = ForecastFetcher()
-        fetcher.create_entries()
+        print('Fetching weater')
+        for entry in fetcher.create_entries():
+            print(entry)
+
 
 
 

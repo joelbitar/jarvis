@@ -7,13 +7,21 @@
     </div>
 
     <div layout="row">
-        <i class="wi wi-thermometer"></i>
-        &nbsp;
+        <div layout="column">
+            <div class="temperature">
             <span>
-                {{ forecast.t }}°C
+                {{ forecast.t }}<span class="wi wi-celsius"></span>
             </span>
-        &nbsp;
-        {{ forecast.pit }} mm
+            </div>
+
+        </div>
+        <div layout="column">
+            <div class="percipitation">
+            <span>
+                {{ forecast.pit }}<span>mm</span>
+            </span>
+            </div>
+            </div>
     </div>
 </div>
 

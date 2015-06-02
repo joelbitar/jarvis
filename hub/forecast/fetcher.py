@@ -59,7 +59,7 @@ class ForecastFetcher(object):
         result = self.get_parsed_result()
 
         for data in result['timeseries']:
-            entry = self.create_entry(
+            yield self.create_entry(
                 self.transform_data(
                     data=data,
                     reference_time=result['referenceTime']
