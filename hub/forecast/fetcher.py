@@ -1,5 +1,10 @@
+from time import mktime
+from time import strptime
 import requests
 import json
+import datetime
+from django.utils import timezone
+import pytz
 
 from forecast.models import Forecast
 
@@ -25,8 +30,17 @@ class ForecastFetcher(object):
 
         return response.content.decode('utf-8')
 
+    def parse_time(self, time_string):
+        return timezone.make_aware(
+            datetime.datetime.fromtimestamp(mktime(strptime(time_string, "%Y-%m-%dT%H:%M:%SZ"))),
+            pytz.timezone('GMT')
+        )
+
     def create_entry(self, data):
         # Check if a forecast with this valid time exists
+        data['valid_time'] = self.parse_time(data['valid_time'])
+        data['reference_time'] = self.parse_time(data['reference_time'])
+
         try:
             forecast = Forecast.objects.get(
                 valid_time=data['valid_time']

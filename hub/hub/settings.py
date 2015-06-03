@@ -22,7 +22,7 @@ except ImportError:
         from psycopg2cffi import compat
         compat.register()
     except ImportError:
-        pass
+        print('could not import any postgres db connector')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/

@@ -106,7 +106,6 @@ class NowForecastView(viewsets.generics.ListAPIView):
             )
         )
 
-
     def get(self, request, date=None, *args, **kwargs):
         if date is None:
             date = timezone.now()

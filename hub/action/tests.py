@@ -71,6 +71,8 @@ class TestPropagateSignal(SignalTestsHelper):
 
         device = Device.objects.get(pk=self.device.pk)
 
+        print('Device state', device.state)
+
         self.assertEqual(
             device.state,
             1
