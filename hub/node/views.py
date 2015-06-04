@@ -9,18 +9,19 @@ from node.serializers import NodeSerializer
 from node.serializers import NodeDetailsSerializer
 from node.communicator import NodeCommunicator
 
+from authentication.views import AuthenticationViewBaseClass
 
-class NodeViewSet(viewsets.ModelViewSet):
+class NodeViewSet(AuthenticationViewBaseClass, viewsets.ModelViewSet):
     queryset = Node.objects.all()
     serializer_class = NodeSerializer
 
 
-class NodeDetailView(generics.RetrieveAPIView):
+class NodeDetailView(AuthenticationViewBaseClass, generics.RetrieveAPIView):
     queryset = Node.objects.all()
     serializer_class = NodeDetailsSerializer
 
 
-class NodeCommandViewBase(APIView):
+class NodeCommandViewBase(AuthenticationViewBaseClass, APIView):
     permission_classes = (IsAdminUser, )
 
     def execute_request(self, node):

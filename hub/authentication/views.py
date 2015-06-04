@@ -7,7 +7,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.auth import logout
 
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import SessionAuthentication
+
 from authentication.serializers import AuthModelSerializer
+from authentication.authentication import GetAuthentication
 
 
 # Create your views here.
@@ -59,3 +63,10 @@ class LoginUserView(APIView):
             auth_model_serializer.data
         )
 
+
+class AuthenticationViewBaseClass(object):
+    authentication_classes = (
+        SessionAuthentication,
+        TokenAuthentication,
+        GetAuthentication
+    )

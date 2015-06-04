@@ -7,6 +7,7 @@ from django.conf import settings
 from django.views.generic import View
 from django.http import HttpResponse
 
+from rest_framework.authentication import get_authorization_header
 
 class RestRouterView(View):
     def get(self, request, path):
@@ -24,6 +25,19 @@ class RestRouterView(View):
 
     def patch(self, request, path):
         return self.execute_method(request, path, 'patch')
+
+    def get_auth_token_from_request(self, request):
+        auth = get_authorization_header(request).split()
+
+        if not auth or auth[0].lower() != b'token':
+            return None
+
+        if len(auth) == 1:
+            return None
+        elif len(auth) > 2:
+            return None
+
+        return auth[1]
 
     def execute_method(self, request, path, method):
         url = settings.MAIN_HUB_URL + path
@@ -49,6 +63,11 @@ class RestRouterView(View):
 
         response_status_code = 500
         response_content = {}
+
+        auth_token = self.get_auth_token_from_request(request)
+
+        if auth_token is not None:
+            url += '?token=' + auth_token
 
         try:
             # Get the method form 'requests' lib and execute it

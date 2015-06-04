@@ -3,8 +3,9 @@ from rest_framework.response import Response
 
 from event.receiver import Receiver
 
+from authentication.views import AuthenticationViewBaseClass
 
-class EventReceiverView(APIView):
+class EventReceiverView(AuthenticationViewBaseClass, APIView):
     permission_classes = ()
 
     def post(self, request):

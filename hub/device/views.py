@@ -21,18 +21,19 @@ from device.models import DeviceGroup
 from node.models import RequestLog
 from button.models import Button
 
+from authentication.views import AuthenticationViewBaseClass
 
-class DeviceViewSet(viewsets.ModelViewSet):
+class DeviceViewSet(AuthenticationViewBaseClass, viewsets.ModelViewSet):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
 
 
-class DeviceDetailedView(generics.RetrieveAPIView):
+class DeviceDetailedView(AuthenticationViewBaseClass, generics.RetrieveAPIView):
     queryset = Device.objects.all()
     serializer_class = DeviceDetailSerializer
 
 
-class CommandViewBase(APIView):
+class CommandViewBase(AuthenticationViewBaseClass, APIView):
     def is_in_test_mode(self):
         if hasattr(mail, 'outbox'):
             return True
@@ -170,7 +171,7 @@ class DeviceOptionsView(APIView):
         )
 
 
-class DeviceGroupViewSet(viewsets.ModelViewSet):
+class DeviceGroupViewSet(AuthenticationViewBaseClass, viewsets.ModelViewSet):
     queryset = DeviceGroup.objects.all()
     serializer_class = DeviceGroupSerializer
 

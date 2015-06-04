@@ -21,8 +21,10 @@ from rest_framework.response import Response
 from forecast.models import Forecast
 from forecast.serializers import ForecastSerializer
 
+from authentication.views import AuthenticationViewBaseClass
 
-class NowForecastView(viewsets.generics.ListAPIView):
+
+class NowForecastView(AuthenticationViewBaseClass, viewsets.generics.ListAPIView):
     serializer_class = ForecastSerializer
 
     def serialize_forecast_queryset(self, queryset):
@@ -119,6 +121,8 @@ class NowForecastView(viewsets.generics.ListAPIView):
 
 class ShortForecastView(NowForecastView):
     def get_forecast(self, date):
+        print(self.request.META.get('HTTP_AUTHORIZATION'))
+
         return Response(
             self.serialize_forecasts(
                 Forecast.objects.filter(
@@ -131,7 +135,7 @@ class ShortForecastView(NowForecastView):
         )
 
 
-class LatestForecastView(viewsets.generics.ListAPIView):
+class LatestForecastView(AuthenticationViewBaseClass, viewsets.generics.ListAPIView):
     serializer_class = ForecastSerializer
 
     def get(self, request, *args, **kwargs):
@@ -178,7 +182,7 @@ class DetailedForecastView(NowForecastView):
                 
 
 
-class ForecastViewSet(viewsets.ModelViewSet):
+class ForecastViewSet(AuthenticationViewBaseClass, viewsets.ModelViewSet):
     def get_queryset(self):
         return Forecast.objects.all()
 
