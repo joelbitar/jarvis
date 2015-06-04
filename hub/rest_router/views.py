@@ -34,7 +34,7 @@ class RestRouterView(View):
         header_properties_map = (
             ('HTTP_X_CSRFTOKEN',),
             ('CONTENT_TYPE', 'content-type'),
-            ('COOKIE', 'cookie'),
+        #    ('COOKIE', 'cookie'),
             ('HTTP_AUTHORIZATION', 'Authorization',),
         )
 
