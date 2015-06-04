@@ -5,6 +5,7 @@ from event.receiver import Receiver
 
 from authentication.views import AuthenticationViewBaseClass
 
+
 class EventReceiverView(AuthenticationViewBaseClass, APIView):
     permission_classes = ()
 

@@ -11,7 +11,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.authentication import SessionAuthentication
 
 from authentication.serializers import AuthModelSerializer
-from authentication.authentication import GetAuthentication
+from authentication.getauth import GetAuthentication
 
 
 # Create your views here.
