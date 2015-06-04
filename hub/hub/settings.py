@@ -136,8 +136,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 
-from authentication.getauth import GetAuthentication
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
@@ -158,5 +156,6 @@ try:
     if MAIN_HUB_URL is not None:
         if not MAIN_HUB_URL.endswith('/'):
             raise ValueError('MAIN_HUB_URL does not end with slash, exiting')
+    print('imported secret.py')
 except ImportError:
     print('Could not find secret.py :(')
