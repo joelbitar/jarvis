@@ -40,6 +40,16 @@ app.config(['$httpProvider', function($httpProvider){
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
 }]);
 
+app.config(['$sceDelegateProvider', function($sceDelegateProvider) {
+    $sceDelegateProvider.resourceUrlWhitelist([
+            // Allow same origin resource loads.
+            'self',
+            // Allow loading from our assets domain.  Notice the difference between * and **.
+            django.base_static_url + '**'
+        ]
+    );
+}]);
+
 app.directive("include", function ($http, $templateCache, $compile) {
     return {
         restrict: 'A',
