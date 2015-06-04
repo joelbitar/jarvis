@@ -37,7 +37,7 @@ class RestRouterView(View):
         elif len(auth) > 2:
             return None
 
-        return auth[1]
+        return auth[1].decode('utf-8')
 
     def execute_method(self, request, path, method):
         url = settings.MAIN_HUB_URL + path
