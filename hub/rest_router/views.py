@@ -34,7 +34,7 @@ class RestRouterView(View):
         header_properties_map = (
             ('HTTP_X_CSRFTOKEN',),
             ('CONTENT_TYPE', 'content-type'),
-        #    ('COOKIE', 'cookie'),
+            ('COOKIE', 'cookie'),
             ('HTTP_AUTHORIZATION', 'Authorization',),
         )
 
@@ -49,6 +49,7 @@ class RestRouterView(View):
 
         response_status_code = 500
         response_content = {}
+        response_content_type = 'application/json'
 
         try:
             # Get the method form 'requests' lib and execute it
@@ -62,6 +63,7 @@ class RestRouterView(View):
 
             response_content = response.content.decode('utf-8')
             response_status_code = response.status_code
+            response_content_type = response.headers['Content-Type']
         except requests.ConnectionError:
             # If there was a connection-error, communicate this.
             response_status_code = 502
@@ -73,5 +75,5 @@ class RestRouterView(View):
         return HttpResponse(
             content=response_content,
             status=response_status_code,
-            content_type='application/json',
+            content_type=response_content_type,
         )

@@ -8,14 +8,14 @@ jarvis_auth.factory('User', ['$rootScope', 'Restangular',
             },
             loadCurrent : function(){
                 console.log('load Current from Server');
-                Restangular.one('/api/auth/currentuser').one().then(
+                Restangular.one('auth/current').get().then(
                     function(user){
                         // If the user fetched was not a proper one with a pk, it is to be considered false.
-                        if(data.pk == undefined){
-                            data = false;
+                        if(user.pk == undefined){
+                            user = false;
                         }
 
-                        User.data.current = data;
+                        User.data.current = user;
                         $rootScope.$broadcast('loggedIn');
                     }
                 )
@@ -34,7 +34,7 @@ jarvis_auth.config(['$routeProvider', function($routeProvider){
     )
 }]);
 
-jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http','$location', 'User', function($scope, $rootScope, $http, $location, User) {
+jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http', '$cookies', '$location', 'User', function($scope, $rootScope, $http, $cookies, $location, User) {
     // This object will be filled by the form
 
     // Set current user to nothing and lazy logout the user if we reach this.
@@ -44,6 +44,13 @@ jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http','$loc
     }
 
     $scope.login_disabled = false;
+
+
+    if($cookies.auth_token !== null && $cookies.auth_token !== undefined){
+        $http.defaults.headers.common['Authorization'] = 'Token ' + $cookies.auth_token;
+        console.log(User);
+        User.loadCurrent();
+    }
 
     // Register the login() function
     $scope.login = function(){
@@ -62,6 +69,8 @@ jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http','$loc
 
                 $http.defaults.headers.common['Authorization'] = 'Token ' + user.auth_token;
 
+                // Set cookie.
+                $cookies.auth_token = user.auth_token;
             }
         ).error(function(){
                 // Error: authentication failed

@@ -15,10 +15,13 @@
     <div layout="row">
         <div layout="row">
             <h2 class="md-toolbar-tools">
+                <md-button ng-click="toggleSidenav('left')" hide-gt-sm class="md-icon-button">
+                    <md-icon aria-label="Menu" md-svg-icon="https://s3-us-west-2.amazonaws.com/s.cdpn.io/68133/menu.svg"></md-icon>
+                </md-button>
                 <a href="#/" class="logo">YARVIS</a>
             </h2>
         </div>
-        <div layout="row">
+        <div layout="row" hide show-gt-sm>
             <div class="md-toolbar-tools">
                 <md-button ng-href="#/">Översikt</md-button>
                 <md-button ng-href="#/weather/">Väder</md-button>
@@ -28,7 +31,7 @@
                 <md-button ng-href="#/devices/">Enheter</md-button>
             </div>
         </div>
-        <div layout="row" flex layout-align="end center">
+        <div layout="row" flex layout-align="end center" hide show-gt-sm>
             <div>
                 <md-button ng-href="#/settings/">Inställningar</md-button>
             </div>
@@ -52,6 +55,7 @@
 <script src="{% static "js/angularjs/angular-animate.min.js" %}"></script>
 <script src="{% static "js/angularjs/angular-aria.min.js" %}"></script>
 <script src="{% static "js/angularjs/angular-route.min.js" %}"></script>
+<script src="{% static "js/angularjs/angular-cookies.min.js" %}"></script>
 
 <script src="{% static "js/lib/lodash.min.js" %}"></script>
 <script src="{% static "js/lib/restangular.min.js" %}"></script>

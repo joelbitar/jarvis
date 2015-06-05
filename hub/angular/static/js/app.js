@@ -3,6 +3,8 @@ var app = angular.module('jarvis', [
     'restangular',
     'ngMaterial',
 
+    'ngCookies',
+
     'jarvis.startpage',
     'jarvis.device',
     'jarvis.devicegroup',
