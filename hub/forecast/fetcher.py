@@ -70,7 +70,10 @@ class ForecastFetcher(object):
         return data
 
     def create_entries(self):
+        print('create entries')
         result = self.get_parsed_result()
+
+        print('result', result)
 
         for data in result['timeseries']:
             yield self.create_entry(

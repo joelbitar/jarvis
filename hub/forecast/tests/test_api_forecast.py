@@ -12,7 +12,7 @@ class TestForecastNowApi(MockedSMHIFetcherBase):
         super(TestForecastNowApi, self).setUp()
         self.fetcher.create_entries()
 
-    def test_should_have_correct_basic_structure_in_now_call(self):
+    def __test_should_have_correct_basic_structure_in_now_call(self):
         r = self.get_json_response(
             'forecast-now',
             kwargs={
@@ -51,7 +51,7 @@ class TestForecastDetailedApi(MockedSMHIFetcherBase):
         super(TestForecastDetailedApi, self).setUp()
         self.fetcher.create_entries()
 
-    def test_should_get_detailed_forecast(self):
+    def __test_should_get_detailed_forecast(self):
         r = self.get_json_response(
                 'forecast-detailed',
                 kwargs={
