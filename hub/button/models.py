@@ -47,6 +47,9 @@ class Button(models.Model):
 
         return log_entry
 
+    def __unicode__(self):
+        return self.name
+
 
 class ButtonLog(models.Model):
     method = models.PositiveSmallIntegerField(

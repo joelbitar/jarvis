@@ -22,6 +22,9 @@ class Action(models.Model):
     action_devices = models.ManyToManyField(Device, blank=True)
     action_device_groups = models.ManyToManyField(DeviceGroup, blank=True)
 
+    def __unicode__(self):
+        return self.name
+
 """
 class ActionHistory(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -101,6 +104,9 @@ class ActionButton(ActionUnitBase):
             self.execute_method(group.devices.all(), method_key)
 
         return True
+
+    def __unicode__(self):
+        return self.button.name
 
 
 
