@@ -25,6 +25,9 @@ class Action(models.Model):
     def __unicode__(self):
         return self.name
 
+    def __str__(self):
+        return self.name
+
 """
 class ActionHistory(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -106,6 +109,9 @@ class ActionButton(ActionUnitBase):
         return True
 
     def __unicode__(self):
+        return self.button.name
+
+    def __str__(self):
         return self.button.name
 
 
