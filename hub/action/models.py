@@ -19,8 +19,8 @@ class Action(models.Model):
     # condition_timer =...
 
     # Gets controlled
-    action_devices = models.ManyToManyField(Device)
-    action_device_groups = models.ManyToManyField(DeviceGroup)
+    action_devices = models.ManyToManyField(Device, blank=True)
+    action_device_groups = models.ManyToManyField(DeviceGroup, blank=True)
 
 """
 class ActionHistory(models.Model):
