@@ -3,3 +3,4 @@ db.sqlite3
 .idea
 *.swp
 secret.py
+settings_*.py

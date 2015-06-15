@@ -15,6 +15,18 @@ class UserAPITests(TestCase):
             email='test@example.com'
         )
 
+    def test_should_always_lower_case_of_username_when_saving(self):
+        u = User.objects.create_user(
+            username='TESTuser',
+            password='test',
+            email='test'
+        )
+
+        self.assertEqual(
+            u.username,
+            'testuser'
+        )
+
     def test_get_logged_in_user_should_yield_empty_response_for_not_logged_in_client(self):
         c = Client()
         r = c.get(
@@ -57,6 +69,23 @@ class UserAPITests(TestCase):
                     'auth_token': self.user.auth_token.key,
                 }
             )
+        )
+
+    def test_should_be_able_to_login_with_caps_lock(self):
+        c = Client()
+
+        r = c.post(
+            reverse('login'),
+            data=json.dumps({
+                'username': 'TeSt',
+                'password': 'test'
+            }),
+            content_type='application/json'
+        )
+
+        self.assertEqual(
+            r.status_code,
+            200
         )
 
     def test_should_be_able_to_login_with_ajax_api(self):

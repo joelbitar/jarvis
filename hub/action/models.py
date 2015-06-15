@@ -19,8 +19,14 @@ class Action(models.Model):
     # condition_timer =...
 
     # Gets controlled
-    action_devices = models.ManyToManyField(Device)
-    action_device_groups = models.ManyToManyField(DeviceGroup)
+    action_devices = models.ManyToManyField(Device, blank=True)
+    action_device_groups = models.ManyToManyField(DeviceGroup, blank=True)
+
+    def __unicode__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
 
 """
 class ActionHistory(models.Model):
@@ -101,6 +107,12 @@ class ActionButton(ActionUnitBase):
             self.execute_method(group.devices.all(), method_key)
 
         return True
+
+    def __unicode__(self):
+        return self.button.name
+
+    def __str__(self):
+        return self.button.name
 
 
 

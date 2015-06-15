@@ -39,7 +39,7 @@ class LoginUserView(APIView):
     def post(self, request):
         try:
             user = User.objects.get(
-                username=request.data['username']
+                username=request.data['username'].lower()
             )
         except User.DoesNotExist:
             return Response(status=404)
