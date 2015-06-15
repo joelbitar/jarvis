@@ -8,14 +8,14 @@ class Sensor(models.Model):
     name = models.CharField(max_length=56, default='', blank=True)
 
     humidity = models.SmallIntegerField(null=True, default=None, blank=True)
-    temperature = models.SmallIntegerField(null=True, default=None, blank=True)
+    temperature = models.DecimalField(max_digits=3, decimal_places=1, null=True, default=None, blank=True)
 
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def log(self, signal):
         self.humidity = int(signal.humidity)
-        self.temperature = int(signal.humidity)
+        self.temperature = int(signal.temp)
         self.save()
 
         return True

@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 
 from sensor.models import Sensor, SensorLog
 from device.tests import HasLoggedInClientBase
-
+from event.models import Signal, Sender
 import json
 
 
@@ -78,6 +78,32 @@ class SensorModelTests(TestCase):
                 SensorLog.objects.all().count(),
                 i
             )
+
+    def test_after_logging_on_sensor_should_have_correct_values_for_each_parameter(self):
+        sensor = Sensor(
+            name='testSensor'
+        )
+        sensor.save()
+
+        signal = Signal.objects.create(
+            temp="21.5",
+            humidity="65"
+        )
+
+        sensor.log(
+            signal=signal
+        )
+
+        self.assertEqual(
+            str(sensor.humidity),
+            signal.humidity
+        )
+
+        self.assertEqual(
+            str(sensor.temperature),
+            signal.temp
+
+        )
 
 
 class TestSensorAPI(HasLoggedInClientBase):

@@ -116,6 +116,7 @@ class Receiver(object):
 
         # Propagate event
         signal.propagate()
+        # Log event and in logging
         unit.log(signal=signal)
 
         return signal, unit
