@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 
 from django.dispatch import receiver
@@ -15,7 +17,7 @@ class Sensor(models.Model):
 
     def log(self, signal):
         self.humidity = int(signal.humidity)
-        self.temperature = int(signal.temp)
+        self.temperature = Decimal(signal.temp)
         self.save()
 
         return True
