@@ -1,24 +1,55 @@
 var jarvis_auth = angular.module('jarvis.auth', ['ngRoute', 'restangular']);
 
-jarvis_auth.factory('User', ['$rootScope', 'Restangular',
-    function($rootScope, Restangular){
+jarvis_auth.run(['$rootScope', '$cookies', '$http', 'User', function($rootScope, $cookies, $http, User){
+    // Sets Auth token if found in cookies and loads user with Username and that.
+    if(User.getAuthCookie() !== undefined){
+        User.setAuthHeaders();
+        User.loadCurrent();
+    }
+}]);
+
+jarvis_auth.factory('User', ['$rootScope', '$cookies', '$http', 'Restangular',
+    function($rootScope, $cookies, $http, Restangular){
         var User = {
             data : {
                 current : false
             },
             loadCurrent : function(){
-                console.log('load Current from Server');
                 Restangular.one('auth/current').get().then(
                     function(user){
                         // If the user fetched was not a proper one with a pk, it is to be considered false.
-                        if(user.pk == undefined){
-                            user = false;
-                        }
+                        // Otherwise, set it to the user we got.
+                        User.data.current = (function(u){
+                            if(!u.pk){
+                                return false;
+                            }
+                            return u;
+                        }(user));
 
-                        User.data.current = user;
                         $rootScope.$broadcast('loggedIn');
                     }
                 )
+            },
+            setAuthCookie : function (auth_token){
+                $cookies.auth_token = auth_token;
+                return this;
+            },
+            getAuthCookie : function (){
+                if($cookies.auth_token !== null && $cookies.auth_token !== undefined){
+                    return $cookies.auth_token;
+                }
+
+                return undefined;
+            },
+            /*
+            * Set Authentication token, defaults to using token found in cookies.
+            */
+            setAuthHeaders : function (auth_token){
+                if(auth_token === undefined){
+                    auth_token = $cookies.auth_token;
+                }
+
+                $http.defaults.headers.common['Authorization'] = 'Token ' + auth_token;
             }
         };
 
@@ -46,11 +77,9 @@ jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http', '$co
     $scope.login_disabled = false;
 
 
-    if($cookies.auth_token !== null && $cookies.auth_token !== undefined){
-        $http.defaults.headers.common['Authorization'] = 'Token ' + $cookies.auth_token;
-        console.log(User);
-        User.loadCurrent();
-    }
+    $rootScope.$on('loggedIn', function(){
+        console.log('user has logged in!')
+    });
 
     // Register the login() function
     $scope.login = function(){
@@ -61,16 +90,13 @@ jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http', '$co
             }
         ).success(function(user){
                 // No error: authentication OK
-                console.log('success login')
                 $scope.login_disabled = false;
                 User.data.current = user;
                 $rootScope.$broadcast('loggedIn');
                 $location.url('/');
 
-                $http.defaults.headers.common['Authorization'] = 'Token ' + user.auth_token;
-
-                // Set cookie.
-                $cookies.auth_token = user.auth_token;
+                // Sets auth Cookie then set auth headers
+                User.setAuthCookie(user.auth_token).setAuthHeaders();
             }
         ).error(function(){
                 // Error: authentication failed
@@ -89,6 +115,7 @@ jarvis_auth.controller('LogoutController', ['$scope', '$rootScope', '$location',
             User.data.current = false;
             delete $http.defaults.headers.common['Authorization'];
             $rootScope.$broadcast('loggedOut');
+            console.log('send user to login');
             $location.url('/login');
         }
     )
