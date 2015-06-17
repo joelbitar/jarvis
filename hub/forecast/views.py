@@ -144,6 +144,7 @@ class LatestForecastView(viewsets.generics.ListAPIView):
             ).data
         )
 
+
 class DetailedForecastView(NowForecastView):
     def get_forecast(self, date):
         current_day = datetime.datetime(date.year, date.month, date.day) 
@@ -172,10 +173,6 @@ class DetailedForecastView(NowForecastView):
                 #self.get_grouped_forecasts(12, current_day + timedelta(days=9), 2),
             )
         )
-
-
-        
-                
 
 
 class ForecastViewSet(viewsets.ModelViewSet):
