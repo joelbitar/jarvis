@@ -42,6 +42,16 @@ class SensorLog(models.Model):
     sensor = models.ForeignKey(Sensor, related_name='logs')
     created = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return "{sensor.name} - {temp}c {humidity}%".format(
+            sensor=self.sensor,
+            temp=self.temperature,
+            humidity=self.humidity
+        )
+
+    class Meta:
+        ordering = ['-id']
+
 
 @receiver(post_save, sender=Sensor)
 def log_sensor(sender, instance, **kwargs):
