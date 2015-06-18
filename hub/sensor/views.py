@@ -1,3 +1,7 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from rest_framework import viewsets
 from rest_framework import generics
 from sensor.models import Sensor
@@ -17,7 +21,7 @@ class SensorViewSet(viewsets.ModelViewSet):
 class SensorLogView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         return Response(
-            SensorLogSerializer(SensorLog.objects.all(), many=True).data
+            SensorLogSerializer(SensorLog.objects.all()[:10], many=True).data
         )
 
 
