@@ -9,12 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="744.09448819"
-   height="1052.3622047"
+   width="1000"
+   height="1000"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="logo-white.svg">
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="/home/joel/projects/jarvis/hub/material/static/images/logo/logo-180.png"
+   inkscape:export-xdpi="16.200001"
+   inkscape:export-ydpi="16.200001">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -24,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="323.71322"
-     inkscape:cy="623.15294"
+     inkscape:zoom="0.35"
+     inkscape:cx="80.405692"
+     inkscape:cy="249.46055"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -52,21 +55,31 @@
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(0,-52.362183)">
     <path
        style="color:#000000;fill:#673ab7;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       d="m 325.26339,316.02679 c -20.00031,0.50671 -38.12177,8.5747 -51.65625,21.40625 l 53.90625,57.15625 54.25,-56.375 c -14.065,-13.72973 -33.29208,-22.1875 -54.5,-22.1875 -0.67339,0 -1.33069,-0.017 -2,0 z"
+       d="M 491.97459,77.750767 C 369.38162,80.856673 258.30514,130.30985 175.34482,208.96153 L 505.76609,559.30386 838.29439,213.75025 C 752.08222,129.59312 634.22879,77.750767 504.23369,77.750767 c -4.12757,0 -8.15653,-0.104203 -12.2591,0 z"
        id="path3778"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/joel/projects/jarvis/hub/material/static/images/logo/logo-180.png"
+       inkscape:export-xdpi="103.90356"
+       inkscape:export-ydpi="103.90356" />
     <path
        style="color:#000000;fill:#673ab7;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       d="m 267.48214,343.90179 c -11.38701,13.56191 -18.25,31.06215 -18.25,50.15625 0,41.41366 32.26945,75.29142 73.03125,77.875 l 0,-68.75 -54.78125,-59.28125 z"
+       d="M 137.80131,248.61209 C 68.004012,331.74055 25.936944,439.00921 25.936944,556.04753 c 0,253.84726 197.797336,461.50287 447.648986,477.33907 l 0,-421.40689 -335.78462,-363.36762 z"
        id="path3776"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/joel/projects/jarvis/hub/material/static/images/logo/logo-180.png"
+       inkscape:export-xdpi="103.90356"
+       inkscape:export-ydpi="103.90356" />
     <path
        style="color:#000000;fill:#673ab7;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       d="m 387.88839,344.90179 -55.28125,58.40625 0,68.59375 c 40.6049,-2.74589 72.6875,-36.54254 72.6875,-77.84375 0,-18.62448 -6.51798,-35.74069 -17.40625,-49.15625 z"
+       d="m 875.83791,254.74164 -338.84941,358.00427 0,420.44909 c 248.88993,-16.8311 445.54196,-223.98947 445.54196,-477.14747 0,-114.15975 -39.95231,-219.07449 -106.69255,-301.30589 z"
        id="path2989"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/joel/projects/jarvis/hub/material/static/images/logo/logo-180.png"
+       inkscape:export-xdpi="103.90356"
+       inkscape:export-ydpi="103.90356" />
   </g>
 </svg>
