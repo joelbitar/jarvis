@@ -1,4 +1,4 @@
-<div layout="column" layout-align="start center">
+<div layout="column" layout-margin layout-align="start center">
     <div layout="row" ng-if="forecast.valid_time">
         {{ forecast.valid_time | date : "HH:mm" }}
     </div>
@@ -6,22 +6,29 @@
         {{ forecast.valid_time__min | date : "HH" }} - {{ forecast.valid_time__max | date : "HH" }}
     </div>
 
-    <div layout="row">
-        <div layout="column">
-            <div class="temperature">
+    <div layout="column">
+        <div layout="row">
+            <div layout="column">
+                <weather-icon forecast="forecast"></weather-icon>
+            </div>
+            <div layout="column">
+                <div class="temperature">
             <span>
                 {{ forecast.t }}<span class="wi wi-celsius"></span>
             </span>
-            </div>
+                </div>
 
+            </div>
         </div>
-        <div layout="column">
-            <div class="percipitation">
-            <span>
-                {{ forecast.pit }}<span>mm</span>
-            </span>
+        <div layout="row">
+            <div layout="column">
+                <div class="percipitation">
+                    <span>
+                        {{ forecast.pit }}<span>mm</span>
+                    </span>
+                </div>
             </div>
-            </div>
+        </div>
     </div>
 </div>
 
