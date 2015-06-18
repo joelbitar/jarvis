@@ -152,6 +152,9 @@ TEST_MODE = None
 MAIN_HUB_URL = None
 #MAIN_HUB_URL = 'http://127.0.0.1:9999/'
 
+VERSION = "0.1"
+AUTO_GENERATE_VERSION = False
+
 try:
     from hub.secret import *
     if MAIN_HUB_URL is not None:
