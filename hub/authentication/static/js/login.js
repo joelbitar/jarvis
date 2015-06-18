@@ -2,19 +2,20 @@ var jarvis_auth = angular.module('jarvis.auth', ['ngRoute', 'restangular']);
 
 jarvis_auth.run(['$rootScope', '$cookies', '$http', 'User', function($rootScope, $cookies, $http, User){
     // Sets Auth token if found in cookies and loads user with Username and that.
-    if(User.getAuthCookie() !== undefined){
-        User.setAuthHeaders();
+    if(User.setAuthHeaders()){
+        //There was a auth token. Set it to header and load current user.
         User.loadCurrent();
     }
 }]);
 
-jarvis_auth.factory('User', ['$rootScope', '$cookies', '$http', 'Restangular',
-    function($rootScope, $cookies, $http, Restangular){
+jarvis_auth.factory('User', ['$rootScope', '$cookies', '$http', '$localStorage', 'Restangular',
+    function($rootScope, $cookies, $http, $localStorage, Restangular){
         var User = {
             data : {
                 current : false
             },
             loadCurrent : function(){
+                // Uses the Auth token header to fetch current so no need to set Auth token or headers.
                 Restangular.one('auth/current').get().then(
                     function(user){
                         // If the user fetched was not a proper one with a pk, it is to be considered false.
@@ -30,15 +31,22 @@ jarvis_auth.factory('User', ['$rootScope', '$cookies', '$http', 'Restangular',
                     }
                 )
             },
-            setAuthCookie : function (auth_token){
-                $cookies.auth_token = auth_token;
+            getLocalStorage : function(){
+                return $localStorage.$default({
+                    'auth_token' : undefined
+                })
+            },
+            setAuthToken : function (auth_token){
+                var localStorage = User.getLocalStorage();
+                User.getLocalStorage().auth_token = auth_token;
                 return this;
             },
-            getAuthCookie : function (){
-                if($cookies.auth_token !== null && $cookies.auth_token !== undefined){
-                    return $cookies.auth_token;
-                }
+            getAuthToken : function (){
+                var localStorage = User.getLocalStorage();
 
+                if(localStorage.auth_token !== null && localStorage.auth_token !== undefined){
+                    return localStorage.auth_token;
+                }
                 return undefined;
             },
             /*
@@ -46,10 +54,20 @@ jarvis_auth.factory('User', ['$rootScope', '$cookies', '$http', 'Restangular',
             */
             setAuthHeaders : function (auth_token){
                 if(auth_token === undefined){
-                    auth_token = $cookies.auth_token;
+                    auth_token = User.getAuthToken();
+                }
+
+                if(auth_token === undefined){
+                    return false;
                 }
 
                 $http.defaults.headers.common['Authorization'] = 'Token ' + auth_token;
+                return true;
+            },
+            clearUser : function(){
+                User.data.current = false;
+                User.getLocalStorage().auth_token = undefined;
+                delete $http.defaults.headers.common['Authorization'];
             }
         };
 
@@ -96,7 +114,7 @@ jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http', '$co
                 $location.url('/');
 
                 // Sets auth Cookie then set auth headers
-                User.setAuthCookie(user.auth_token).setAuthHeaders();
+                User.setAuthToken(user.auth_token).setAuthHeaders();
             }
         ).error(function(){
                 // Error: authentication failed
@@ -112,10 +130,9 @@ jarvis_auth.controller('LoginController', ['$scope', '$rootScope', '$http', '$co
 jarvis_auth.controller('LogoutController', ['$scope', '$rootScope', '$location', '$http', 'User', function($scope, $rootScope, $location, $http, User){
     $http.get(api_url('auth/logout/'), {}).success(
         function(response){
-            User.data.current = false;
-            delete $http.defaults.headers.common['Authorization'];
+            // Delete current user
+            User.clearUser();
             $rootScope.$broadcast('loggedOut');
-            console.log('send user to login');
             $location.url('/login');
         }
     )

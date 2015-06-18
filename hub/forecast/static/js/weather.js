@@ -70,15 +70,12 @@ var jarvis_weather = angular.module('jarvis.weather', ['ngRoute'])
                     }
                 }
 
-                console.log(forecast, valid_time, valid_time.getHours());
-
                 return icon_parts.join('-')
             }
         }
     }])
     .controller('WeatherIconController', ['$scope', 'WeatherIcon', function($scope, WeatherIcon){
         $scope.weather_icon_class = WeatherIcon.icon($scope.forecast);
-        console.log($scope.weather_icon_class);
     }])
     .directive('weatherIcon', function(){
         return {

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{% static "fonts/weather-icons/css/weather-icons.min.css" %}">
     <title>YARVIS - Yet Another Rather Very Intelligent System</title>
     <meta name="viewport" content="initial-scale=1" />
+    <link rel="icon" type="image/png" href="{% static 'images/logo/logo.png' %}">
 </head>
 <body layout="column">
 <md-toolbar>
@@ -52,16 +53,24 @@
 </script>
 <!-- Angular Material Dependencies -->
 <script src="{% static "js/angularjs/angular.min.js" %}"></script>
+
+{# AngularJS Core team modules #}
 <script src="{% static "js/angularjs/angular-animate.min.js" %}"></script>
 <script src="{% static "js/angularjs/angular-aria.min.js" %}"></script>
 <script src="{% static "js/angularjs/angular-route.min.js" %}"></script>
 <script src="{% static "js/angularjs/angular-cookies.min.js" %}"></script>
 
+{# AngularJS Third party modules #}
+<script src="{% static "js/lib/ngStorage.min.js" %}"></script>
+
+{# Third party helpers and libraries #}
 <script src="{% static "js/lib/lodash.min.js" %}"></script>
 <script src="{% static "js/lib/restangular.min.js" %}"></script>
 
+{# UI Libraries #}
 <script src="{% static "js/angular-material.min.js" %}"></script>
 
+{# YARVIS controllers #}
 <script src="{% static "js/startpage.js" %}"></script>
 <script src="{% static "js/device.js" %}"></script>
 <script src="{% static "js/node.js" %}"></script>
