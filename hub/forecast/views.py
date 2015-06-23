@@ -108,7 +108,17 @@ class NowForecastView(viewsets.generics.ListAPIView):
 
     def get(self, request, date=None, *args, **kwargs):
         if date is None:
-            date = timezone.now()
+            now = datetime.datetime.now()
+
+            d = datetime.datetime(
+                year=now.year,
+                month=now.month,
+                day=now.day,
+                hour=now.hour,
+                minute=0,
+                second=0,
+            )
+            date = timezone.make_aware(d)
         else:
             date = timezone.make_aware(
                 datetime.datetime.fromtimestamp(mktime(strptime(date, "%Y-%m-%dT%H:%M:%S")))
@@ -119,6 +129,7 @@ class NowForecastView(viewsets.generics.ListAPIView):
 
 class ShortForecastView(NowForecastView):
     def get_forecast(self, date):
+        print(date)
         return Response(
             self.serialize_forecasts(
                 Forecast.objects.filter(
