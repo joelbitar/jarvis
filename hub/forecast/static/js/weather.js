@@ -7,7 +7,7 @@ var jarvis_weather = angular.module('jarvis.weather', ['ngRoute'])
     .factory('WeatherIcon', [function(){
         return {
             'icon' : function (forecast){
-                var valid_time, icon_parts = ['wi'];
+                var valid_time, icon_parts = [], night_time = false;
 
                 if(forecast.valid_time !== undefined){
                     valid_time = new Date(forecast.valid_time);
@@ -16,6 +16,10 @@ var jarvis_weather = angular.module('jarvis.weather', ['ngRoute'])
                 }
 
                 if(valid_time.getHours() > 20 || valid_time.getHours() < 7){
+                    night_time = true;
+                }
+
+                if(night_time){
                     // At night
                     icon_parts.push('night-alt')
                 }else{
@@ -59,16 +63,33 @@ var jarvis_weather = angular.module('jarvis.weather', ['ngRoute'])
                         }
                     }())
                 }else{
-                    // No rain, lets see if it is cloudy
+                    // No rain, lets see if we have special cases
                     if(forecast.tstm > 50){
                         // Thunder
                         icon_parts.push('lightning');
+                    }else if(forecast.tcc >= 4){
+                        // Cloudy
+                        icon_parts.push('cloudy');
                     }else{
-                        if(forecast.tcc >= 4){
-                            icon_parts.push('cloudy')
+                        // Special cases.
+                        if(night_time){
+                            if(forecast.tcc >= 2){
+                                // the partly cloudy does not conform with the other ones at all.
+                                icon_parts = ['night-partly-cloudy']
+                            }else{
+                                icon_parts = ['night-clear'];
+                            }
+                        }else{
+                            if(forecast.tcc >= 2){
+                                icon_parts.push('sunny-overcast')
+                            }else{
+                                icon_parts.push('sunny');
+                            }
                         }
                     }
                 }
+
+                icon_parts.unshift('wi');
 
                 return icon_parts.join('-')
             }
