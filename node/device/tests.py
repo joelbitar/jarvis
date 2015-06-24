@@ -299,7 +299,7 @@ class DeviceRestCallTests(BasicDeviceTest):
             }
         )
 
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 201)
 
         self.assertEqual(
             DeviceCommand.objects.all().count(),
@@ -340,7 +340,7 @@ class DeviceRestCallTests(BasicDeviceTest):
             content_type='application/json'
         )
 
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 201)
 
         self.assertEqual(
             DeviceCommand.objects.all().count(),
