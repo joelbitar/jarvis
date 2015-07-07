@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sensor',
             name='identifier',
-            field=models.CharField(default=None, blank=True, max_length=4),
+            field=models.CharField(default=None, blank=True, max_length=4, null=True),
         ),
     ]
