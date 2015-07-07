@@ -11,6 +11,7 @@ class Sender(models.Model):
     house = models.CharField(max_length=256, blank=True, null=True, default=None)
     unit = models.CharField(max_length=256, blank=True, null=True, default=None)
     code = models.CharField(max_length=256, blank=True, null=True, default=None)
+    identifier = models.CharField(max_length=256, blank=True, null=True, default=None)
 
     created = models.DateTimeField(auto_now_add=True)
 
@@ -47,9 +48,12 @@ class Signal(models.Model):
     code = models.CharField(max_length=256, blank=True, null=True, default=None)
     group = models.CharField(max_length=256, blank=True, null=True, default=None)
     method = models.CharField(max_length=256, blank=True, null=True, default=None)
+    # named 'class' in event.
     event_class = models.CharField(max_length=256, blank=True, null=True, default=None)
     humidity = models.CharField(max_length=256, blank=True, null=True, default=None)
     temp = models.CharField(max_length=256, blank=True, null=True, default=None)
+    # named 'id' in events.
+    identifier = models.CharField(max_length=8, blank=True, null=True, default=None)
 
     sender = models.ForeignKey(Sender, null=True, blank=True, default=None)
 

@@ -122,6 +122,55 @@ class CreateSpecificModelInstanceTests(SignalTestsHelper):
             SensorLog.objects.all().count()
         )
 
+    def test_create_sensor_log_event_should_add_id_to_event(self):
+        self.helper_parse_event(
+            'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:44;temp:21.1;',
+        )
+
+        self.assertEqual(
+            Signal.objects.all().count(),
+            1
+        )
+
+        signal = Signal.objects.all()[0]
+
+        self.assertEqual(
+            signal.identifier,
+            "135"
+        )
+
+        sensor = Sensor.objects.get(pk=1)
+
+        self.assertEqual(
+            sensor.identifier,
+            "135"
+        )
+
+    def test_create_sensor_log_event_should_not_set_id_as_pk(self):
+        self.helper_parse_event(
+            'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:44;temp:21.1;',
+        )
+        signal = Signal.objects.all()[0]
+
+        self.assertEqual(
+            signal.pk,
+            1
+        )
+
+    def test_different_ids_should_create_multiple_sensors(self):
+        self.helper_parse_event(
+            'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:44;temp:21.1;',
+            'class:sensor;protocol:fineoffset;id:155;model:temperaturehumidity;humidity:44;temp:21.1;',
+            'class:sensor;protocol:fineoffset;id:155;model:temperaturehumidity;humidity:44;temp:21.1;',
+            'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:44;temp:21.1;',
+            'class:sensor;protocol:fineoffset;id:155;model:temperaturehumidity;humidity:44;temp:21.1;',
+        )
+
+        self.assertEqual(
+            Sensor.objects.all().count(),
+            2
+        )
+
 
 # Create your tests here.
 class TestParseRawSignal(TestCase):

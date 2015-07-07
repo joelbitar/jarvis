@@ -23,7 +23,7 @@ class Receiver(object):
         sender_identifiers = {}
 
         # Fetch attributes from the event and try to get
-        for attribute_name in ['house', 'unit', 'code']:
+        for attribute_name in ['house', 'unit', 'code', 'identifier']:
             event_attribute_value = getattr(event, attribute_name)
             sender_identifiers[attribute_name] = event_attribute_value
 
@@ -42,23 +42,26 @@ class Receiver(object):
 
             return sender
 
-    def get_or_create_unit(self, event):
+    def get_or_create_unit(self, signal):
         """
         Returns a Button or Sensor event
         :return:
         """
-        unit = event.sender.get_unit()
+        unit = signal.sender.get_unit()
+
         if unit is not None:
             return unit
 
-        if event.event_class == 'command' and event.method in ['turnoff', 'turnon']:
+        if signal.event_class == 'command' and signal.method in ['turnoff', 'turnon']:
             unit = Button()
 
-        if event.event_class == 'sensor' and event.model in ['temperaturehumidity']:
+        if signal.event_class == 'sensor' and signal.model in ['temperaturehumidity']:
             unit = Sensor()
+            # Add specific stuff for sensors.
+            unit.identifier = signal.identifier
 
         unit.save()
-        unit.senders.add(event.sender)
+        unit.senders.add(signal.sender)
         unit.save()
 
         return unit
@@ -66,6 +69,9 @@ class Receiver(object):
     def sanitize_key(self, key):
         if key == 'class':
             key = 'event_class'
+
+        if key == 'id':
+            key = 'identifier'
 
         return key
 

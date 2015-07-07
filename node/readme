@@ -15,10 +15,10 @@ joel ALL = NOPASSWD: /home/joel/projects/jarvis/node/scripts/restart_daemon.sh
 apt-get install libssl-dev
 ## Python installation ## (grab 3.3.x)
 cd ~
-wget http://www.python.org/ftp/python/3.3.2/Python-3.3.2.tar.bz2
-tar jxf ./Python-3.3.2.tar.bz2
-cd ./Python-3.3.2
-./configure --prefix=/opt/python3.3.2
+wget https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tar.xz
+tar -xvf Python-3.4.3.tar.xz
+cd Python-3.4.3
+./configure --prefix=/opt/python3.4.3
 make && sudo make install
 
 # Install easy_install.

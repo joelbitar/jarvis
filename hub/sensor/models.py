@@ -15,6 +15,8 @@ class Sensor(models.Model):
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    identifier = models.CharField(max_length=4, default=None, blank=True, null=True)
+
     def log(self, signal):
         self.humidity = int(signal.humidity)
         self.temperature = Decimal(signal.temp)

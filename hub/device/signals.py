@@ -25,7 +25,11 @@ def reset_written_to_conf_on_node(sender, instance, **kwargs):
     if instance.node is None:
         return None
 
-    old_device = Device.objects.get(pk=instance.pk)
+    try:
+        old_device = Device.objects.get(pk=instance.pk)
+    except Device.DoesNotExist:
+        # There was no old device, this can happen when we load fixtures for instance
+        return None
 
     if old_device.node != instance.node:
         instance.written_to_conf_on_node = False

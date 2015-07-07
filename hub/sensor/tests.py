@@ -105,7 +105,6 @@ class SensorModelTests(TestCase):
 
         )
 
-
 class TestSensorAPI(HasLoggedInClientBase):
     def setUp(self):
         super(TestSensorAPI, self).setUp()
