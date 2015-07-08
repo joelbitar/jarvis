@@ -424,8 +424,7 @@ class TestReadSignalsTXTFileAndCheckSignalModelContent(TestCase):
 
                 key, value = keyvalue.split(':')
 
-                if key == 'class':
-                    key = 'event_class'
+                key = receiver.sanitize_key(key)
 
                 self.assertEqual(
                     str(getattr(event, key)),
