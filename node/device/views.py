@@ -17,6 +17,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
     serializer_class = DeviceSerializer
 
 
+# Should NOT be used anymore. we should only use ZeroMQ
 class DeviceCommandView(APIView):
     def get(self, request, pk, format=None):
         return Response()

@@ -10,6 +10,8 @@ import json
 
 from device.models import DeviceCommand
 
+from device.message.command import DeviceCommandMessage
+
 
 class BasicDeviceTest(TestCase):
     def setUp(self):
@@ -444,6 +446,86 @@ class RestartTelldusRESTTest(BasicDeviceTest):
             )
 
         self.assertEqual(response.status_code, 200, response.content)
+
+
+class DeviceCommandMessageDecodeTests(BasicDeviceTest):
+    def test_should_be_able_to_decode_json_and_have_properties_of_command(self):
+        msg = '{"device_id": 1, "command_name": "test", "command_data" : {}}'
+
+        devcommsg = DeviceCommandMessage(msg)
+
+        devcommsg.decode()
+
+        self.assertEqual(
+            devcommsg.device.pk,
+            self.device.pk
+        )
+
+        self.assertEqual(
+            devcommsg.command_name,
+            "test"
+        )
+
+    def test_if_command_data_is_empty_should_be_a_empty_dict(self):
+        msg = '{"device_id": 1, "command_name": "test"}'
+
+        devcommsg = DeviceCommandMessage(msg)
+
+        devcommsg.decode()
+
+        self.assertEqual(
+            devcommsg.command_data,
+            {}
+        )
+
+    def test_should_be_able_to_execute_command(self):
+        msg = '{"device_id": 1, "command_name": "on"}'
+        devcommsg = DeviceCommandMessage(msg)
+        devcommsg.decode()
+
+        self.assertTrue(
+            devcommsg.execute()
+        )
+
+
+class DeviceCommandMessageEncodeTests(BasicDeviceTest):
+    def test_should_encode_basic_data(self):
+        dcm = DeviceCommandMessage()
+        dcm.device = self.device
+        dcm.command_name = 'on'
+
+        dcm.encode()
+
+        self.assertJSONEqual(
+            dcm.message_string,
+            json.dumps(
+                {
+                    'device_id': self.device.pk,
+                    'command_name': 'on',
+                    'command_data': {}
+                }
+            )
+        )
+
+    def test_should_be_able_to_set_arbitrary_command_data(self):
+        dcm = DeviceCommandMessage()
+        dcm.device = self.device
+        dcm.command_name = 'dim'
+        dcm.set_command_data('dimlevel', 50)
+        dcm.encode()
+
+        self.assertJSONEqual(
+            dcm.message_string,
+            json.dumps(
+                {
+                    'device_id': self.device.pk,
+                    'command_name': 'dim',
+                    'command_data': {
+                        'dimlevel': 50
+                    }
+                }
+            )
+        )
 
 
 

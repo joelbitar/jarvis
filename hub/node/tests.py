@@ -19,7 +19,8 @@ class NodeTestsBase(HasLoggedInClientBase):
         self.node = Node.objects.create(
             name='TestNode',
             address='http://example.com/api',
-            auth_token='asefasefasefasef'
+            auth_token='asefasefasefasef',
+            api_port=8001
         )
 
 
@@ -88,7 +89,9 @@ class NodeAdminTests(HasLoggedInClientBase):
         super(NodeAdminTests, self).setUp()
 
         self.node = Node(
-            name='TestNode'
+            name='TestNode',
+            address='testadress',
+            api_port=8001
         )
 
         self.node.save()
@@ -174,7 +177,7 @@ class NodeAdminTests(HasLoggedInClientBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/conf/write/'
+            'http://' + self.node.address + ':' + str(self.node.api_port) + '/conf/write/'
         )
 
         self.assertIsNotNone(
@@ -204,7 +207,7 @@ class NodeAdminTests(HasLoggedInClientBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/conf/restart-daemon/'
+            'http://' + self.node.address + ':' + str(self.node.api_port) + '/conf/restart-daemon/'
         )
 
         self.assertIsNotNone(

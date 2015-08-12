@@ -139,6 +139,8 @@ HUB_HOST = '127.0.0.1'
 HUB_URL = 'http://' + HUB_HOST + ':8099'
 HUB_API_URL = HUB_URL + '/api/'
 
+NODE_NAME = 'testnode'
+
 try:
     from node.secret import *
     if HUB_URL is not None:

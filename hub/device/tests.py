@@ -70,6 +70,7 @@ class DeviceModelTestsBase(HasLoggedInClientBase):
         n = Node()
         n.address = 'address'
         n.name = 'Test Node'
+        n.api_port = 8001
         n.save()
 
         d = Device()
@@ -107,7 +108,8 @@ class DeviceBasicModelAttributesTests(DeviceModelTestsBase):
 
         n2 = Node(
             address='http://127.0.0.2',
-            name='Other node'
+            name='Other node',
+            api_port=8001
         )
 
         n2.save()
@@ -125,6 +127,7 @@ class DeviceModelTests(TestCase):
         n = Node()
         n.address = 'address'
         n.name = 'Test Node'
+        n.api_port = 8001
         n.save()
 
         d = Device()
@@ -141,6 +144,7 @@ class DeviceModelTests(TestCase):
         n = Node()
         n.address = 'address'
         n.name = 'Test Node'
+        n.api_port = 8001
         n.save()
 
         d = Device()
@@ -161,6 +165,7 @@ class DevicePropertySetterTests(TestCase):
         n = Node()
         n.address = 'address'
         n.name = 'Test Node'
+        n.api_port = 8001
         n.save()
 
         self.node = n
@@ -660,7 +665,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/devices/'
+            'http://' + self.node.address + ':' + str(self.node.api_port) + '/devices/'
         )
 
         self.assertIsNotNone(
@@ -716,7 +721,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/devices/{node_device_pk}/'.format(node_device_pk=self.device.node_device_pk)
+            'http://' + self.node.address + ':' + str(self.node.api_port) + '/devices/{node_device_pk}/'.format(node_device_pk=self.device.node_device_pk)
         )
 
         self.assertIsNotNone(
@@ -759,7 +764,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/devices/{node_device_pk}/'.format(node_device_pk=self.device.node_device_pk)
+            'http://' + self.node.address + ':' + str(self.node.api_port) + '/devices/{node_device_pk}/'.format(node_device_pk=self.device.node_device_pk)
         )
 
         self.assertIsNotNone(
@@ -802,30 +807,10 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         self.assertTrue(nd.learn())
 
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
         )
 
-        r = RequestLog.objects.get(pk=1)
-        self.assertEqual(
-            r.url,
-            self.node.address + '/devices/{node_device_pk}/execute/'.format(node_device_pk=self.device.node_device_pk)
-        )
-
-        self.assertIsNotNone(
-            r.response_data,
-        )
-
-        self.assertEqual(
-            r.response_status_code,
-            200
-        )
-
-        device = self.refresh(self.device)
-
-        self.assertTrue(
-            device.learnt_on_node
-        )
 
     def test_send_off_command(self):
         nd = NodeDeviceCommunicator(device=self.device)
@@ -839,23 +824,8 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         self.assertTrue(nd.turn_off())
 
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
-        )
-
-        r = RequestLog.objects.get(pk=1)
-        self.assertEqual(
-            r.url,
-            self.node.address + '/devices/{node_device_pk}/execute/'.format(node_device_pk=self.device.node_device_pk)
-        )
-
-        self.assertIsNotNone(
-            r.response_data,
-        )
-
-        self.assertEqual(
-            r.response_status_code,
-            200
         )
 
     def test_send_on_command(self):
@@ -870,24 +840,10 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         nd.get_response = fake_get_response
         self.assertTrue(nd.turn_on())
 
+        # Does not send requests anymore.
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
-        )
-
-        r = RequestLog.objects.get(pk=1)
-        self.assertEqual(
-            r.url,
-            self.node.address + '/devices/{node_device_pk}/execute/'.format(node_device_pk=self.device.node_device_pk)
-        )
-
-        self.assertIsNotNone(
-            r.response_data,
-        )
-
-        self.assertEqual(
-            r.response_status_code,
-            200
         )
 
 
@@ -1127,7 +1083,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.assertEqual(response.status_code, 200)
         
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
         )
 
@@ -1144,7 +1100,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
         )
 
@@ -1156,7 +1112,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
         )
 
@@ -1180,7 +1136,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
         )
 

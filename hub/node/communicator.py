@@ -1,11 +1,16 @@
 import json
+import zmq
+
 import requests
 from django.conf import settings
 from datetime import datetime
 from django.core import mail
 from django.utils import timezone
 
+
 from node.models import RequestLog
+
+from node import zmqclient
 
 
 class CommunicatorBase(object):
@@ -103,7 +108,10 @@ class NodeCommunicator(CommunicatorBase):
 
     @property
     def node_url(self):
-        return self.node.address
+        return 'http://{address}:{port}'.format(
+            address=self.node.address,
+            port=self.node.api_port
+        )
 
     def build_url(self, path, **kwargs):
         return '{node_url}/{path}'.format(
@@ -173,23 +181,28 @@ class NodeDeviceCommunicator(NodeCommunicator):
         return self.get_device_url() + 'execute/'
 
     def execute_device_command(self, command_name, command_data=None):
+        # Setting socket and context if there is none.
+        if zmqclient.socket is None:
+            zmqclient.context = zmq.Context()
+            zmqclient.socket = zmqclient.context.socket(zmq.PUB)
+            zmqclient.socket.connect("tcp://localhost:5556")
+
+            # In case this is a new socket we need to sleep.
+            from time import sleep
+            sleep(0.5)
+
+        # compile and send message
         data = {
-            'command': command_name,
+            'command_name': command_name,
+            'command_data': command_data or {},
+            'device_id': self.device.node_device_pk
         }
 
-        # Setting the 'data' key in request data to include all command data
-        if command_data is not None:
-            data['data'] = command_data
-
-        print(self.get_device_command_url(), command_data, data)
-
-        status_code, json_response = self.execute_request(
-            url=self.get_device_command_url(),
-            method='post',
-            data=data
+        zmqclient.socket.send_string(
+            self.device.node.name + json.dumps(data)
         )
+        return True
 
-        return status_code in [200, 201]
 
     def serialize_device(self):
         return {

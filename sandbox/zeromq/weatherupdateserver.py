@@ -14,7 +14,7 @@ socket.bind("tcp://*:5556")
 print("gonna run for eeeva")
 while True:
     zipcode = randrange(1, 100000)
-    zipcode = "44160"
+    zipcode = 44160
     temperature = randrange(-80, 135)
     relhumidity = randrange(10, 60)
 
