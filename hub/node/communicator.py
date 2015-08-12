@@ -177,16 +177,26 @@ class NodeDeviceCommunicator(NodeCommunicator):
             )
         )
 
-    def execute_device_command(self, command_name, command_data=None):
+    def get_socket(self):
         # Setting socket and context if there is none.
         if zmqclient.socket is None:
+            print('Binding ZeroMQ...')
             zmqclient.context = zmq.Context()
             zmqclient.socket = zmqclient.context.socket(zmq.PUB)
-            zmqclient.socket.connect("tcp://localhost:5556")
+            zmqclient.socket.bind("tcp://*:5556")
 
             # In case this is a new socket we need to sleep.
             from time import sleep
             sleep(0.5)
+
+        return zmqclient.socket
+
+
+    def execute_device_command(self, command_name, command_data=None):
+        try:
+            socket = self.get_socket()
+        except Exception:
+            return False
 
         # compile and send message
         data = {
@@ -195,7 +205,7 @@ class NodeDeviceCommunicator(NodeCommunicator):
             'device_id': self.device.node_device_pk
         }
 
-        zmqclient.socket.send_string(
+        socket.send_string(
             self.device.node.name + json.dumps(data)
         )
         return True
