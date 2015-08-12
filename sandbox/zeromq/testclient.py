@@ -13,7 +13,7 @@ context = zmq.Context()
 socket = context.socket(zmq.SUB)
 
 print("Collecting updates from weather server…")
-socket.bind("tcp://*:5556")
+socket.connect("tcp://localhost:5556")
 
 filter = 'testnode'
 socket.setsockopt_string(zmq.SUBSCRIBE, filter)

@@ -7,7 +7,6 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         )
 }])
 .controller('StartpageDeviceController', ['$scope', '$rootScope', 'Restangular',  function($scope, $rootScope, Restangular) {
-    console.log('test');
         // Update device without setting everything again.
         $scope.updateDevice = function(device){
             $scope.devices.forEach(function(d){
@@ -18,7 +17,7 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         };
 
         $scope.$on('refresh-devices', function(){
-            Restangular.all('devices').getList().then(function(devices){
+            Restangular.all('devices/').getList().then(function(devices){
                 if($scope.devices !== undefined){
                     devices.forEach($scope.updateDevice);
                 }else{
@@ -30,7 +29,7 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
 }]).controller('StartpageForecastController', ['$scope', 'Restangular',  function($scope, Restangular) {
         console.log('startpageforecastctrl');
 
-        Restangular.all('forecast/short').getList().then(function(forecasts){
+        Restangular.all('forecast/short/').getList().then(function(forecasts){
             $scope.forecasts = [];
 
             forecasts.forEach(function(forecast_group){
@@ -39,15 +38,16 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         });
 }])
 .controller('StartpageSensorController', ['$scope', 'Restangular',  function($scope, Restangular) {
-        Restangular.all('sensors').getList().then(function(sensors){
+        Restangular.all('sensors/').getList().then(function(sensors){
             $scope.sensors = sensors;
         });
 }]).controller('StartpageDeviceGroupController', ['$scope', '$rootScope', 'Restangular',  function($scope, $rootScope, Restangular) {
         $scope.$on('refresh-groups', function() {
-            Restangular.all('groups').getList().then(function (groups) {
+            Restangular.all('groups/').getList().then(function (groups) {
                 $scope.groups = groups;
             });
         });
+        // Load groups on first run (aka refresh)
         $scope.$broadcast('refresh-groups');
 }]);
 
