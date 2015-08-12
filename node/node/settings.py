@@ -135,7 +135,8 @@ TELLSTICK_DEVICE_NODE = '/dev/tellstick'
 TELLSTICK_CONFIG_PATH = '/etc/tellstick.conf'
 TELLSTICK_RESTART_DAEMON_SCRIPT_PATH = os.path.join(BASE_DIR, 'scripts', 'restart_daemon.sh')
 
-HUB_URL = 'http://127.0.0.1:8099'
+HUB_HOST = '127.0.0.1'
+HUB_URL = 'http://' + HUB_HOST + ':8099'
 HUB_API_URL = HUB_URL + '/api/'
 
 try:
