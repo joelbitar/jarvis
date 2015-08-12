@@ -4,10 +4,6 @@ from django.core.management.base import BaseCommand, CommandError
 import zmq
 
 from django.conf import settings
-from time import sleep
-from device.models import Device
-from device.commands import CommandDispatcher
-from device.models import DeviceCommand
 from device.message.command import DeviceCommandMessage
 
 

@@ -177,9 +177,6 @@ class NodeDeviceCommunicator(NodeCommunicator):
             )
         )
 
-    def get_device_command_url(self):
-        return self.get_device_url() + 'execute/'
-
     def execute_device_command(self, command_name, command_data=None):
         # Setting socket and context if there is none.
         if zmqclient.socket is None:
@@ -202,7 +199,6 @@ class NodeDeviceCommunicator(NodeCommunicator):
             self.device.node.name + json.dumps(data)
         )
         return True
-
 
     def serialize_device(self):
         return {
