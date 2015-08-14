@@ -3,7 +3,8 @@ from django.db import models
 
 class Node(models.Model):
     name = models.CharField(max_length=56)
-    address = models.CharField(max_length=128)
+    address = models.CharField(max_length=128, help_text="Host name or IP adress")
+    api_port = models.PositiveSmallIntegerField(help_text="Node API port, where the web application is running")
     auth_token = models.CharField(max_length=40, null=True, default=None)
 
     def __str__(self):

@@ -20,7 +20,8 @@ class TestPropagateSignal(SignalTestsHelper):
 
         self.node = Node(
             name="Test Node",
-            address="http://127.0.0.1"
+            address="http://127.0.0.1",
+            api_port=8001
         )
 
         self.node.save()

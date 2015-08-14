@@ -23,6 +23,8 @@ MAIN_HUB_URL = "http://localhost:9999/api/"
 * Summary of set up
 * Configuration
 * Dependencies
+libzmq3
+libzmq3-dev
 * Database configuration
 * How to run tests
 Run runtests.sh

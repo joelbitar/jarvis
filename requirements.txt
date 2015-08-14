@@ -6,3 +6,4 @@ tellcore-py==1.1.0
 django-extensions
 beautifulsoup4==4.3.2
 pytz==2015.4
+pyzmq==14.7.0

@@ -36,6 +36,9 @@ class CommandDispatcher(BaseCommand):
         return self.__device
 
     def execute_command(self, command_name, **kwargs):
+        """
+        Executes command on command-line, with the 'tdtool' commandline utility.
+        """
         if command_name not in self.COMMAND_NAME_WHITE_LIST:
             raise CommandError('command name "{command_name}" is not in white list'.format(command_name=command_name))
 
@@ -53,7 +56,12 @@ class CommandDispatcher(BaseCommand):
         command += [str(self.device.pk)]
 
         if self.send_commands:
-            call(command)
+            try:
+                call(command)
+            except FileNotFoundError:
+                print('Could not find executable file')
+                return False
+
         else:
             print('Does not call command, in test mode. $ ' + " ".join(command))
 
