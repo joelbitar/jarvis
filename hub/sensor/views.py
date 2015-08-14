@@ -14,7 +14,7 @@ from sensor.serializers import SensorLogSerializer
 
 
 class SensorViewSet(viewsets.ModelViewSet):
-    queryset = Sensor.objects.all()
+    queryset = Sensor.objects.filter(active=True)
     serializer_class = SensorSerializer
 
 

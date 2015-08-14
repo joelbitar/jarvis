@@ -183,6 +183,13 @@ class NodeDeviceCommunicator(NodeCommunicator):
             'command_data': command_data or {},
             'device_id': self.device.node_device_pk
         }
+        node_name = self.device.node.name
+
+        # if node name is testnode, do not continue.
+        if node_name == 'testnode':
+            print('Node name is "testnode" does NOT send message', data)
+            return True
+
         # Setting socket and context if there is none.
         try:
             if zmqclient.socket is None:
@@ -197,7 +204,7 @@ class NodeDeviceCommunicator(NodeCommunicator):
 
         # compile and send message
             zmqclient.socket.send_string(
-                self.device.node.name + json.dumps(data)
+                node_name + json.dumps(data)
             )
         except Exception:
             print('ERROR while trying to publish message', data)

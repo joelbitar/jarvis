@@ -17,6 +17,8 @@ class Sensor(models.Model):
 
     identifier = models.CharField(max_length=4, default=None, blank=True, null=True)
 
+    active = models.BooleanField(default=False, help_text="If we should bother with the sensor")
+
     def log(self, signal):
         self.humidity = int(signal.humidity)
         self.temperature = Decimal(signal.temp)

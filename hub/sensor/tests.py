@@ -110,7 +110,22 @@ class TestSensorAPI(HasLoggedInClientBase):
         super(TestSensorAPI, self).setUp()
 
         self.sensor = Sensor.objects.create(
-            name='test'
+            name='test',
+            active=True
+        )
+
+    def test_should_only_see_active_sensors(self):
+        inactive_sensor = Sensor.objects.create(
+            name='test',
+        )
+
+        r = self.logged_in_client.get(
+            reverse('sensor-list')
+        )
+
+        self.assertEqual(
+            len(json.loads(r.content.decode('utf-8'))),
+            1
         )
 
     def test_should_have_log_entries_in_json(self):
