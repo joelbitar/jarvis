@@ -52,7 +52,7 @@ class Receiver(object):
         if unit is not None:
             return unit
 
-        if signal.event_class == 'command' and signal.method in ['turnoff', 'turnon']:
+        if signal.event_class == 'command' and signal.method in ['turnoff', 'turnon', 'learn']:
             unit = Button()
 
         if signal.event_class == 'sensor' and signal.model in ['temperaturehumidity']:
