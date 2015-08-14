@@ -51,7 +51,7 @@ class Button(models.Model):
         return self.name
 
     def __str__(self):
-        return self.name
+        return self.name or self.pk
 
 
 class ButtonLog(models.Model):
