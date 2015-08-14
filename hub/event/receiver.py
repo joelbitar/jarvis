@@ -60,6 +60,10 @@ class Receiver(object):
             # Add specific stuff for sensors.
             unit.identifier = signal.identifier
 
+        if unit is None:
+            print('could not identify unit', signal.raw_command)
+            print('class', signal.event_class, 'method', signal.method)
+
         unit.save()
         unit.senders.add(signal.sender)
         unit.save()
