@@ -75,6 +75,7 @@ class ActionButton(ActionUnitBase):
             method = getattr(communicator, {
                 Button.METHOD_ON: 'turn_on',
                 Button.METHOD_OFF: 'turn_off',
+                Button.METHOD_LEARN: 'learn',
             }.get(method_key))
 
             method.__call__()

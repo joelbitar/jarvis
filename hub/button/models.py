@@ -8,6 +8,7 @@ class Button(models.Model):
     """
     METHOD_ON = 1
     METHOD_OFF = 2
+    METHOD_LEARN = 3
 
     BUTTON_TYPE_BUTTON = 1
     BUTTON_TYPE_MOTION_SENSOR = 2
@@ -31,6 +32,7 @@ class Button(models.Model):
         return {
             'turnon' : Button.METHOD_ON,
             'turnoff' : Button.METHOD_OFF,
+            'learn' : Button.METHOD_LEARN
         }.get(signal.method)
 
     def log(self, signal):
@@ -58,7 +60,8 @@ class ButtonLog(models.Model):
     method = models.PositiveSmallIntegerField(
         choices=(
             (Button.METHOD_ON, 'on'),
-            (Button.METHOD_OFF, 'off')
+            (Button.METHOD_OFF, 'off'),
+            (Button.METHOD_LEARN, 'learn')
         )
     )
     created = models.DateTimeField(auto_now_add=True)
