@@ -1,5 +1,8 @@
 import json
-import zmq
+try:
+    import zmq
+except ImportError:
+    print('Could not import zmq library, this is NOT a requirement in external hubs')
 
 import requests
 from django.conf import settings
