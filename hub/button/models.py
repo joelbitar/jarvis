@@ -48,10 +48,10 @@ class Button(models.Model):
         return log_entry
 
     def __unicode__(self):
-        return self.name
+        return self.name or '-- unnamed --'
 
     def __str__(self):
-        return self.name or str(self.pk)
+        return self.name or '-- unnamed -- {pk}'.format(pk=self.pk)
 
 
 class ButtonLog(models.Model):
