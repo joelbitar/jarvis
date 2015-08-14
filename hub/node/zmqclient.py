@@ -1,7 +1,5 @@
 __author__ = 'joel'
-import zmq
-from django.conf import settings
-from time import sleep
+# Just a placeholder for the socket and context.
 
 socket = None
 context = None
