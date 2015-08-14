@@ -52,13 +52,17 @@ class Receiver(object):
         if unit is not None:
             return unit
 
-        if signal.event_class == 'command' and signal.method in ['turnoff', 'turnon']:
+        if signal.event_class == 'command' and signal.method in ['turnoff', 'turnon', 'learn']:
             unit = Button()
 
         if signal.event_class == 'sensor' and signal.model in ['temperaturehumidity']:
             unit = Sensor()
             # Add specific stuff for sensors.
             unit.identifier = signal.identifier
+
+        if unit is None:
+            print('could not identify unit', signal.raw_command)
+            print('class', signal.event_class, 'method', signal.method)
 
         unit.save()
         unit.senders.add(signal.sender)

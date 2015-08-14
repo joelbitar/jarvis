@@ -295,6 +295,8 @@ class NodeDeviceCommunicator(NodeCommunicator):
         return True
 
     def learn(self):
+        print('Learn is ignored, is not executed')
+        return True
         success = self.execute_device_command(
             'learn'
         )

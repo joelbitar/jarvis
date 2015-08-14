@@ -26,11 +26,12 @@ class Command(BaseCommand):
         loop = asyncio.get_event_loop()
         dispatcher = td.AsyncioCallbackDispatcher(loop)
 
-        raw_event = RawEventHandler(send_to_hub=not options['dry'])
+        raw_event_handler = RawEventHandler(send_to_hub=not options['dry'])
+        raw_event_handler.connect()
 
         core = td.TelldusCore(callback_dispatcher=dispatcher)
         callbacks = []
-        callbacks.append(core.register_raw_device_event(raw_event))
+        callbacks.append(core.register_raw_device_event(raw_event_handler))
 
         print('Staring to listen...')
         loop.run_forever()

@@ -16,6 +16,9 @@ from device.management.raw_event_handler import RawEventHandler
 class Command(BaseCommand):
     args = "<events>"
     def handle(self, *args, **options):
+        event_handler = RawEventHandler()
+        event_handler.connect()
+
         if len(args) == 0:
             test_args = [
                 'class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;', # from internet.
@@ -28,6 +31,5 @@ class Command(BaseCommand):
                 args = test_args
 
         for arg in args:
-            event_handler = RawEventHandler()
             event_handler(arg)
 
