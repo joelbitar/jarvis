@@ -199,7 +199,7 @@ class NodeDeviceCommunicator(NodeCommunicator):
                 print('Binding ZeroMQ...')
                 zmqclient.context = zmq.Context()
                 zmqclient.socket = zmqclient.context.socket(zmq.PUB)
-                zmqclient.socket.bind("tcp://*:5556")
+                zmqclient.socket.bind("tcp://*:5557")
 
                 # In case this is a new socket we need to sleep.
                 from time import sleep

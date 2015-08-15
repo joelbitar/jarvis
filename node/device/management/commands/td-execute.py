@@ -15,7 +15,7 @@ class Command(BaseCommand):
         socket = context.socket(zmq.SUB)
 
         #socket.bind("tcp://*:5556")
-        socket.connect("tcp://{address}:5556".format(
+        socket.connect("tcp://{address}:5557".format(
             address=settings.HUB_HOST
         ))
 
