@@ -33,5 +33,5 @@ class Command(BaseCommand):
         callbacks = []
         callbacks.append(core.register_raw_device_event(raw_event_handler))
 
-        print('Staring to listen...')
+        print('Staring to listen to events on Telldus unit')
         loop.run_forever()
