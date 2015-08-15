@@ -208,7 +208,7 @@ class NodeDeviceCommunicator(NodeCommunicator):
                 sleep(0.5)
 
         # compile and send message
-            zmqclient.socket.send_string(
+            zmqclient.sockets[node_name].send_string(
                 'command:' + json.dumps(data)
             )
         except Exception as e:
