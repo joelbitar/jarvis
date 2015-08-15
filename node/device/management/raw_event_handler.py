@@ -30,10 +30,9 @@ class RawEventHandler(object):
                 sleep(0.5)
 
                 self.__socket = zmqclient.socket
-            except Exception:
+            except Exception as e:
                 print('error while connecting')
                 return False
-
 
         return True
 
@@ -54,8 +53,9 @@ class RawEventHandler(object):
             self.socket.send_string(
                 "raw_event:" + raw_command
             )
-        except Exception:
+        except Exception as e:
             print('ERROR while trying to publish message', raw_command)
+            print(e)
             return False
 
         return True
