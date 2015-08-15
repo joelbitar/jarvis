@@ -209,7 +209,8 @@ class NodeDeviceCommunicator(NodeCommunicator):
             zmqclient.socket.send_string(
                 node_name + json.dumps(data)
             )
-        except Exception:
+        except Exception as e:
+            print(e)
             print('ERROR while trying to publish message', data)
             return False
         return True

@@ -25,7 +25,3 @@ class Command(BaseCommand):
             complete_message = socket.recv_string()
             event_message = complete_message[message_prefix_length:]
             signal, unit = receiver.act_on_raw_event_string(event_message)
-            print('signal', signal, 'unit', unit)
-
-
-
