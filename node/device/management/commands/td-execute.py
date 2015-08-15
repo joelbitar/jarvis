@@ -19,10 +19,12 @@ class Command(BaseCommand):
             address=settings.HUB_HOST
         ))
 
-        print('Listening to messages, node name:', settings.NODE_NAME)
-        socket.setsockopt_string(zmq.SUBSCRIBE, settings.NODE_NAME)
+        node_name = settings.NODE_NAME
 
-        message_prefix_length = len(settings.NODE_NAME)
+        print('Listening to messages, node name:', node_name)
+        socket.setsockopt_string(zmq.SUBSCRIBE, node_name)
+
+        message_prefix_length = len(node_name)
 
         while True:
             complete_message = socket.recv_string()
