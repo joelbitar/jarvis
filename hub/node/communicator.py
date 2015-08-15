@@ -208,6 +208,7 @@ class NodeDeviceCommunicator(NodeCommunicator):
                 sleep(0.5)
 
         # compile and send message
+            print(zmqclient.sockets)
             zmqclient.sockets[node_name].send_string(
                 'command:' + json.dumps(data)
             )
