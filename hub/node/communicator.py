@@ -194,28 +194,33 @@ class NodeDeviceCommunicator(NodeCommunicator):
             return True
 
         # Setting socket and context if there is none.
-        try:
+        #try:
+        if True:
             if zmqclient.sockets.get(node_name, None) is None:
                 print('Connecting socket ZeroMQ... ', self.device.node.address)
-                zmqclient.contexts[node_name] = zmq.Context()
-                zmqclient.sockets[node_name] = zmqclient.context[node_name].socket(zmq.PUB)
-                zmqclient.sockets[node_name].connect("tcp://{node_adress}:5557".format(
+                context = zmq.Context()
+                socket = context.socket(zmq.PUB)
+                socket.connect("tcp://{node_adress}:5557".format(
                     self.device.node.address
                 ))
+                zmqclient.sockets[node_name] = socket
 
                 # In case this is a new socket we need to sleep.
                 from time import sleep
                 sleep(0.5)
+            else:
+                socket = zmqclient.sockets.get(node_name)
 
         # compile and send message
             print(zmqclient.sockets)
-            zmqclient.sockets[node_name].send_string(
+            socket.send_string(
                 'command:' + json.dumps(data)
             )
-        except Exception as e:
-            print(e)
-            print('ERROR while trying to publish message', data)
-            return False
+        #except Exception as e:
+        #    print(e)
+        #    print('ERROR while trying to publish message', data)
+        #    return False
+
         return True
 
     def serialize_device(self):
