@@ -32,6 +32,7 @@ class RawEventHandler(object):
                 self.__socket = zmqclient.socket
             except Exception as e:
                 print('error while connecting')
+                print(e)
                 return False
 
         return True
