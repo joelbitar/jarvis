@@ -195,11 +195,13 @@ class NodeDeviceCommunicator(NodeCommunicator):
 
         # Setting socket and context if there is none.
         try:
-            if zmqclient.socket is None:
-                print('Binding ZeroMQ...')
-                zmqclient.context = zmq.Context()
-                zmqclient.socket = zmqclient.context.socket(zmq.PUB)
-                zmqclient.socket.bind("tcp://*:5557")
+            if zmqclient.sockets.get(node_name, None) is None:
+                print('Connecting socket ZeroMQ... ', self.device.node.address)
+                zmqclient.contexts[node_name] = zmq.Context()
+                zmqclient.sockets[node_name] = zmqclient.context.socket(zmq.PUB)
+                zmqclient.sockets[node_name].connect("tcp://{node_adress}:5557".format(
+                    self.device.node.address
+                ))
 
                 # In case this is a new socket we need to sleep.
                 from time import sleep
@@ -207,7 +209,7 @@ class NodeDeviceCommunicator(NodeCommunicator):
 
         # compile and send message
             zmqclient.socket.send_string(
-                node_name + json.dumps(data)
+                'command:' + json.dumps(data)
             )
         except Exception as e:
             print(e)

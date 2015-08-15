@@ -14,14 +14,16 @@ class Command(BaseCommand):
         context = zmq.Context()
         socket = context.socket(zmq.SUB)
 
-        #socket.bind("tcp://*:5556")
-        socket.connect("tcp://{address}:5557".format(
-            address=settings.HUB_HOST
-        ))
+        socket.bind("tcp://*:5556")
 
-        node_name = settings.NODE_NAME
+        #socket.connect("tcp://{address}:5557".format(
+        #    address=settings.HUB_HOST
+        #))
 
-        print('Listening to messages, node name:', node_name)
+        #node_name = settings.NODE_NAME
+        node_name = "command:"
+
+        print('Listening to messages, filter:', node_name)
         socket.setsockopt_string(zmq.SUBSCRIBE, node_name)
 
         message_prefix_length = len(node_name)
