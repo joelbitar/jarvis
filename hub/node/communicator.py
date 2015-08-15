@@ -200,8 +200,8 @@ class NodeDeviceCommunicator(NodeCommunicator):
                 print('Connecting socket ZeroMQ... ', self.device.node.address)
                 context = zmq.Context()
                 socket = context.socket(zmq.PUB)
-                socket.connect("tcp://{node_adress}:5557".format(
-                    self.device.node.address
+                socket.connect("tcp://{node_address}:5557".format(
+                    node_address=self.device.node.address
                 ))
                 zmqclient.sockets[node_name] = socket
 
