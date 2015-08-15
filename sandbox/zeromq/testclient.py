@@ -15,10 +15,10 @@ socket = context.socket(zmq.SUB)
 print("Collecting updates from weather server…")
 socket.connect("tcp://localhost:5556")
 
-filter = 'testnode'
-socket.setsockopt_string(zmq.SUBSCRIBE, filter)
+filter_name = input('Filter: ') 
+socket.setsockopt_string(zmq.SUBSCRIBE, filter_name)
 
 # Process 5 updates
 while True:
-    string = socket.recv_string()[len(filter) + 1:]
+    string = socket.recv_string()
     print('received', string)

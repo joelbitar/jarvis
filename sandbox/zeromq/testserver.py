@@ -10,21 +10,15 @@ from random import randrange
 
 context = zmq.Context()
 socket = context.socket(zmq.PUB)
-socket.connect("tcp://localhost:5556")
-
+socket.bind("tcp://*:5556")
 
 print("gonna run for eeeva")
 
+sleep(1)
+
 socket.send_string("%s %s" % ("testnode", '{}'))
 
-for i in range(100):
-    socket.send_string("%s %s" % ("testnode", '{"t" : "'+ str(i) + '"}'))
-    sleep(0.001)
-
-
-"""
+filter_name = input('Filter: ')
 while True:
-    zipcode = 'testnode'
-    socket.send_string("%s %s" % (zipcode, input("msg: ")))
-    print("sent")
-    """
+    input_string = input("msg: ") or "test"
+    socket.send_string("%s %s" % (filter_name, input_string))
