@@ -23,7 +23,7 @@ class RawEventHandler(object):
             try:
                 zmqclient.context = zmq.Context()
                 zmqclient.socket = zmqclient.context.socket(zmq.PUB)
-                zmqclient.socket.bind("tcp://" + settings.HUB_HOST + ":5556")
+                zmqclient.socket.connect("tcp://" + settings.HUB_HOST + ":5556")
 
                 # In case this is a new socket we need to sleep.
                 from time import sleep

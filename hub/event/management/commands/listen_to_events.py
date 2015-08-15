@@ -7,14 +7,14 @@ from event.receiver import Receiver
 
 
 class Command(BaseCommand):
-    help = 'Listen to commands'
+    help = 'Listen incomming events from all nodes'
 
     def handle(self, *args, **options):
         context = zmq.Context()
         socket = context.socket(zmq.SUB)
 
         #socket.bind("tcp://*:5556")
-        socket.connect("tcp://localhost:5556")
+        socket.bind("tcp://localhost:5556")
 
         socket.setsockopt_string(zmq.SUBSCRIBE, "raw_event:")
         message_prefix_length = 10
