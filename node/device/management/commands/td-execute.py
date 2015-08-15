@@ -13,7 +13,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         context = zmq.Context()
         socket = context.socket(zmq.SUB)
-
         socket.bind("tcp://*:5557")
 
         #socket.connect("tcp://{address}:5557".format(
