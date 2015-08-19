@@ -53,7 +53,12 @@ class Button(models.Model):
         return self.name or '-- unnamed --'
 
     def __str__(self):
-        return self.name or '-- unnamed -- {pk}'.format(pk=self.pk)
+        s = self.name or '-- unnamed -- {pk}'.format(pk=self.pk)
+
+        if self.archived:
+            s += " (arkiverad)"
+
+        return s
 
 
 class ButtonLog(models.Model):
