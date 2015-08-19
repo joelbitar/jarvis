@@ -24,4 +24,9 @@ class Command(BaseCommand):
         while True:
             complete_message = socket.recv_string()
             event_message = complete_message[message_prefix_length:]
-            signal, unit = receiver.act_on_raw_event_string(event_message)
+            try:
+                signal, unit = receiver.act_on_raw_event_string(event_message)
+            except Exception as e:
+                print('Error while processing message; ', event_message)
+                print(e)
+

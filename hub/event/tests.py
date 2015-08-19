@@ -27,6 +27,21 @@ class SignalTestsHelper(TestCase):
         return signals
 
 
+class ReceiveSignalsWithWeirdStuff(SignalTestsHelper):
+    def test_minus_weird_sensor(self):
+        signals = [
+            'class:sensor;protocol:fineoffset;id:33;model:temperaturehumidity;humidity:53;temp:-113.0;'
+        ]
+        self.helper_parse_event(
+            *signals
+        )
+
+        self.assertEqual(
+            len(signals),
+            Sensor.objects.all().count()
+        )
+
+
 class CreateSpecificModelInstanceTests(SignalTestsHelper):
     def test_create_a_specific_model_instance_when_button_on(self):
         self.helper_parse_event(
