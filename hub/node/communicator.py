@@ -193,9 +193,12 @@ class NodeDeviceCommunicator(NodeCommunicator):
             print('Node name is "testnode" does NOT send message', data)
             return True
 
+        if self.is_in_test_mode():
+            print('In test mode, do not send message', data)
+            return True
+
         # Setting socket and context if there is none.
-        #try:
-        if True:
+        try:
             if zmqclient.sockets.get(node_name, None) is None:
                 print('Connecting socket ZeroMQ... ', self.device.node.address)
                 context = zmq.Context()
@@ -216,10 +219,10 @@ class NodeDeviceCommunicator(NodeCommunicator):
             socket.send_string(
                 'command:' + json.dumps(data)
             )
-        #except Exception as e:
-        #    print(e)
-        #    print('ERROR while trying to publish message', data)
-        #    return False
+        except Exception as e:
+            print(e)
+            print('ERROR while trying to publish message', data)
+            return False
 
         return True
 
