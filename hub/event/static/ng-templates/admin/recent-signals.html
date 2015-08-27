@@ -11,6 +11,15 @@
             </h5>
         </div>
         <div>
+            pk: {{ signal.id }}, sender_pk : {{ signal.sender.id }}
+            <span ng-if="signal.sender.button">
+                button_pk: {{ signal.sender.button.id }}
+            </span>
+            <span ng-if="signal.sender.sensor">
+                sender_pk: {{ signal.sender.sensor.id }}
+            </span>
+        </div>
+        <div>
             {{ signal.created }}
         </div>
         <div>

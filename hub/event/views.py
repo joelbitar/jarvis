@@ -9,7 +9,9 @@ from event.serializers import RecentSignalSerializer
 
 
 class RecentSignalsView(viewsets.generics.ListAPIView):
-    queryset = Signal.objects.all()
+    queryset = Signal.objects.all().order_by(
+        '-id'
+    )
     serializer_class = RecentSignalSerializer
 
     def get(self, request, *args, **kwargs):
