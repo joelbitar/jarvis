@@ -11,7 +11,6 @@ from action.models import Action, ActionButton
 
 # Create your tests here.
 
-
 class TestPropagateSignal(SignalTestsHelper):
     def setUp(self):
         r = Receiver()
@@ -67,6 +66,31 @@ class TestPropagateSignal(SignalTestsHelper):
                                         action 2
 
         """
+
+        self.signal.propagate()
+
+        device = Device.objects.get(pk=self.device.pk)
+
+        print('Device state', device.state)
+
+        self.assertEqual(
+            device.state,
+            1
+        )
+
+    def test_propagate_event_if_the_action_is_a_dud(self):
+        """
+        When an event comes in we should be able to propagate the event through its sender -> unit -> actions
+
+        event ->
+                 sender ->
+                            unit 1 ->
+                                        action 1
+
+        """
+
+        self.action.block_sending = True
+        self.action.save()
 
         self.signal.propagate()
 

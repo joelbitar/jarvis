@@ -22,6 +22,9 @@ class Action(models.Model):
     action_devices = models.ManyToManyField(Device, blank=True)
     action_device_groups = models.ManyToManyField(DeviceGroup, blank=True)
 
+    #If the action is a blocks sending, Nothing gets transmitted. This is used when there is a connection outside of Yarvis.
+    block_sending = models.BooleanField(default=False, help_text='If set to True, we will NOT send the signal. but we will pretend we did.')
+
     def __unicode__(self):
         return self.name
 
@@ -69,16 +72,31 @@ class ActionButton(ActionUnitBase):
 
     command_filter = models.PositiveSmallIntegerField(choices=CONTROLS_CHOICES, default=COMMAND_FILTER_NONE, help_text="What signals are passed through")
 
+    def execute_on_communicator(self, method_key, device):
+        communicator = device.get_communicator()
+        method = getattr(communicator, {
+            Button.METHOD_ON: 'turn_on',
+            Button.METHOD_OFF: 'turn_off',
+            Button.METHOD_LEARN: 'learn',
+        }.get(method_key))
+        method.__call__()
+
+    def set_device_state_without_communicator(self, method_key, device):
+        device.state = {
+            Button.METHOD_OFF: 0,
+            Button.METHOD_ON: 1,
+            Button.METHOD_LEARN: device.state
+        }.get(method_key)
+        device.save()
+
     def execute_method(self, devices, method_key):
         for device in devices:
-            communicator = device.get_communicator()
-            method = getattr(communicator, {
-                Button.METHOD_ON: 'turn_on',
-                Button.METHOD_OFF: 'turn_off',
-                Button.METHOD_LEARN: 'learn',
-            }.get(method_key))
-
-            method.__call__()
+            # If we block sending, just set the state
+            if self.action.block_sending:
+                self.set_device_state_without_communicator(method_key, device)
+            else:
+                # This is the Norm. We execute on communicator
+                self.execute_on_communicator(method_key, device)
 
     def is_valid(self, signal, method_key):
         if self.command_filter == self.COMMAND_FILTER_NONE:
