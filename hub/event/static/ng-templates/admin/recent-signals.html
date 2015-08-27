@@ -1,0 +1,32 @@
+<div ng-controller="RecentSignalsController">
+    <div layout="column" ng-repeat="signal in signals">
+        <div flex="100">
+            <h5>
+            <span ng-if="signal.sender.name">
+                {{ signal.sender.name }}
+            </span>
+            <span ng-if="!signal.sender.name">
+                -- Ej namngiven --
+            </span>
+            </h5>
+        </div>
+        <div>
+            pk: {{ signal.id }}, sender_pk : {{ signal.sender.id }}
+            <span ng-if="signal.sender.button">
+                button_pk: {{ signal.sender.button.id }}
+            </span>
+            <span ng-if="signal.sender.sensor">
+                sender_pk: {{ signal.sender.sensor.id }}
+            </span>
+        </div>
+        <div>
+            {{ signal.created }}
+        </div>
+        <div>
+            {{ signal.sender.unit_type }}
+        </div>
+        <div flex="100">
+            {{ signal.raw_command }}
+        </div>
+    </div>
+</div>

@@ -1,7 +1,26 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import viewsets
 
 from event.receiver import Receiver
+from event.models import Signal
+
+from event.serializers import RecentSignalSerializer
+
+
+class RecentSignalsView(viewsets.generics.ListAPIView):
+    queryset = Signal.objects.all().order_by(
+        '-id'
+    )
+    serializer_class = RecentSignalSerializer
+
+    def get(self, request, *args, **kwargs):
+        return Response(
+            self.get_serializer(
+                instance=self.queryset[:50],
+                many=True
+            ).data
+        )
 
 
 class EventReceiverView(APIView):

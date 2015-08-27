@@ -8,6 +8,9 @@ from sensor.models import Sensor
 
 # a specific sender
 class Sender(models.Model):
+    UNIT_BUTTON = 1
+    UNIT_SENSOR = 2
+
     house = models.CharField(max_length=256, blank=True, null=True, default=None)
     unit = models.CharField(max_length=256, blank=True, null=True, default=None)
     code = models.CharField(max_length=256, blank=True, null=True, default=None)
@@ -21,13 +24,34 @@ class Sender(models.Model):
     sensor = models.ForeignKey(Sensor, null=True, default=None, blank=True, related_name='senders')
 
     def get_unit(self):
-        if self.button is not None:
+        if self.get_unit_type() is self.UNIT_BUTTON:
             return self.button
 
-        if self.sensor is not None:
+        if self.get_unit_type() is self.UNIT_SENSOR:
             return self.sensor
 
         return None
+
+    def get_unit_type(self):
+        if self.button is not None:
+            return self.UNIT_BUTTON
+
+        if self.sensor is not None:
+            return self.UNIT_SENSOR
+
+        return None
+
+    def get_unit_type_string(self):
+        return {
+            self.UNIT_BUTTON: 'button',
+            self.UNIT_SENSOR: 'sensor',
+        }.get(self.get_unit_type(), None)
+
+    def get_unit_name(self):
+        try:
+            return self.get_unit().name
+        except AttributeError:
+            return None
 
     def __str__(self):
         return 'house: {sender.house}, unit: {sender.unit}, code: {sender.code}, last signal: {sender.last_signal_received}'.format(
