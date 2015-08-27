@@ -11,9 +11,10 @@ var app = angular.module('jarvis', [
     'jarvis.devicegroup',
     'jarvis.node',
     'jarvis.sensor',
-    'jarvis.settings',
+    'jarvis.admin',
     'jarvis.weather',
-    'jarvis.auth'
+    'jarvis.auth',
+    'jarvis.signals'
 ]);
 
 /* Global functions */

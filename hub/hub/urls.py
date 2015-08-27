@@ -23,6 +23,7 @@ from node.views import NodeRestartDaemonView
 from node.views import NodeDetailView
 
 from event.views import EventReceiverView
+from event.views import RecentSignalsView
 
 from sensor.views import SensorViewSet
 from sensor.views import SensorLogView
@@ -81,6 +82,7 @@ rest_patterns = patterns('',
     url(r'^nodes/(?P<pk>[0-9]+)/restartdaemon/$', NodeRestartDaemonView.as_view(), name="node-restartdaemon"),
 
     url(r'^event/$', EventReceiverView.as_view(), name="event"),
+    url(r'^signals/recent/$', RecentSignalsView.as_view(), name='signals-recent'),
 
     url(r'^forecast/$', LatestForecastView.as_view(), name="latest-forecast"),
     url(r'^forecast/detailed/$', DetailedForecastView.as_view(), name="forecast-detailed"),

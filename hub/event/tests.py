@@ -14,6 +14,7 @@ from event.models import Signal, Sender
 
 from sensor.models import Sensor, SensorLog
 
+from device.tests import HasLoggedInClientBase
 
 class SignalTestsHelper(TestCase):
     def helper_parse_event(self, *raw_command_strings):
@@ -25,6 +26,109 @@ class SignalTestsHelper(TestCase):
             signals.append(signal)
 
         return signals
+
+
+class RecentSignalsTests(SignalTestsHelper, HasLoggedInClientBase):
+    def setUp(self):
+        super(RecentSignalsTests, self).setUp()
+
+        for i in range(50):
+            self.helper_parse_event(
+                "class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;"
+            )
+
+    def test_should_get_the_fifty_most_recent(self):
+        self.helper_parse_event(
+            "class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;"
+        )
+
+        self.assertEqual(
+            Signal.objects.all().count(),
+            51
+        )
+
+        r = self.get_json_response(
+            'signals-recent'
+        )
+
+        self.assertEqual(
+            len(r),
+            50
+        )
+
+    def test_should_get_name(self):
+        Button.objects.update(
+            name='TEST name'
+        )
+        r = self.get_json_response(
+            'signals-recent'
+        )
+
+        signal = r[0]
+
+        self.pretty_print_json(signal)
+
+        self.assertEqual(
+            signal['sender']['name'],
+            'TEST name'
+        )
+
+    def test_should_get_most_recent_with_all_useful_data(self):
+        r = self.get_json_response(
+            'signals-recent'
+        )
+
+        signal = r[0]
+
+        """
+        {
+    "code": null,
+    "created": "2015-08-27T16:58:05.267503Z",
+    "event_class": "command",
+    "group": "0",
+    "house": "2887766",
+    "humidity": null,
+    "id": 1,
+    "identifier": null,
+    "method": "turnon",
+    "model": "selflearning",
+    "protocol": "arctech",
+    "raw_command": "class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;",
+    "sender": {
+        "button": {
+            "archived": false,
+            "button_type": 1,
+            "created": "2015-08-27T16:58:05.267864Z",
+            "id": 1,
+            "name": ""
+        },
+        "code": null,
+        "created": "2015-08-27T16:58:05.267199Z",
+        "house": "2887766",
+        "id": 1,
+        "identifier": null,
+        "last_signal_received": "2015-08-27T16:58:05.269636Z",
+        "sensor": null,
+        "unit": "1"
+    },
+    "temp": null,
+    "unit": "1"
+}
+
+        """
+
+        self.assertIsNotNone(
+            signal['sender']
+        )
+
+        self.assertIsNotNone(
+            signal['sender']['button']
+        )
+
+        self.assertIsNone(
+            signal['sender']['sensor']
+        )
+
 
 
 class ReceiveSignalsWithWeirdStuff(SignalTestsHelper):

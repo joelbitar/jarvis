@@ -50,7 +50,7 @@ class HasLoggedInClientBase(TestCase):
 
         self.superuser_client = superuser_client
 
-    def get_json_response(self, url_name, kwargs=Node):
+    def get_json_response(self, url_name, kwargs=None):
         r = self.logged_in_client.get(
             reverse(url_name,kwargs=kwargs or {})
         )
@@ -62,6 +62,8 @@ class HasLoggedInClientBase(TestCase):
             print('Request error')
             raise Exception('Error')
 
+    def pretty_print_json(self, obj):
+        print(json.dumps(obj, sort_keys=True, indent=4))
 
 
 class DeviceModelTestsBase(HasLoggedInClientBase):
