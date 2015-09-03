@@ -204,7 +204,7 @@ class CreateSpecificModelInstanceTests(SignalTestsHelper):
         )
 
     def test_create_only_one_sensor_when_two_different_are_sent(self):
-        self.helper_parse_event(
+        signals = self.helper_parse_event(
             'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:44;temp:21.1;',
             'class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:53;temp:21.1;'
         )
@@ -429,6 +429,66 @@ class SignalsAndUnitCreationTests(SignalTestsHelper):
                 primary_button.pk
             )
 
+    def test_values_not_present_in_event_should_be_set_to_null(self):
+        raw_event = 'class:command;protocol:arctech;model:selflearning;group:0;method:turnon;'
+        r = Receiver()
+        signal = r.parse_raw_event(raw_event)
+
+        sender = signal.sender
+
+        self.assertIsNone(sender.unit)
+        self.assertIsNone(sender.code)
+        self.assertIsNone(sender.identifier)
+        self.assertIsNone(sender.house)
+
+    # For an error where senders were edited
+    def test_should_create_only_one_sender_when_signal_has_been_saved_and_set_property_as_empty_string(self):
+        raw_event = 'class:command;protocol:arctech;model:selflearning;house:15190034;unit:11;group:0;method:turnon;'
+
+        r = Receiver()
+
+        signal = r.parse_raw_event(raw_event)
+
+        sender = signal.sender
+        sender.code = ""
+        sender.save()
+
+        signal = r.parse_raw_event(raw_event)
+
+        self.assertEqual(
+            Sender.objects.all().count(),
+            1,
+            "Only one sender should have been created."
+        )
+
+        self.assertEqual(
+            signal.sender.pk,
+            1
+        )
+
+    def test_senders_should_always_have_null_values_instead_of_empty_strings_on_important_places(self):
+        r = Receiver()
+        signal = r.parse_raw_event('class:command;protocol:arctech;model:selflearning;house:15190034;unit:11;group:0;method:turnon;')
+
+        self.assertIsNone(
+            signal.sender.code,
+            'If raw event parsing does not have a parameter it should be set to None'
+        )
+        self.assertIsNone(
+            signal.sender.identifier,
+            'If raw event parsing does not have a parameter it should be set to None'
+        )
+
+        sender = signal.sender
+        sender.unit = ""
+        sender.code = ""
+        sender.identifier = ""
+        sender.save()
+
+        self.assertIsNone(sender.unit)
+        self.assertIsNone(sender.code)
+        self.assertIsNone(sender.identifier)
+
 
 class TestSignalEndPoints(TestCase):
     def setUp(self):
@@ -501,8 +561,6 @@ class TestSignalEndPoints(TestCase):
             ButtonLog.objects.all().count(),
             1
         )
-
-
 
 
 class TestReadSignalsTXTFileAndCheckSignalModelContent(TestCase):

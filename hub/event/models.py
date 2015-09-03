@@ -53,6 +53,21 @@ class Sender(models.Model):
         except AttributeError:
             return None
 
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = None
+
+        if not self.unit:
+            self.unit = None
+
+        if not self.identifier:
+            self.identifier = None
+
+        if not self.house:
+            self.house = None
+
+        return super(Sender, self).save(*args, **kwargs)
+
     def __str__(self):
         return 'house: {sender.house}, unit: {sender.unit}, code: {sender.code}, last signal: {sender.last_signal_received}'.format(
             sender=self

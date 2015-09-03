@@ -22,7 +22,7 @@ class Receiver(object):
     def get_or_create_sender(self, event):
         sender_identifiers = {}
 
-        # Fetch attributes from the event and try to get
+        # Fetch attributes from the event and set to a dictionary, used for query.
         for attribute_name in ['house', 'unit', 'code', 'identifier']:
             event_attribute_value = getattr(event, attribute_name)
             sender_identifiers[attribute_name] = event_attribute_value
@@ -80,6 +80,9 @@ class Receiver(object):
         return key
 
     def sanitize_value(self, value):
+        if not value:
+            return None
+
         return value
 
     def parse_raw_event(self, raw_event_string):
