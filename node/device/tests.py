@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
+from django.utils import timezone
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
@@ -9,7 +12,7 @@ from django.conf import settings
 import json
 
 from device.message.command import DeviceCommandMessage
-
+from device.management.raw_event_handler import RawEventHandler
 
 class BasicDeviceTest(TestCase):
     def setUp(self):
@@ -343,6 +346,81 @@ class DeviceCommandMessageEncodeTests(BasicDeviceTest):
             )
         )
 
+
+class RawEventHandlerTests(TestCase):
+    def setUp(self):
+        self.handler = RawEventHandler()
+
+    def test_should_accept_signals(self):
+        signals = (
+            "class:command;protocol:arctech;model:selflearning;house:48810982;unit:11;group:0;method:turnon;",
+            "class:sensor;protocol:fineoffset;id:135;model:temperaturehumidity;humidity:59;temp:19.4;"
+        )
+        for signal in signals:
+            self.assertTrue(
+                self.handler.should_send_event(
+                    signal
+                ),
+                "Should send for: " + signal
+            )
+
+    def test_should_deny_signals(self):
+        signals = (
+            "class:command;protocol:everflourish;model:selflearning;house:3262;unit:2;method:learn;",
+            "class:command;protocol:sartano;model:codeswitch;code:1010011001;method:turnon;"
+        )
+        for signal in signals:
+            self.assertFalse(
+                self.handler.should_send_event(
+                    signal
+                )
+            )
+
+    def test_should_add_signals_to_a_list_of_recent_signals_but_no_more_than_ten(self):
+        signal_template = "class:command;protocol:arctech;model:selflearning;house:48810982;unit:{unit};group:0;method:turnon;"
+
+        for i in range(100):
+            self.handler.add_to_recent_signals(
+                signal_template.format(
+                    unit=i
+                )
+            )
+
+        self.assertEqual(
+            len(self.handler.recent_signals),
+            10
+        )
+
+    def test_should_ignore_if_two_events_were_sent_imediatly_after_one_another(self):
+        signal = "class:command;protocol:arctech;model:selflearning;house:48810982;unit:11;group:0;method:turnon;"
+
+        self.assertTrue(
+            self.handler.should_send_event(
+                signal
+            )
+        )
+
+        self.handler.add_to_recent_signals(signal)
+        # Second time around. NO! no sending!
+        self.assertFalse(
+            self.handler.should_send_event(
+                signal
+            )
+        )
+
+    def test_should_be_able_to_send_first_signal_but_not_second(self):
+        signal = "class:command;protocol:arctech;model:selflearning;house:48810982;unit:11;group:0;method:turnon;"
+        self.assertTrue(self.handler(signal))
+        self.assertFalse(self.handler(signal))
+
+    def test_should_send_if_received_was_long_ago(self):
+        signal = "class:command;protocol:arctech;model:selflearning;house:48810982;unit:11;group:0;method:turnon;"
+        self.handler.add_to_recent_signals(
+            signal, timezone.now() - timedelta(seconds=1)
+        )
+        self.assertFalse(self.handler(signal))
+        self.assertFalse(self.handler(signal))
+        self.assertFalse(self.handler(signal))
 
 
 

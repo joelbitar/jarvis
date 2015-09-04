@@ -562,6 +562,15 @@ class TestSignalEndPoints(TestCase):
             1
         )
 
+class DorbellSignalTests(SignalTestsHelper):
+    def test_should_create_a_unit_from_bell_signal(self):
+        bell_signal = 'class:command;protocol:arctech;model:codeswitch;house:P;method:bell;'
+
+        signals = self.helper_parse_event(
+            bell_signal,
+        )
+
+        self.assertTrue(False)
 
 class TestReadSignalsTXTFileAndCheckSignalModelContent(TestCase):
     def setUp(self):
