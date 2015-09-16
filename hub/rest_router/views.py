@@ -63,7 +63,8 @@ class RestRouterView(View):
 
             response_content = response.content.decode('utf-8')
             response_status_code = response.status_code
-            response_content_type = response.headers['Content-Type']
+            if hasattr(response.headers, 'Content-Type'):
+                response_content_type = response.headers['Content-Type']
         except requests.ConnectionError:
             # If there was a connection-error, communicate this.
             response_status_code = 502
