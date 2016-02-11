@@ -1,24 +1,21 @@
-<div ng-controller="DeviceController" layout="column">
-    <md-card>
-        <md-card-content>
-            <div layout="column" layout-align="start center">
-                <h4><a href="#/device/{{ device.id }}/">{{ device.name }}</a></h4>
+<div ng-controller="DeviceController" layout="column" layout-xs="row">
+    <div layout="column" layout-xs="row" layout-align="start center" flex-xs="50">
+        <h4><a href="#/device/{{ device.id }}/">{{ device.name }}</a></h4>
 
-                <div ng-if="!device.is_dimmable" class="device" ng-click="toggleDevice(device);">
-                    <img ng-if="!device.state" static-src="img/light_off.png" />
-                    <img ng-if="device.state" static-src="img/light_on.png" />
-                </div>
-
-                <div ng-if="device.is_dimmable" class="device dimmable" ng-click="toggleDevice(device);">
-                    <img style="opacity: {{ device.state / 255 }};" static-src="img/light_on.png" />
-                </div>
+        <div hide-xs>
+            <div ng-if="!device.is_dimmable" class="device" ng-click="toggleDevice(device);">
+                <img ng-if="!device.state" static-src="img/light_off.png" />
+                <img ng-if="device.state" static-src="img/light_on.png" />
             </div>
 
-            <div layout="row" layout-align="center center">
-                <md-slider ng-if="device.is_dimmable" flex="80" ng-model="device.state" min="0" max="255" aria-label="Brightness" ng-change="brightnessSliderChange(device);"></md-slider>
-                <md-switch ng-if="!device.is_dimmable" ng-model="device.state" ng-true-value="1" ng-false-value="0" aria-label="State"  ng-change="sendDeviceState(device);"></md-switch>
+            <div ng-if="device.is_dimmable" class="device dimmable" ng-click="toggleDevice(device);">
+                <img style="opacity: {{ device.state / 255 }};" static-src="img/light_on.png" />
             </div>
+        </div>
+    </div>
 
-        </md-card-content>
-    </md-card>
+    <div layout="row" layout-align="center center" flex-xs="50">
+        <md-slider ng-if="device.is_dimmable" flex="80" ng-model="device.state" min="0" max="255" aria-label="Brightness" ng-change="brightnessSliderChange(device);"></md-slider>
+        <md-switch ng-if="!device.is_dimmable" ng-model="device.state" ng-true-value="1" ng-false-value="0" aria-label="State"  ng-change="sendDeviceState(device);"></md-switch>
+    </div>
 </div>
