@@ -1,11 +1,12 @@
 # Class that receives raw events
 from event.models import Signal
-from event.models import Sender 
+from event.models import Sender
 
 from django.utils import timezone
 from datetime import timedelta
 
 from button.models import Button
+from button.models import Bell
 from sensor.models import Sensor
 
 
@@ -60,9 +61,14 @@ class Receiver(object):
             # Add specific stuff for sensors.
             unit.identifier = signal.identifier
 
+        if signal.event_class == 'command' and signal.method == 'bell':
+            unit = Bell()
+
         if unit is None:
             print('could not identify unit', signal.raw_command)
             print('class', signal.event_class, 'method', signal.method)
+
+            raise NotImplementedError('Did not have a class for this unit, the event_class needs to correspond to a Model ' + signal.raw_command)
 
         unit.save()
         unit.senders.add(signal.sender)

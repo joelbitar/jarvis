@@ -1,6 +1,7 @@
 from django.db import models
 from button.models import Button
 from sensor.models import Sensor
+from button.models import Bell
 
 #class:command;protocol:arctech;model:selflearning;house:2887766;unit:1;group:0;method:turnon;
 #class:command;protocol:sartano;model:codeswitch;code:1111011001;method:turnoff;
@@ -10,6 +11,7 @@ from sensor.models import Sensor
 class Sender(models.Model):
     UNIT_BUTTON = 1
     UNIT_SENSOR = 2
+    UNIT_BELL = 3
 
     house = models.CharField(max_length=256, blank=True, null=True, default=None)
     unit = models.CharField(max_length=256, blank=True, null=True, default=None)
@@ -22,6 +24,7 @@ class Sender(models.Model):
 
     button = models.ForeignKey(Button, null=True, default=None, blank=True, related_name='senders')
     sensor = models.ForeignKey(Sensor, null=True, default=None, blank=True, related_name='senders')
+    bell = models.ForeignKey(Bell, null=True, default=None, blank=True, related_name='senders')
 
     def get_unit(self):
         if self.get_unit_type() is self.UNIT_BUTTON:
@@ -29,6 +32,9 @@ class Sender(models.Model):
 
         if self.get_unit_type() is self.UNIT_SENSOR:
             return self.sensor
+
+        if self.get_unit_type() is self.UNIT_BELL:
+            return self.bell
 
         return None
 
@@ -38,6 +44,9 @@ class Sender(models.Model):
 
         if self.sensor is not None:
             return self.UNIT_SENSOR
+
+        if self.bell is not None:
+            return self.UNIT_BELL
 
         return None
 
@@ -106,6 +115,10 @@ class Signal(models.Model):
             return unit.actionbutton_set.all()
         if isinstance(unit, Sensor):
             return unit.actionsensor_set.all()
+        if isinstance(unit, Bell):
+            return unit.actions()
+
+        print('unit', unit)
 
     # Propagate this signal to actions and stuff on the unit
     def propagate(self):
