@@ -69,6 +69,8 @@ INSTALLED_APPS = (
     'angular',
     'material',
     'timer',
+
+    'janitor',
 )
 
 MIDDLEWARE_CLASSES = (
