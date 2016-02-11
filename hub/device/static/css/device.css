@@ -2,6 +2,11 @@ div.device.dimmable{
     background-image: url("../img/light_off.png");
     background-repeat: no-repeat;
 }
+
+div.device.dimmable-xs{
+    background-image: url("../img/xs_light_off.png");
+}
+
 div.device.dimmable img{
 }
 
