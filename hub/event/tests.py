@@ -570,6 +570,7 @@ class DorbellSignalTests(SignalTestsHelper):
             bell_signal,
         )
 
+        print('We have to check that door sensors do not also send bell signals, if so, we need to be able to mark a bell as no-send.')
         self.assertTrue(False)
 
 class TestReadSignalsTXTFileAndCheckSignalModelContent(TestCase):
