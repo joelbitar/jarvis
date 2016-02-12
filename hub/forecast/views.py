@@ -136,7 +136,10 @@ class ShortForecastView(NowForecastView):
                     valid_time__gte=date
                 )[:6],
                 self.get_grouped_forecasts(
-                    3, date + timedelta(hours=5), 6
+                    3, date + timedelta(hours=5), 12
+                ),
+                Forecast.objects.filter(
+                    valid_time__gte=date + timedelta(hours=(5 + (3 * 12) + 3))
                 )
             )
         )

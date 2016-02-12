@@ -1,8 +1,28 @@
-div.device.dimmable{
-    background-image: url("../img/light_off.png");
+div.device.light{
     background-repeat: no-repeat;
+    width: 60px;
+    height:60px;
 }
-div.device.dimmable img{
+
+
+div.device.light.light-off{
+    background-image: url("../img/light_off.png");
+}
+div.device.light.light-on{
+    background-image: url("../img/light_on.png");
+}
+
+@media (max-width:599px) {
+    div.device.light{
+        width: 40px;
+        height: 40px;
+    }
+    div.device.light.light-off{
+        background-image: url("../img/xs_light_off.png");
+    }
+    div.device.light.light-on{
+        background-image: url("../img/xs_light_on.png");
+    }
 }
 
 div.device{
