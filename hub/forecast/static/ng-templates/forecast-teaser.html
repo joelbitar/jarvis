@@ -1,23 +1,18 @@
-<div layout="column" layout-margin layout-align="start center">
-    <div layout="row" ng-if="forecast.valid_time">
+<div layout="column" layout-xs="row" layout-margin layout-align="start center" layout-align-xs="space-around center">
+    <div ng-if="forecast.valid_time">
         {{ forecast.valid_time | date : "HH:mm" }}
     </div>
-    <div layout="column" ng-if="forecast.valid_time__min">
+    <div ng-if="forecast.valid_time__min">
         {{ forecast.valid_time__min | date : "HH" }} - {{ forecast.valid_time__max | date : "HH" }}
     </div>
 
-    <div layout="column">
+    <div layout="column" layout-xs="row">
         <div layout="row">
-            <div layout="column">
-                <weather-icon forecast="forecast"></weather-icon>
-            </div>
-            <div layout="column">
-                <div class="temperature">
-            <span>
-                {{ forecast.t }}<span class="wi wi-celsius"></span>
-            </span>
-                </div>
-
+            <weather-icon forecast="forecast"></weather-icon>
+            <div class="temperature">
+                    <span>
+                        {{ forecast.t }}<span class="wi wi-celsius"></span>
+                    </span>
             </div>
         </div>
         <div layout="row">
