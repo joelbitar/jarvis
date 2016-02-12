@@ -6,14 +6,16 @@
         {{ forecast.valid_time__min | date : "HH" }} - {{ forecast.valid_time__max | date : "HH" }}
     </div>
 
+    
+
     <div layout="column" layout-xs="row" flex-xs="60">
-        <weather-icon forecast="forecast"></weather-icon>
-        <div class="temperature" flex-xs="50">
+        <weather-icon forecast="forecast" flex-xs="33"></weather-icon>
+        <div class="temperature" flex-xs="33">
                     <span>
                         {{ forecast.t }}<span class="wi wi-celsius"></span>
                     </span>
         </div>
-        <div class="percipitation" flex-xs="50">
+        <div class="percipitation" flex-xs="33">
                     <span>
                         {{ forecast.pit }}<span>mm</span>
                     </span>
