@@ -1,6 +1,7 @@
 <div ng-controller="DeviceController" layout="column" layout-xs="row">
     <div layout="column" layout-xs="row" layout-align="start center" flex-xs="40">
-        <div layout="column" hide-gt-xs>
+        <!--
+        <div layout="column" hide-xs>
             <div ng-if="!device.is_dimmable" class="device" ng-click="toggleDevice(device);">
                 <img ng-if="!device.state" static-src="img/xs_light_off.png" />
                 <img ng-if="device.state" static-src="img/xs_light_on.png" />
@@ -10,17 +11,20 @@
                 <img style="opacity: {{ device.state / 255 }};" static-src="img/xs_light_on.png" />
             </div>
         </div>
+        -->
 
-        <h4><a href="#/device/{{ device.id }}/">{{ device.name }}</a></h4>
+        <div flex-order-xs="2">
+            <h4><a href="#/device/{{ device.id }}/">{{ device.name }}</a></h4>
+        </div>
 
-        <div hide-xs>
+        <div flex-order-xs="1">
             <div ng-if="!device.is_dimmable" class="device" ng-click="toggleDevice(device);">
-                <img ng-if="!device.state" static-src="img/light_off.png" />
-                <img ng-if="device.state" static-src="img/light_on.png" />
+                <div ng-if="!device.state" class="device light light-off"></div>
+                <div ng-if="device.state" class="device light light-on"></div>
             </div>
 
-            <div ng-if="device.is_dimmable" class="device dimmable" ng-click="toggleDevice(device);">
-                <img style="opacity: {{ device.state / 255 }};" static-src="img/light_on.png" />
+            <div ng-if="device.is_dimmable" class="device light light-off" ng-click="toggleDevice(device);">
+                <div style="opacity: {{ device.state / 255 }};" class="device light light-on"></div>
             </div>
         </div>
     </div>
