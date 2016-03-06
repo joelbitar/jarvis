@@ -54,8 +54,11 @@
         "version" : "{{ VERSION }}"
     };
 </script>
-<!-- Angular Material Dependencies -->
+{# AngularJS Core #}
 <script src="{% static "js/angularjs/angular.min.js" %}{% version_extension %}"></script>
+
+{# AngularJS i18n #}
+<script src="{% static "js/angularjs/i18n/angular-locale_sv-se.js" %}{% version_extension %}"></script>
 
 {# AngularJS Core team modules #}
 <script src="{% static "js/angularjs/angular-animate.min.js" %}{% version_extension %}"></script>
