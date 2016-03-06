@@ -26,7 +26,7 @@
             {{ forecast.valid_time | date : "HH:mm" }}
         </div>
         <div ng-if="forecast.valid_time__min" flex-xs="20">
-            {{ forecast.valid_time__min | date : "HH" }} - {{ forecast.valid_time__max | date : "HH" }}
+            {{ forecast.valid_time__min | date : "HH" }}-{{ forecast.valid_time__max | date : "HH" }}
         </div>
 
         <div layout="column" layout-xs="row" flex-xs="50">
