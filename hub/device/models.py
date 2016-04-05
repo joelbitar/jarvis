@@ -87,6 +87,7 @@ class Device(models.Model):
 
     class Meta:
         app_label = 'device'
+        ordering = ('name', )
 
 
 class DeviceGroup(models.Model):

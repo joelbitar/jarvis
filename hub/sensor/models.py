@@ -38,6 +38,9 @@ class Sensor(models.Model):
 
         return str(self.pk)
 
+    class Meta:
+        ordering = ('name', )
+
 
 class SensorLog(models.Model):
     humidity = models.SmallIntegerField(null=True, blank=True, default=None)

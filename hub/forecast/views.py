@@ -129,7 +129,6 @@ class NowForecastView(viewsets.generics.ListAPIView):
 
 class ShortForecastView(NowForecastView):
     def get_forecast(self, date):
-        print(date)
         return Response(
             self.serialize_forecasts(
                 Forecast.objects.filter(

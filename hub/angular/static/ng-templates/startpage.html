@@ -25,6 +25,16 @@
             </div>
             <div layout="row" layout-align="space-between left" layout-wrap>
                 <div flex="12" flex-lg="20" flex-md="33" flex-sm="100" flex-xs="100" ng-repeat="forecast in forecasts">
+                    <div hide-gt-xs ng-show="forecast.valid_time">
+                        <div ng-show="(forecast.valid_time|date:'d') != (forecasts[$index -1].valid_time|date:'d')">
+                            <hr/>
+                        </div>
+                    </div>
+                    <div hide-gt-xs ng-show="forecast.valid_time__min">
+                        <div ng-show="(forecast.valid_time__min|date:'d') != (forecasts[$index -1].valid_time__min|date:'d')">
+                            <hr/>
+                        </div>
+                    </div>
                     <div include="forecast-teaser.html"></div>
                 </div>
             </div>

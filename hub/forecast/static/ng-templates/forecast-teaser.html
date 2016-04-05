@@ -1,8 +1,4 @@
 <div layout="column">
-    <div hide-gt-xs ng-show="(forecast.valid_time|date:'H') == 1 || (forecast.valid_time__min|date:'H') == 1">
-        <hr/>
-    </div>
-
     <div layout="column" layout-xs="row" layout-padding layout-align="start center" layout-align-xs="space-around center">
         <div flex-xs="15">
         <span ng-if="forecast.valid_time__min">
@@ -37,9 +33,9 @@
                     </span>
             </div>
             <div class="percipitation" flex-xs="33">
-                    <span ng-show="forecast.pit > 0">
-                        {{ forecast.pit }}<span>mm</span>
-                    </span>
+                <span ng-show="forecast.pit > 0">
+                    {{ forecast.pit }}<span style="font-size: 0.7em">mm</span>
+                </span>
             </div>
         </div>
     </div>
