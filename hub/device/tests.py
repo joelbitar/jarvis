@@ -1336,3 +1336,46 @@ class DeviceGroupStateTests(DeviceModelTestsBase):
         )
 
 
+class DeviceOrderingTests(DeviceModelTestsBase):
+    def setUp(self):
+        super(DeviceOrderingTests, self).setUp()
+        self.device2 = Device(
+            name='ZDevice',
+            protocol=Device.PROTOCOL_ARCHTEC,
+            model=Device.MODEL_SELFLEARNING_DIMMER,
+            node=self.node,
+        )
+        self.device2.save()
+
+        self.device3 = Device(
+            name='ADevice',
+            protocol=Device.PROTOCOL_ARCHTEC,
+            model=Device.MODEL_SELFLEARNING_DIMMER,
+            node=self.node,
+        )
+        self.device3.save()
+
+    def test_should_be_in_alphabetical_order(self):
+        response = self.logged_in_client.get(
+            reverse('device-list')
+        )
+
+        response_obj = json.loads(
+            response.content.decode('utf-8'),
+        )
+
+        self.assertEqual(
+            response_obj[0]['name'],
+            'ADevice'
+        )
+
+        self.assertEqual(
+            response_obj[1]['name'],
+            'TestDevice'
+        )
+
+        self.assertEqual(
+            response_obj[2]['name'],
+            'ZDevice'
+        )
+
