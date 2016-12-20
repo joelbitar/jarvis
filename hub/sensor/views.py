@@ -8,6 +8,7 @@ from sensor.models import Sensor
 from sensor.models import SensorLog
 
 from rest_framework.response import Response
+from rest_framework import filters
 
 from sensor.serializers import SensorSerializer
 from sensor.serializers import SensorLogSerializer
@@ -16,6 +17,9 @@ from sensor.serializers import SensorLogSerializer
 class SensorViewSet(viewsets.ModelViewSet):
     queryset = Sensor.objects.filter(active=True)
     serializer_class = SensorSerializer
+    filter_backends = (filters.OrderingFilter,)
+    ordering_fields = ('name', 'id',)
+    ordering = ('name',)
 
 
 class SensorLogView(generics.ListAPIView):
