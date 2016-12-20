@@ -1,0 +1,54 @@
+/**
+ * Created by joel on 2016-12-20.
+ */
+var CACHE_NAME = 'my-site-cache-v1';
+var urlsToCache = [
+  '/',
+  '/styles/main.css',
+  '/script/main.js'
+];
+
+var CACHE_NAME = 'jarvis-v1';
+var urlsToCache = [
+    '/',
+    'css/angular-material.min.css',
+    'css/device.css',
+    'css/jarvis.css',
+
+    'fonts/weather-icons/css/weather-icons.min.css',
+
+    'js/startpage.js',
+    'js/angularjs/angular.min.js',
+    'js/angularjs/i18n/angular-locale_sv-se.js',
+    'js/angularjs/angular-animate.min.js',
+    'js/angularjs/angular-aria.min.js',
+    'js/angularjs/angular-route.min.js',
+    'js/angularjs/angular-cookies.min.js',
+
+    'js/lib/ngStorage.min.js',
+
+    'js/lib/lodash.min.js',
+    'js/lib/restangular.min.js',
+
+    'js/angular-material.min.js',
+
+    'js/startpage.js',
+    'js/device.js',
+    'js/node.js',
+    'js/devicegroup.js',
+    'js/sensor.js',
+    'js/weather.js',
+    'js/login.js',
+    'js/signals.js'
+];
+
+self.addEventListener('install', function(event) {
+    // Perform install steps
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(function(cache) {
+                console.log('Opened cache');
+                return cache.addAll(urlsToCache);
+            })
+    );
+});
