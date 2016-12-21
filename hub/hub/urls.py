@@ -38,6 +38,8 @@ from authentication.views import CurrentUserView
 from authentication.views import LoginUserView
 from authentication.views import LogoutUserView
 
+from progressive.views import ManifestView
+
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -91,7 +93,7 @@ rest_patterns = patterns('',
     url(r'^forecast/short/$', ShortForecastView.as_view(), name="forecast-now"),
     url(r'^forecast/now/(?P<date>.*)/$', NowForecastView.as_view(), name="forecast-now"),
 
-    url(r'^sensors/(?P<sensor_pk>\d+)/logs/$', SensorLogView.as_view(), name='sensorlog-list')
+    url(r'^sensors/(?P<sensor_pk>\d+)/logs/$', SensorLogView.as_view(), name='sensorlog-list'),
 )
 
 urlpatterns = patterns('',
@@ -103,4 +105,6 @@ urlpatterns = patterns('',
     url(r'^proxy/', include('rest_router.urls')),
     url(r'^api/', include(rest_patterns)), # All REST patterns
     url(r'^admin/', include(admin.site.urls)),
+
+    url(r'^manifest.json$', ManifestView.as_view(), name='manifest-json'),
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
