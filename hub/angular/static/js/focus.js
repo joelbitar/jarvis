@@ -5,8 +5,11 @@
 angular.module('ngFocus', []).
     factory('focus', ['$window', '$rootScope', function(win, rootScope){
         var functions = [], broadcasts = [];
-        win.onfocus = function(){
+
+        visibly.onVisible(function(){
             _.each(broadcasts, function(def){
+                console.log('broadcast');
+                
                 rootScope.$broadcast(
                     def['signal_name'],
                     def['message']
@@ -18,7 +21,7 @@ angular.module('ngFocus', []).
                 var func =  def['executable'];
                 func.call(def['scope']);
             })
-        };
+        });
 
         return {
             broadcast : function(signal_name, message){
@@ -40,3 +43,5 @@ angular.module('ngFocus', []).
         };
 
     }]);
+
+
