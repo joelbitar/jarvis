@@ -66,6 +66,7 @@ INSTALLED_APPS = (
     'action',
     'forecast',
 
+    'progressive',
     'angular',
     'material',
     'timer',

@@ -12,6 +12,8 @@
     <meta name="viewport" content="initial-scale=1" />
     <link rel="icon" type="image/png" href="{% static 'images/logo/logo.png' %}{% version_extension %}" />
     <link rel="apple-touch-icon" href="{% static 'images/logo/logo-180.png' %}{% version_extension %}" />
+
+    <link rel="manifest" href="{% url 'manifest-json' %}">
 </head>
 <body layout="column">
 <md-toolbar>
@@ -54,6 +56,9 @@
         "version" : "{{ VERSION }}"
     };
 </script>
+
+<script src="{% static "bootstrap.js" %}"></script>
+
 {# AngularJS Core #}
 <script src="{% static "js/angularjs/angular.min.js" %}{% version_extension %}"></script>
 
@@ -68,6 +73,7 @@
 
 {# AngularJS Third party modules #}
 <script src="{% static "js/lib/ngStorage.min.js" %}{% version_extension %}"></script>
+<script src="{% static "js/focus.js" %}{% version_extension %}"></script>
 
 {# Third party helpers and libraries #}
 <script src="{% static "js/lib/lodash.min.js" %}{% version_extension %}"></script>

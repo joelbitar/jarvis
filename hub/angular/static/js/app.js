@@ -6,6 +6,8 @@ var app = angular.module('jarvis', [
     'ngCookies',
     'ngStorage',
 
+    'ngFocus',
+
     'jarvis.startpage',
     'jarvis.device',
     'jarvis.devicegroup',
