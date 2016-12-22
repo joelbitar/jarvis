@@ -6,7 +6,11 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
             }
         )
 }])
-.controller('StartpageDeviceController', ['$scope', '$rootScope', 'Restangular',  function($scope, $rootScope, Restangular) {
+.controller('StartpageDeviceController', ['$scope', '$rootScope', '$window', 'Restangular', 'focus',  function($scope, $rootScope, $window, Restangular, focus) {
+        focus(function(){
+            $scope.$broadcast('refresh-devices');
+        });
+
         // Update device without setting everything again.
         $scope.updateDevice = function(device){
             $scope.devices.forEach(function(d){
@@ -15,6 +19,7 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                 }
             });
         };
+
 
         $scope.$on('refresh-devices', function(){
             Restangular.all('devices/').getList().then(function(devices){
@@ -26,8 +31,10 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
             });
         });
         $scope.$broadcast('refresh-devices');
-}]).controller('StartpageForecastController', ['$scope', 'Restangular',  function($scope, Restangular) {
-        console.log('startpageforecastctrl');
+}]).controller('StartpageForecastController', ['$scope', '$window', 'Restangular', 'focus',  function($scope, $window, Restangular) {
+        focus(function(){
+            console.log('On focus from forecast controller on startpage');
+        });
 
         Restangular.all('forecast/short/').getList().then(function(forecasts){
             $scope.forecasts = [];

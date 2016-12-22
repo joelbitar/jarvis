@@ -19,6 +19,7 @@ var urlsToCache = [
     'js/angularjs/angular-cookies.min.js',
 
     'js/lib/ngStorage.min.js',
+    'js/focus.js',
 
     'js/lib/lodash.min.js',
     'js/lib/restangular.min.js',
