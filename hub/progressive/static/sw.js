@@ -1,14 +1,7 @@
 /**
  * Created by joel on 2016-12-20.
  */
-var CACHE_NAME = 'my-site-cache-v1';
-var urlsToCache = [
-  '/',
-  '/styles/main.css',
-  '/script/main.js'
-];
-
-var CACHE_NAME = 'jarvis-v1';
+var CACHE_NAME = 'jarvis-v1.1';
 var urlsToCache = [
     '/',
     'css/angular-material.min.css',
@@ -39,7 +32,18 @@ var urlsToCache = [
     'js/sensor.js',
     'js/weather.js',
     'js/login.js',
-    'js/signals.js'
+    'js/signals.js',
+
+    'ng-templates/device-detail.html',
+    'ng-templates/device-group-teaser.html',
+    'ng-templates/device-teaser.html',
+
+    'ng-templates/directive/weather-icon.html',
+    'ng-templates/forecast-teaser.html',
+    'ng-templates/weather.html',
+
+    'ng-templates/sensor-detail.html',
+    'ng-templates/sensor-teaser.html'
 ];
 
 self.addEventListener('install', function(event) {
