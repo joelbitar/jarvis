@@ -1,8 +1,9 @@
 {% load static %}
+{% load version_tags %}
 /**
  * Created by joel on 2016-12-20.
  */
-var CACHE_NAME = 'jarvis-v1.2';
+var CACHE_NAME = 'jarvis-v{% real_version_number %}';
 var urlsToCache = [
     '/',
     '{% static "css/angular-material.min.css" %}',
@@ -23,11 +24,17 @@ var urlsToCache = [
     '{% static "js/focus.js" %}',
 
     '{% static "js/lib/lodash.min.js" %}',
+    '{% static "js/lib/visibly.js" %}',
+    '{% static "js/lib/loading-bar.js" %}',
     '{% static "js/lib/restangular.min.js" %}',
 
     '{% static "js/angular-material.min.js" %}',
 
+    '{% static "js/app.js" %}',
+
     '{% static "js/startpage.js" %}',
+    '{% static "js/admin.js" %}',
+
     '{% static "js/device.js" %}',
     '{% static "js/node.js" %}',
     '{% static "js/devicegroup.js" %}',
@@ -35,6 +42,8 @@ var urlsToCache = [
     '{% static "js/weather.js" %}',
     '{% static "js/login.js" %}',
     '{% static "js/signals.js" %}',
+
+    '{% static "ng-templates/startpage.html" %}',
 
     '{% static "ng-templates/device-detail.html" %}',
     '{% static "ng-templates/device-group-teaser.html" %}',
