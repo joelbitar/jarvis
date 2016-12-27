@@ -3,9 +3,11 @@ from django.shortcuts import render
 # Create your views here.
 
 from rest_framework.views import APIView
+from django.views.generic import TemplateView
 from rest_framework.response import Response
 
 from django.contrib.staticfiles.templatetags.staticfiles import static
+
 
 class ManifestView(APIView):
     authentication_classes = ()
@@ -44,3 +46,12 @@ class ManifestView(APIView):
             manifest
         )
 
+
+class ServiceWorkerView(TemplateView):
+    template_name = 'service_worker.js'
+    content_type = 'application/javascript'
+
+    def get_context_data(self, **kwargs):
+        context = super(TemplateView, self).get_context_data(**kwargs)
+
+        return context
