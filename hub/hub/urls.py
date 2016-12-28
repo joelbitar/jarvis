@@ -39,6 +39,8 @@ from authentication.views import LoginUserView
 from authentication.views import LogoutUserView
 
 from progressive.views import ManifestView
+from progressive.views import ServiceWorkerView
+
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -107,4 +109,5 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^manifest.json$', ManifestView.as_view(), name='manifest-json'),
+    url(r'^service_worker.js$', ServiceWorkerView.as_view(), name='service_worker-js'),
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
