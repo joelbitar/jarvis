@@ -12,7 +12,10 @@ var urlsToCache = [
 
     '{% static "fonts/weather-icons/css/weather-icons.min.css" %}',
 
-    '{% static "js/startpage.js" %}',
+    '{% static "images/icons/ic_autorenew_black_24px.svg" %}',
+    '{% static "images/icons/ic_autorenew_white_24px.svg" %}',
+    '{% static "images/icons/menu.svg" %}',
+
     '{% static "js/angularjs/angular.min.js" %}',
     '{% static "js/angularjs/i18n/angular-locale_sv-se.js" %}',
     '{% static "js/angularjs/angular-animate.min.js" %}',
