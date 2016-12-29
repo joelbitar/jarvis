@@ -155,7 +155,7 @@ TEST_MODE = None
 MAIN_HUB_URL = None
 #MAIN_HUB_URL = 'http://127.0.0.1:9999/'
 
-VERSION = "0.3.5"
+VERSION = "0.3.6"
 AUTO_GENERATE_VERSION = False
 
 try:
