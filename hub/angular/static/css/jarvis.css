@@ -21,3 +21,10 @@ i.wi{
 a.logo{
     color: white;
 }
+
+div.floating-toolbar{
+    position: fixed;
+    bottom: 1px;
+    z-index: 1;
+    right: 1px;
+}

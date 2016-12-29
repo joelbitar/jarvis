@@ -65,6 +65,20 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         });
         // Load groups on first run (aka refresh)
         $scope.$broadcast('refresh-groups');
+}]).controller('ToolbarController', ['$scope', '$rootScope', function($scope, $rootScope){
+        $scope.refresh = function(){
+            _.each(
+                [
+                    'refresh-devices',
+                    'refresh-forecast',
+                    'refresh-sensors',
+                    'refresh-groups'
+                ],
+                function(signal_name){
+                    $rootScope.$broadcast(signal_name);
+                }
+            );
+        };
 }]);
 
 

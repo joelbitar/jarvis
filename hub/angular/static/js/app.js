@@ -105,4 +105,13 @@ app.config(function(RestangularProvider){
     RestangularProvider.setBaseUrl(api_url(""));
 });
 
+app.config(function($mdIconProvider){
+    var icons = [
+        ['refresh-black', 'ic_autorenew_black_24px'],
+        ['refresh-white', 'ic_autorenew_white_24px']
+    ];
 
+    _.each(icons, function(image_conf){
+        $mdIconProvider.icon(image_conf[0], django.base_static_url + 'images/icons/' + image_conf[1] + '.svg')
+    });
+});
