@@ -21,7 +21,7 @@ var app = angular.module('jarvis', [
 
 /* Global functions */
 var template_url = function(template_name){
-    return django.base_ng_template_url + template_name + '?v' + django.version;
+    return django.base_ng_template_url + template_name + '?v=' + django.version;
 };
 
 // Function needed for when NOT using Restangular, Also used when configuring restangular..
