@@ -34,6 +34,10 @@ var api_url = function(path){
 };
 
 app.config(['$httpProvider', '$locationProvider', function($httpProvider, $locationProvider){
+    $locationProvider.html5Mode(true);
+}]);
+
+app.config(['$httpProvider', '$locationProvider', function($httpProvider, $locationProvider){
     $httpProvider.interceptors.push(function($q, $location){
         return {
             'response' : function(response){
