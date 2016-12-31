@@ -1,5 +1,6 @@
 {% load static %}{% load version_tags %}var CACHE_NAME = "jarvis-{% version_number %}", urlsToCache = [
     '/',
+
     '{% static "css/angular-material.min.css" %}{% version_extension %}',
     '{% static "css/device.css" %}{% version_extension %}',
     '{% static "css/jarvis.css" %}{% version_extension %}',
@@ -8,6 +9,8 @@
 
     '{% static "images/icons/ic_autorenew_black_24px.svg" %}',
     '{% static "images/icons/ic_autorenew_white_24px.svg" %}',
+    '{% static "img/xs_light_on.png" %}',
+    '{% static "img/xs_light_off.png" %}',
     '{% static "images/icons/menu.svg" %}',
 
     '{% static "js/angularjs/angular.min.js" %}{% version_extension %}',
