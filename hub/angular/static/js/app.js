@@ -112,6 +112,6 @@ app.config(function($mdIconProvider){
     ];
 
     _.each(icons, function(image_conf){
-        $mdIconProvider.icon(image_conf[0], django.base_static_url + 'images/icons/' + image_conf[1] + '.svg')
+        $mdIconProvider.icon(image_conf[0], django.base_static_url + 'images/icons/' + image_conf[1] + '.svg?v=' + django.version)
     });
 });
