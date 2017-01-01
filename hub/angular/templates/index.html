@@ -3,14 +3,18 @@
 
 <html lang="en" ng-app="jarvis">
 <head>
+    {# Angular JS Base url for Routing #}
     <base href="/">
-    <link rel="stylesheet" href="{% static "css/angular-material.min.css" %}{% version_extension %}">
-    <link rel="stylesheet" href="{% static "css/device.css" %}{% version_extension %}">
-    <link rel="stylesheet" href="{% static "css/jarvis.css" %}{% version_extension %}">
+    <link rel="stylesheet" media="all" href="{% static "css/angular-material.min.css" %}{% version_extension %}">
+    <link rel="stylesheet" media="all" href="{% static "css/device.css" %}{% version_extension %}">
+    <link rel="stylesheet" media="all" href="{% static "css/jarvis.css" %}{% version_extension %}">
 
-    <link rel="stylesheet" href="{% static "fonts/weather-icons/css/weather-icons.min.css" %}{% version_extension %}">
+    <link rel="stylesheet" media="all" href="{% static "fonts/weather-icons/css/weather-icons.min.css" %}{% version_extension %}">
     <title>YARVIS</title>
-    <meta name="viewport" content="initial-scale=1" />
+    {# for mobile renderers #}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {# theme color for progressive apps #}
+    <meta name="theme-color" content="#db5945">
     <link rel="icon" type="image/png" href="{% static 'images/logo/logo.png' %}{% version_extension %}" />
     <link rel="apple-touch-icon" href="{% static 'images/logo/logo-180.png' %}{% version_extension %}" />
 
