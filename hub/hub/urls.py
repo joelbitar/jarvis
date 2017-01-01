@@ -103,11 +103,12 @@ urlpatterns = patterns('',
     # url(r'^$', 'jarvis.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
-    url(r'^', include('angular.urls')),
     url(r'^proxy/', include('rest_router.urls')),
     url(r'^api/', include(rest_patterns)), # All REST patterns
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^manifest.json$', ManifestView.as_view(), name='manifest-json'),
     url(r'^service_worker.js$', ServiceWorkerView.as_view(), name='service_worker-js'),
+
+    url(r'^', include('angular.urls')),
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
