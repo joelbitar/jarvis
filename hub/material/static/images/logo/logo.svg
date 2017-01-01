@@ -13,11 +13,11 @@
    height="1000"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="logo.svg"
-   inkscape:export-filename="/home/joel/projects/jarvis/hub/material/static/images/logo/logo-180.png"
-   inkscape:export-xdpi="16.200001"
-   inkscape:export-ydpi="16.200001">
+   inkscape:export-filename="/home/joel/private/jarvis/hub/material/static/images/logo/logo-256.png"
+   inkscape:export-xdpi="24.108435"
+   inkscape:export-ydpi="24.108435">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,17 +28,17 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.35"
-     inkscape:cx="80.405692"
+     inkscape:cx="-402.45145"
      inkscape:cy="249.46055"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:window-width="1863"
-     inkscape:window-height="1056"
-     inkscape:window-x="57"
-     inkscape:window-y="24"
+     inkscape:window-width="1920"
+     inkscape:window-height="1043"
+     inkscape:window-x="1600"
+     inkscape:window-y="0"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
@@ -48,7 +48,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
