@@ -82,6 +82,11 @@ class ServiceWorkerView(TemplateView):
             "css/device.css",
             "css/jarvis.css",
 
+            "images/logo/logo.png",
+            "images/logo/logo-180.png",
+            "images/logo/logo-192.png",
+            "images/logo/logo-256.png",
+
             "fonts/weather-icons/css/weather-icons.min.css",
 
             "images/icons/ic_autorenew_black_24px.svg",
