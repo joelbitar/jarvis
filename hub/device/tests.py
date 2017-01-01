@@ -1,4 +1,6 @@
 import json
+
+from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django.core.urlresolvers import reverse
 
@@ -17,11 +19,60 @@ from device.property_generator import PropertyValueGenerator
 from button.models import Button
 
 
-class DeviceModelTestsBase(TestCase):
+class HasLoggedInClientBase(TestCase):
     def setUp(self):
+        self.user = User.objects.create_user(
+            username='test',
+            password='test'
+        )
+
+        client = Client()
+        client.login(
+            username='test',
+            password='test'
+        )
+
+        self.maxDiff = 5000
+        self.logged_in_client = client
+
+        superuser_client = Client()
+
+        self.admin_user = User.objects.create_superuser(
+            username='admin',
+            password='admin',
+            email='admin@example.com',
+        )
+
+        superuser_client.login(
+            username='admin',
+            password='admin',
+        )
+
+        self.superuser_client = superuser_client
+
+    def get_json_response(self, url_name, kwargs=None):
+        r = self.logged_in_client.get(
+            reverse(url_name,kwargs=kwargs or {})
+        )
+
+        try:
+            return json.loads(r.content.decode('utf-8'))
+        except Exception:
+            print(r.status_code, r.content)
+            print('Request error')
+            raise Exception('Error')
+
+    def pretty_print_json(self, obj):
+        print(json.dumps(obj, sort_keys=True, indent=4))
+
+
+class DeviceModelTestsBase(HasLoggedInClientBase):
+    def setUp(self):
+        super(DeviceModelTestsBase, self).setUp()
         n = Node()
         n.address = 'address'
         n.name = 'Test Node'
+        n.api_port = 8001
         n.save()
 
         d = Device()
@@ -41,6 +92,7 @@ class DeviceModelTestsBase(TestCase):
         self.device = d
         self.group = g
 
+
     def refresh(self, obj):
         return obj.__class__.objects.get(pk=obj.pk)
 
@@ -58,7 +110,8 @@ class DeviceBasicModelAttributesTests(DeviceModelTestsBase):
 
         n2 = Node(
             address='http://127.0.0.2',
-            name='Other node'
+            name='Other node',
+            api_port=8001
         )
 
         n2.save()
@@ -76,6 +129,7 @@ class DeviceModelTests(TestCase):
         n = Node()
         n.address = 'address'
         n.name = 'Test Node'
+        n.api_port = 8001
         n.save()
 
         d = Device()
@@ -92,6 +146,7 @@ class DeviceModelTests(TestCase):
         n = Node()
         n.address = 'address'
         n.name = 'Test Node'
+        n.api_port = 8001
         n.save()
 
         d = Device()
@@ -112,6 +167,7 @@ class DevicePropertySetterTests(TestCase):
         n = Node()
         n.address = 'address'
         n.name = 'Test Node'
+        n.api_port = 8001
         n.save()
 
         self.node = n
@@ -594,7 +650,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
     def test_create_device_on_node_rest_call(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(*args, **kwargs):
             return 201, {
                 'id' : 1001
             }
@@ -611,7 +667,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/devices/'
+            'http://' + self.node.address + ':' + str(self.node.api_port) + '/devices/'
         )
 
         self.assertIsNotNone(
@@ -649,7 +705,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
     def test_delete_device_on_node_rest_call(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(*args, **kwargs):
             return 200, {}
 
         nd.get_response = fake_get_response
@@ -667,7 +723,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/devices/{node_device_pk}/'.format(node_device_pk=self.device.node_device_pk)
+            'http://' + self.node.address + ':' + str(self.node.api_port) + '/devices/{node_device_pk}/'.format(node_device_pk=self.device.node_device_pk)
         )
 
         self.assertIsNotNone(
@@ -692,7 +748,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
     def test_update_device_on_node_rest_call(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(*args, **kwargs):
             return 200, {}
 
         nd.get_response = fake_get_response
@@ -710,7 +766,7 @@ class NodeCrudCommunicationTests(DeviceModelTestsBase):
         r = RequestLog.objects.get(pk=1)
         self.assertEqual(
             r.url,
-            self.node.address + '/devices/{node_device_pk}/'.format(node_device_pk=self.device.node_device_pk)
+            'http://' + self.node.address + ':' + str(self.node.api_port) + '/devices/{node_device_pk}/'.format(node_device_pk=self.device.node_device_pk)
         )
 
         self.assertIsNotNone(
@@ -743,7 +799,7 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
     def test_send_learn_command(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(url, method, data, auth_token):
             if data != {'command': 'learn'}:
                 print(data)
                 raise ValueError()
@@ -753,35 +809,15 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         self.assertTrue(nd.learn())
 
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
         )
 
-        r = RequestLog.objects.get(pk=1)
-        self.assertEqual(
-            r.url,
-            self.node.address + '/devices/{node_device_pk}/command/'.format(node_device_pk=self.device.node_device_pk)
-        )
-
-        self.assertIsNotNone(
-            r.response_data,
-        )
-
-        self.assertEqual(
-            r.response_status_code,
-            200
-        )
-
-        device = self.refresh(self.device)
-
-        self.assertTrue(
-            device.learnt_on_node
-        )
 
     def test_send_off_command(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(url, method, data, auth_token):
             if data != {'command': 'off'}:
                 raise ValueError()
             return 200, {}
@@ -790,29 +826,14 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         self.assertTrue(nd.turn_off())
 
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
-        )
-
-        r = RequestLog.objects.get(pk=1)
-        self.assertEqual(
-            r.url,
-            self.node.address + '/devices/{node_device_pk}/command/'.format(node_device_pk=self.device.node_device_pk)
-        )
-
-        self.assertIsNotNone(
-            r.response_data,
-        )
-
-        self.assertEqual(
-            r.response_status_code,
-            200
         )
 
     def test_send_on_command(self):
         nd = NodeDeviceCommunicator(device=self.device)
 
-        def fake_get_response(url, method, data):
+        def fake_get_response(url, method, data, auth_token):
             if data != {'command': 'on'}:
                 print(data)
                 raise ValueError()
@@ -821,29 +842,25 @@ class NodeControlCommunicationsTests(DeviceModelTestsBase):
         nd.get_response = fake_get_response
         self.assertTrue(nd.turn_on())
 
+        # Does not send requests anymore.
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
         )
 
-        r = RequestLog.objects.get(pk=1)
-        self.assertEqual(
-            r.url,
-            self.node.address + '/devices/{node_device_pk}/command/'.format(node_device_pk=self.device.node_device_pk)
-        )
-
-        self.assertIsNotNone(
-            r.response_data,
-        )
-
-        self.assertEqual(
-            r.response_status_code,
-            200
-        )
 
 class HubDeviceOptionsTests(TestCase):
     def test_get_options_for_device(self):
+        self.user = User.objects.create_user(
+            username='test',
+            password='test'
+        )
+
         client = Client()
+        client.login(
+            username='test',
+            password='test'
+        )
 
         response = client.get(
             reverse('device-options')
@@ -908,8 +925,6 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.device.node_device_pk = 1001
         self.device.save()
 
-        self.client = Client()
-
     def test_should_get_all_devices(self):
         for i in range(10):
             Device(
@@ -920,7 +935,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                     node=self.node
                 ).save()
         
-        response = self.client.get(
+        response = self.logged_in_client.get(
             reverse('device-list')
         )
 
@@ -929,8 +944,8 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.assertEqual(len(response_json), Device.objects.all().count())
 
     def test_should_get_single_device(self):
-        response = self.client.get(
-            reverse('device-detail', kwargs={'pk': self.device.pk}),
+        response = self.logged_in_client.get(
+            reverse('device-extra', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -950,7 +965,10 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'house': 'A',
                         'model': self.device.model,
                         'name': 'TestDevice',
-                        'node': self.device.node.pk,
+                        'node': {
+                            'id': self.device.node.pk,
+                            'name': self.device.node.name,
+                        },
                         'node_device_pk': 1001,
                         'property_iteration': 1,
                         'protocol': self.device.protocol,
@@ -973,7 +991,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
     def test_should_get_ok_response_when_sending_create(self):
-        response = self.client.put(
+        response = self.logged_in_client.put(
             reverse('device-detail', kwargs={'pk': self.device.pk}),
             json.dumps({
                 'name' : 'New testDevice',
@@ -1010,7 +1028,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
 
     def test_should_get_ok_response_when_sending_update(self):
-        response = self.client.put(
+        response = self.logged_in_client.put(
             reverse('device-detail', kwargs={'pk': self.device.pk}),
             json.dumps({
                 'name' : 'New testDevice',
@@ -1032,7 +1050,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
 
     def test_should_get_ok_response_when_sending_delete(self):
-        response = self.client.delete(
+        response = self.logged_in_client.delete(
                 reverse('device-detail', kwargs={'pk': self.device.pk}),
                 content_type='application/json'
         )
@@ -1044,42 +1062,320 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
         self.assertEqual(Device.objects.all().count(), 0)
 
+    def test_should_get_forbidden_if_not_admin_response_when_sending_command_learn(self):
+        self.assertFalse(
+            self.user.is_superuser
+        )
+        response = self.logged_in_client.get(
+            reverse('device-learn', kwargs={'pk': self.device.pk}),
+        )
 
-    def test_should_get_ok_response_when_sending_command_learn(self):
-        response = self.client.get(
-                reverse('device-learn', kwargs={'pk': self.device.pk}),
+        self.assertEqual(response.status_code, 403)
+
+        self.assertEqual(
+            0,
+            RequestLog.objects.all().count()
+        )
+
+    def test_should_get_ok_response_when_sending_command_learn_when_admin(self):
+        response = self.superuser_client.get(
+            reverse('device-learn', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)
         
         self.assertEqual(
-            1,
+            0,
             RequestLog.objects.all().count()
         )
 
     def test_should_get_ok_response_when_sending_command_on(self):
-        response = self.client.get(
-                reverse('device-on', kwargs={'pk': self.device.pk}),
+        response = self.logged_in_client.get(
+             reverse('device-on', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)
-        
 
         self.assertEqual(
-            1,
+            self.refresh(self.device).state,
+            1
+        )
+
+        self.assertEqual(
+            0,
             RequestLog.objects.all().count()
         )
 
+    def test_should_get_ok_response_when_sending_command_dimm_with_values_within_range(self):
+        response = self.logged_in_client.get(
+                reverse('device-dim', kwargs={'pk': self.device.pk, 'dimlevel' : 50}),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            0,
+            RequestLog.objects.all().count()
+        )
+
+        d = self.refresh(self.device)
+
+        self.assertEqual(
+            d.state,
+            50
+        )
 
     def test_should_get_ok_response_when_sending_command_off(self):
-        response = self.client.get(
-                reverse('device-off', kwargs={'pk': self.device.pk}),
+        response = self.logged_in_client.get(
+            reverse('device-off', kwargs={'pk': self.device.pk}),
         )
 
         self.assertEqual(response.status_code, 200)
-        
+
         self.assertEqual(
-            1,
+            self.refresh(self.device).state,
+            0
+        )
+
+        self.assertEqual(
+            0,
             RequestLog.objects.all().count()
+        )
+
+
+class DeviceGroupAPITests(DeviceModelTestsBase):
+    def setUp(self):
+        super(DeviceGroupAPITests, self).setUp()
+
+        self.device.node_device_pk = 666
+        self.device.save()
+
+    def test_should_get_groups(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-list')
+        )
+
+        self.assertJSONEqual(
+            response.content.decode('utf-8'),
+            json.dumps(
+                [
+                    {
+                        'id': self.group.pk,
+                        'name': self.group.name,
+                        'state': 0,
+                        'devices': [
+                            {
+                                'id': self.device.pk,
+                                'name': self.device.name,
+                            },
+                        ]
+                    },
+                ]
+            )
+        )
+
+    def test_should_get_ok_response_when_set_group_to_on(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-on', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+    def test_should_get_ok_response_when_set_group_to_off(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-off', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+    def test_should_set_device_states_when_set_group_to_on(self):
+        self.assertIsNone(
+            self.device.state
+        )
+        response = self.logged_in_client.get(
+            reverse('devicegroup-on', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            1
+        )
+
+    def test_should_set_device_states_when_set_group_to_off(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-off', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            0
+        )
+
+
+class DeviceGroupStateTests(DeviceModelTestsBase):
+    def setUp(self):
+        super(DeviceGroupStateTests, self).setUp()
+
+        self.device.node_device_pk = 666
+        self.device.save()
+
+        self.device2 = Device(
+            name='device2',
+            protocol=Device.PROTOCOL_ARCHTEC,
+            model=Device.MODEL_SELFLEARNING_DIMMER,
+            node=self.node,
+        )
+        self.device2.save()
+
+        self.device3 = Device(
+            name='device3',
+            protocol=Device.PROTOCOL_ARCHTEC,
+            model=Device.MODEL_SELFLEARNING_SWITCH,
+            node=self.node,
+        )
+        self.device3.save()
+
+        self.group.devices.add(self.device2)
+        self.group.devices.add(self.device3)
+
+        self.assertEqual(
+            self.group.devices.all().count(),
+            3
+        )
+
+        Device.objects.all().update(
+            node_device_pk=666
+        )
+
+    def helper_get_device_group_state(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-list')
+        )
+
+        return json.loads(response.content.decode('utf-8'))[0]['state']
+
+    def test_should_have_device_group_state_false_if_all_devices_are_none(self):
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            0
+        )
+
+    def test_should_have_state_true_if_all_devices_are_on(self):
+        Device.objects.all().update(
+            state=1
+        )
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+    def test_should_have_state_true_if_one_device_is_on(self):
+        self.device.state = 1
+        self.device.save()
+
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+    def test_should_have_state_true_if_only_one_device_dimmer_is_not_off(self):
+        self.device2.state = 33
+        self.device2.save()
+
+        self.assertEqual(
+            self.group.state,
+            1
+        )
+
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+    def test_should_have_state_false_if_all_devices_are_off(self):
+        Device.objects.all().update(
+            state=0
+        )
+        self.assertEqual(
+            self.helper_get_device_group_state(),
+            0
+        )
+
+    def test_should_not_have_state_true_if_there_is_no_devices(self):
+        Device.objects.all().delete()
+        self.assertNotEqual(
+            self.helper_get_device_group_state(),
+            1
+        )
+
+
+    def test_should_set_dimmer_to_full_effect_when_sending_to_command_on_on_group(self):
+        response = self.logged_in_client.get(
+            reverse('devicegroup-on', kwargs={
+                'pk': self.group.pk
+            })
+        )
+
+        self.assertEqual(
+            self.refresh(self.device2).state,
+            255
+        )
+
+
+class DeviceOrderingTests(DeviceModelTestsBase):
+    def setUp(self):
+        super(DeviceOrderingTests, self).setUp()
+        self.device2 = Device(
+            name='ZDevice',
+            protocol=Device.PROTOCOL_ARCHTEC,
+            model=Device.MODEL_SELFLEARNING_DIMMER,
+            node=self.node,
+        )
+        self.device2.save()
+
+        self.device3 = Device(
+            name='ADevice',
+            protocol=Device.PROTOCOL_ARCHTEC,
+            model=Device.MODEL_SELFLEARNING_DIMMER,
+            node=self.node,
+        )
+        self.device3.save()
+
+    def test_should_be_in_alphabetical_order(self):
+        response = self.logged_in_client.get(
+            reverse('device-list')
+        )
+
+        response_obj = json.loads(
+            response.content.decode('utf-8'),
+        )
+
+        self.assertEqual(
+            response_obj[0]['name'],
+            'ADevice'
+        )
+
+        self.assertEqual(
+            response_obj[1]['name'],
+            'TestDevice'
+        )
+
+        self.assertEqual(
+            response_obj[2]['name'],
+            'ZDevice'
         )
 

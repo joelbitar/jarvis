@@ -1,6 +1,8 @@
+from django.utils import timezone
 from django.db import models
 from device.conf import DeviceConfig
 from device.commands import CommandDispatcher
+import json
 
 
 # Create your models here.
@@ -40,7 +42,16 @@ class Device(models.Model):
     system = models.CharField(max_length=12, null=True, blank=True, default=None)
     units = models.CharField(max_length=12, null=True, blank=True, default=None)
     fade = models.CharField(max_length=12, null=True, blank=True, default=None)
+
     written_to_conf = models.BooleanField(default=False)
+
+    @property
+    def model_string(self):
+        return self.model
+
+    @property
+    def protocol_string(self):
+        return self.protocol
 
     @property
     def config_id(self):
@@ -60,6 +71,4 @@ class Device(models.Model):
 
     def __str__(self):
         return self.name
-
-
 

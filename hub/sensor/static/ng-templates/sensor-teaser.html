@@ -1,9 +1,13 @@
-<div layout="column" layout-align="start center">
-    <h4>
-        {{ sensor.name }}
-    </h4>
+<div layout="column" layout-xs="row" layout-align="start center" layout-align-xs="space-around center">
+    <div flex-xs="50">
+        <h4>
+            <a ng-href="#/sensors/{{ sensor.id }}/">{{ sensor.name }}</a>
+        </h4>
+    </div>
 
-    <div>
-        <span>{{ sensor.temperature }}°C</span> <span>{{ sensor.humidity }}%</span>
+    <div flex-xs="50">
+        <div>
+            <span>{{ sensor.temperature }}°C</span> <span>{{ sensor.humidity }}%</span>
+        </div>
     </div>
 </div>

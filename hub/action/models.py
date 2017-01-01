@@ -8,16 +8,34 @@ from device.models import DeviceGroup
 
 class Action(models.Model):
     """
-    an action has none or several buttons and sensors
+    an action has none or more triggers (buttons, sensors, times, sun-events etc)
+    todo: an action should have conditions
     and a bunch of devices that it can control.
     """
     name = models.CharField(max_length=256)
     trigger_buttons = models.ManyToManyField(Button, through='ActionButton', related_name='actions')
     trigger_sensors = models.ManyToManyField(Sensor, through='ActionSensor', related_name='actions')
 
+    # condition_timer =...
+
     # Gets controlled
-    action_devices = models.ManyToManyField(Device)
-    action_device_groups = models.ManyToManyField(DeviceGroup)
+    action_devices = models.ManyToManyField(Device, blank=True)
+    action_device_groups = models.ManyToManyField(DeviceGroup, blank=True)
+
+    #If the action is a blocks sending, Nothing gets transmitted. This is used when there is a connection outside of Yarvis.
+    block_sending = models.BooleanField(default=False, help_text='If set to True, we will NOT send the signal. but we will pretend we did.')
+
+    def __unicode__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+"""
+class ActionHistory(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    action = models.ForeignKey(Action)
+"""
 
 
 class ActionUnitBase(models.Model):
@@ -31,10 +49,16 @@ class ActionUnitBase(models.Model):
 
 
 class ActionSensor(ActionUnitBase):
+    """
+    Sensors like humidity and temperature sensors
+    """
     sensor = models.ForeignKey(Sensor)
 
 
 class ActionButton(ActionUnitBase):
+    """
+    This can also be motion sensors, door-sensors (and more?)
+    """
     COMMAND_FILTER_NONE = 1
     COMMAND_FILTER_ON = 2
     COMMAND_FILTER_OFF = 3
@@ -48,15 +72,31 @@ class ActionButton(ActionUnitBase):
 
     command_filter = models.PositiveSmallIntegerField(choices=CONTROLS_CHOICES, default=COMMAND_FILTER_NONE, help_text="What signals are passed through")
 
+    def execute_on_communicator(self, method_key, device):
+        communicator = device.get_communicator()
+        method = getattr(communicator, {
+            Button.METHOD_ON: 'turn_on',
+            Button.METHOD_OFF: 'turn_off',
+            Button.METHOD_LEARN: 'learn',
+        }.get(method_key))
+        method.__call__()
+
+    def set_device_state_without_communicator(self, method_key, device):
+        device.state = {
+            Button.METHOD_OFF: 0,
+            Button.METHOD_ON: 1,
+            Button.METHOD_LEARN: device.state
+        }.get(method_key)
+        device.save()
+
     def execute_method(self, devices, method_key):
         for device in devices:
-            communicator = device.get_communicator()
-            method = getattr(communicator, {
-                Button.METHOD_ON: 'turn_on',
-                Button.METHOD_OFF: 'turn_off',
-            }.get(method_key))
-
-            method.__call__()
+            # If we block sending, just set the state
+            if self.action.block_sending:
+                self.set_device_state_without_communicator(method_key, device)
+            else:
+                # This is the Norm. We execute on communicator
+                self.execute_on_communicator(method_key, device)
 
     def is_valid(self, signal, method_key):
         if self.command_filter == self.COMMAND_FILTER_NONE:
@@ -86,6 +126,12 @@ class ActionButton(ActionUnitBase):
             self.execute_method(group.devices.all(), method_key)
 
         return True
+
+    def __unicode__(self):
+        return self.button.name
+
+    def __str__(self):
+        return self.button.name
 
 
 

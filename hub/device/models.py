@@ -87,11 +87,20 @@ class Device(models.Model):
 
     class Meta:
         app_label = 'device'
+        ordering = ('name', )
 
 
 class DeviceGroup(models.Model):
     name = models.CharField(max_length=12, help_text=_("'Kitchen', 'Driveway'"))
     devices = models.ManyToManyField(Device)
+
+
+    @property
+    def state(self):
+        if self.devices.filter(state__gte=1).count() > 0:
+            return 1
+
+        return 0
 
     def __str__(self):
         return self.name

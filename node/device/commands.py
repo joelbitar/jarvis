@@ -3,8 +3,10 @@ import os
 from subprocess import call
 from django.core import mail
 
+
 class CommandError(Exception):
     pass
+
 
 class BaseCommand(object):
     def is_in_test_mode(self):
@@ -15,6 +17,7 @@ class BaseCommand(object):
 
 
 class CommandDispatcher(BaseCommand):
+    COMMAND_NAME_WHITE_LIST = ['on', 'off', 'learn', 'dim']
     __device = None
     __send_commands = True
 
@@ -33,13 +36,36 @@ class CommandDispatcher(BaseCommand):
         return self.__device
 
     def execute_command(self, command_name, **kwargs):
-        if command_name not in ['on', 'off', 'learn']:
+        """
+        Executes command on command-line, with the 'tdtool' commandline utility.
+        """
+        if command_name not in self.COMMAND_NAME_WHITE_LIST:
             raise CommandError('command name "{command_name}" is not in white list'.format(command_name=command_name))
 
+        # Command name
+        command = ['tdtool']
+
+        # If dim command add --dimlevel
+        if command_name == 'dim':
+            command += ['--dimlevel', str(kwargs.get('dimlevel'))]
+
+        # Add the acutal command name like on, off, learn etc
+        command += ['--{command_name}'.format(command_name=command_name)]
+
+        # Add the device ID
+        command += [str(self.device.pk)]
+
         if self.send_commands:
-            call(['tdtool', '--' + command_name, str(self.device.pk)])
+            try:
+                call(command)
+            except FileNotFoundError:
+                print('Could not find executable file')
+                return False
+
         else:
-            print('Does not send command, in test mode.')
+            print('Does not call command, in test mode. $ ' + " ".join(command))
+
+        return True
 
     def learn(self):
         self.execute_command('learn')
@@ -49,3 +75,9 @@ class CommandDispatcher(BaseCommand):
 
     def turn_off(self):
         self.execute_command('off')
+
+    def dim(self, dimlevel):
+        self.execute_command(
+            'dim',
+            dimlevel=dimlevel
+        )

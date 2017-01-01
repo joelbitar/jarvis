@@ -1,37 +1,105 @@
 {% load static i18n %}
+{% load version_tags %}
 
 <html lang="en" ng-app="jarvis">
-  <head>
-    <link rel="stylesheet" href="{% static "css/angular-material.min.css" %}">
-    <link rel="stylesheet" href="{% static "css/device.css" %}">
-  </head>
-  <body layout="column">
-    <div ng-view></div>
+<head>
+    {# Angular JS Base url for Routing #}
+    <base href="/">
+    <link rel="stylesheet" media="all" href="{% static "css/angular-material.min.css" %}{% version_extension %}">
+    <link rel="stylesheet" media="all" href="{% static "css/device.css" %}{% version_extension %}">
+    <link rel="stylesheet" media="all" href="{% static "css/jarvis.css" %}{% version_extension %}">
+
+    <link rel="stylesheet" media="all" href="{% static "fonts/weather-icons/css/weather-icons.min.css" %}{% version_extension %}">
+    <title>YARVIS</title>
+    {# for mobile renderers #}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {# theme color for progressive apps #}
+    <meta name="theme-color" content="#db5945">
+    <link rel="icon" type="image/png" href="{% static 'images/logo/logo.png' %}{% version_extension %}" />
+    <link rel="apple-touch-icon" href="{% static 'images/logo/logo-180.png' %}{% version_extension %}" />
+
+    <link rel="manifest" href="{% url 'manifest-json' %}">
+</head>
+<body layout="column">
+<md-toolbar>
+    <div layout="row">
+        <div layout="row">
+            <h2 class="md-toolbar-tools">
+                <md-button ng-click="toggleSidenav('left')" hide-gt-md class="md-icon-button">
+                    <md-icon aria-label="Menu" md-svg-icon="{% static 'images/icons/menu.svg' %}"></md-icon>
+                </md-button>
+                <a href="/" class="logo">YARVIS</a>
+            </h2>
+        </div>
+        <div layout="row" hide show-gt-md>
+            <div class="md-toolbar-tools">
+                <md-button ng-href="/">Översikt</md-button>
+                <md-button ng-href="/weather/">Väder</md-button>
+                <md-button ng-href="/rooms/">Rum</md-button>
+                <md-button ng-href="/lights/">Lampor</md-button>
+                <md-button ng-href="/appliances/">Apparater</md-button>
+                <md-button ng-href="/devices/">Enheter</md-button>
+            </div>
+        </div>
+        <div layout="row" flex layout-align="end center" hide show-gt-sm>
+            <div>
+                <md-button ng-href="/administration/">Administration</md-button>
+            </div>
+        </div>
+    </div>
+</md-toolbar>
+
+<div ng-view></div>
 
 
-    <script type="text/javascript" id="settings">
-          var django = {
-              "base_ng_template_url" : "{% static 'ng-templates' %}/",
-              "base_static_url" : "{% static '' %}",
-              "csrf_token" : "{{ csrf_token }}",
-              "proxy_url" : {% if not MAIN_PROXY_URL %}""{% else %}"{{ PROXY_URL }}"{% endif %}
-          };
-      </script>
-    <!-- Angular Material Dependencies -->
-    <script src="{% static "js/angularjs/angular.min.js" %}"></script>
-    <script src="{% static "js/angularjs/angular-animate.min.js" %}"></script>
-    <script src="{% static "js/angularjs/angular-aria.min.js" %}"></script>
-    <script src="{% static "js/angularjs/angular-route.min.js" %}"></script>
+<script type="text/javascript" id="settings">
+    var django = {
+        "base_ng_template_url" : "{% static 'ng-templates' %}/",
+        "base_static_url" : "{% static '' %}",
+        "csrf_token" : "{{ csrf_token }}",
+        "proxy_url" : {% if USE_PROXY %}"{{ PROXY_URL }}"{% else %}""{% endif %},
+        "version" : "{{ VERSION }}"
+    };
+</script>
 
-    <script src="{% static "js/lib/lodash.min.js" %}"></script>
-    <script src="{% static "js/lib/restangular.min.js" %}"></script>
+<script src="{% static "bootstrap.js" %}"></script>
 
-    <script src="{% static "js/angular-material.min.js" %}"></script>
+{# AngularJS Core #}
+<script src="{% static "js/angularjs/angular.min.js" %}{% version_extension %}"></script>
 
-    <script src="{% static "js/startpage.js" %}"></script>
-    <script src="{% static "js/device.js" %}"></script>
-    <script src="{% static "js/sensor.js" %}"></script>
+{# AngularJS i18n #}
+<script src="{% static "js/angularjs/i18n/angular-locale_sv-se.js" %}{% version_extension %}"></script>
 
-    <script src="{% static "js/app.js" %}"></script>
-  </body>
+{# AngularJS Core team modules #}
+<script src="{% static "js/angularjs/angular-animate.min.js" %}{% version_extension %}"></script>
+<script src="{% static "js/angularjs/angular-aria.min.js" %}{% version_extension %}"></script>
+<script src="{% static "js/angularjs/angular-route.min.js" %}{% version_extension %}"></script>
+<script src="{% static "js/angularjs/angular-cookies.min.js" %}{% version_extension %}"></script>
+
+{# Third party helpers and libraries #}
+<script src="{% static "js/lib/lodash.min.js" %}{% version_extension %}"></script>
+<script src="{% static "js/lib/restangular.min.js" %}{% version_extension %}"></script>
+<script src="{% static "js/lib/visibly.js" %}{% version_extension %}"></script>
+
+{# AngularJS Third party modules #}
+<script src="{% static "js/lib/ngStorage.min.js" %}{% version_extension %}"></script>
+<script src="{% static "js/focus.js" %}{% version_extension %}"></script>
+
+{# UI Libraries #}
+<script src="{% static "js/angular-material.min.js" %}{% version_extension %}"></script>
+
+{# YARVIS controllers #}
+<script src="{% static "js/startpage.js" %}{% version_extension %}"></script>
+<script src="{% static "js/device.js" %}{% version_extension %}"></script>
+<script src="{% static "js/node.js" %}{% version_extension %}"></script>
+<script src="{% static "js/devicegroup.js" %}{% version_extension %}"></script>
+<script src="{% static "js/sensor.js" %}{% version_extension %}"></script>
+<script src="{% static "js/weather.js" %}{% version_extension %}"></script>
+<script src="{% static "js/admin.js" %}{% version_extension %}"></script>
+<script src="{% static "js/login.js" %}{% version_extension %}"></script>
+<script src="{% static "js/signals.js" %}{% version_extension %}"></script>
+
+{# Main Angular App #}
+<script src="{% static "js/app.js" %}{% version_extension %}"></script>
+</body>
 </html>

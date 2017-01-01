@@ -1,3 +1,30 @@
 /*
 4a203b
 */
+div.layout-content{
+    max-width: 864px;
+    margin: auto;
+}
+
+a, a:visited{
+    color: #3F51B5;
+    text-decoration: none;
+}
+a:hover{
+    text-decoration: underline;
+}
+
+i.wi{
+    font-size: 18px;
+}
+
+a.logo{
+    color: white;
+}
+
+div.floating-toolbar{
+    position: fixed;
+    bottom: 1px;
+    z-index: 1;
+    right: 1px;
+}

@@ -1,0 +1,27 @@
+<div layout="column" ng-controller="WeatherController">
+    <div layout="column" layout-align="space-between center" ng-repeat="forecast_group in forecast_groups">
+        <div layout="row">
+            DATUM
+        </div>
+        <div layout="row" layout-align="space-between center">
+            <div layout="column" ng-repeat="forecast in forecast_group">
+                <div layout="row" ng-if="forecast.valid_time">
+                    {{ forecast.valid_time | date : "HH:mm" }}
+                </div>
+                <div layout="column" ng-if="forecast.valid_time__min">
+                    {{ forecast.valid_time__min | date : "HH" }} - {{ forecast.valid_time__max | date : "HH" }} {{ forecast.valid_time__min | date :"dd/M" }}
+                </div>
+
+                <div layout="row">
+                    <i class="wi wi-thermometer"></i>
+                    &nbsp;
+                    <span>
+                        {{ forecast.t }}°
+                    </span>
+                    &nbsp;
+                    {{ forecast.pit }}mm
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

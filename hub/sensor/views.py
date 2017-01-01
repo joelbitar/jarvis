@@ -1,11 +1,31 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from rest_framework import viewsets
+from rest_framework import generics
 from sensor.models import Sensor
+from sensor.models import SensorLog
+
+from rest_framework.response import Response
+from rest_framework import filters
 
 from sensor.serializers import SensorSerializer
+from sensor.serializers import SensorLogSerializer
 
 
 class SensorViewSet(viewsets.ModelViewSet):
-    queryset = Sensor.objects.all()
+    queryset = Sensor.objects.filter(active=True)
     serializer_class = SensorSerializer
+    filter_backends = (filters.OrderingFilter,)
+    ordering_fields = ('name', 'id',)
+    ordering = ('name',)
+
+
+class SensorLogView(generics.ListAPIView):
+    def list(self, request, *args, **kwargs):
+        return Response(
+            SensorLogSerializer(SensorLog.objects.all()[:10], many=True).data
+        )
 
 

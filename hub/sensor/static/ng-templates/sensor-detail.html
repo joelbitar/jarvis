@@ -1,0 +1,24 @@
+<div layout="column" class="layout-content" layout-align="start center">
+    <h1>
+        {{ sensor.name }}
+    </h1>
+    <div>
+        {{ sensor.temperature }}°C
+    </div>
+    <div>
+        {{ sensor.humidity }} % luftfuktighet
+    </div>
+
+    <md-list>
+        <md-item ng-repeat="log in sensor_logs">
+            <md-item-content>
+            <div class="md-tile-left">
+                {{ log.temperature }}°
+            </div>
+            <div class="md-tile-content">
+                {{ log.temperature }}°C {{ log.humidity }} % luftfuktighet
+            </div>
+                </md-item-content>
+        </md-item>
+    </md-list>
+</div>

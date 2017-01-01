@@ -1,19 +1,28 @@
 from rest_framework import viewsets
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
+
 from node.models import Node
-
 from node.serializers import NodeSerializer
-
+from node.serializers import NodeDetailsSerializer
 from node.communicator import NodeCommunicator
 
 
 class NodeViewSet(viewsets.ModelViewSet):
     queryset = Node.objects.all()
-    serializer_class = NodeSerializer 
+    serializer_class = NodeSerializer
+
+
+class NodeDetailView(generics.RetrieveAPIView):
+    queryset = Node.objects.all()
+    serializer_class = NodeDetailsSerializer
 
 
 class NodeCommandViewBase(APIView):
+    permission_classes = (IsAdminUser, )
+
     def execute_request(self, node):
         raise NotImplementedError()
 
@@ -23,17 +32,27 @@ class NodeCommandViewBase(APIView):
         if not self.execute_request(node):
             return Response(status=500)
 
-        return Response()
+        return Response(
+            {}
+        )
 
 
 class NodeWriteConfView(NodeCommandViewBase):
     def execute_request(self, node):
         communicator = NodeCommunicator(node=node)
-        return communicator.write_conf()
+        if communicator.write_conf():
+            return Response()
 
 class NodeRestartDaemonView(NodeCommandViewBase):
     def execute_request(self, node):
         communicator = NodeCommunicator(node=node)
-        return communicator.restart_daemon()
+        if communicator.restart_daemon():
+            return Response()
 
 
+class NodeSyncView(NodeCommandViewBase):
+    def execute_request(self, node):
+        for device in node.device_set.filter(node_device_pk=None):
+            device.get_communicator().create()
+
+        return True

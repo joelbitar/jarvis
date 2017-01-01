@@ -3,3 +3,6 @@ db.sqlite3
 .idea
 *.swp
 secret.py
+settings_*.py
+hub/collected_static/*
+node/collected_static/*

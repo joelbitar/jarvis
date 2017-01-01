@@ -14,6 +14,15 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+try:
+    import psycopg2
+except ImportError:
+    # Fall back to psycopg2-ctypes
+    try:
+        from psycopg2cffi import compat
+        compat.register()
+    except ImportError:
+        print('could not import any postgres db connector')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
@@ -42,8 +51,11 @@ INSTALLED_APPS = (
     'django_extensions',
 
     'rest_framework',
+    'rest_framework.authtoken',
 
     'rest_router',
+
+    'authentication',
 
     'device',
     'node',
@@ -52,10 +64,14 @@ INSTALLED_APPS = (
     'button',
     'sensor',
     'action',
+    'forecast',
 
+    'progressive',
     'angular',
     'material',
-    #'timer',
+    'timer',
+
+    'janitor',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -108,7 +124,7 @@ DATABASES = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Stockholm'
 
 USE_I18N = True
 
@@ -121,12 +137,31 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+
+TEST_MODE = None
 # If we should use an alternate URL to hub. Specify the absolute URL to hub and Django will try to proxy the url
 MAIN_HUB_URL = None
 #MAIN_HUB_URL = 'http://127.0.0.1:9999/'
 
+VERSION = "0.5"
+AUTO_GENERATE_VERSION = False
+
 try:
     from hub.secret import *
+    if MAIN_HUB_URL is not None:
+        if not MAIN_HUB_URL.endswith('/'):
+            raise ValueError('MAIN_HUB_URL does not end with slash, exiting')
 except ImportError:
     print('Could not find secret.py :(')

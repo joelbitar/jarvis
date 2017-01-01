@@ -1,7 +1,9 @@
-Django==1.8a1
+Django==1.8
 djangorestframework==3.0.4
 requests==2.5.1
 asyncio==3.4.2
 tellcore-py==1.1.0
 django-extensions
-beautifulsoup4==4.3.2
+beautifulsoup4==4.5.1
+pytz==2015.4
+pyzmq==14.7.0

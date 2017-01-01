@@ -14,6 +14,15 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+try:
+    import psycopg2
+except ImportError:
+    # Fall back to psycopg2-ctypes
+    try:
+        from psycopg2cffi import compat
+        compat.register()
+    except ImportError:
+        print('Could not import psycopg2cffi (for PYPY)')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
@@ -40,6 +49,11 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'rest_framework.authtoken',
+
+    'django_extensions',
+
+    'authentication',
 
     'device',
 )
@@ -100,6 +114,15 @@ USE_L10N = True
 
 USE_TZ = True
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -112,5 +135,16 @@ TELLSTICK_DEVICE_NODE = '/dev/tellstick'
 TELLSTICK_CONFIG_PATH = '/etc/tellstick.conf'
 TELLSTICK_RESTART_DAEMON_SCRIPT_PATH = os.path.join(BASE_DIR, 'scripts', 'restart_daemon.sh')
 
-HUB_URL = 'http://127.0.0.1:8099'
+HUB_HOST = '127.0.0.1'
+HUB_URL = 'http://' + HUB_HOST + ':8099'
 HUB_API_URL = HUB_URL + '/api/'
+
+NODE_NAME = 'testnode'
+
+try:
+    from node.secret import *
+    if HUB_URL is not None:
+        if not HUB_API_URL.endswith('/'):
+            raise ValueError('MAIN_HUB_URL does not end with slash, exiting')
+except ImportError:
+    print('Could not find secret.py :(')

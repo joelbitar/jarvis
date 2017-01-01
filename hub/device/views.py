@@ -7,11 +7,18 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import viewsets
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
+from rest_framework import filters
 
 from device.serializers import DeviceSerializer
+from device.serializers import DeviceDetailSerializer
+from device.serializers import DeviceGroupSerializer
 from device.models import Device
+from device.models import DeviceGroup
 from node.models import RequestLog
 from button.models import Button
 
@@ -19,107 +26,106 @@ from button.models import Button
 class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
+    filter_backends = (filters.OrderingFilter,)
+    ordering_fields = ('name', 'id',)
+    ordering = ('name',)
 
 
-class DeviceCommandViewBase(APIView):
-    __device = None
+class DeviceDetailedView(generics.RetrieveAPIView):
+    queryset = Device.objects.all()
+    serializer_class = DeviceDetailSerializer
 
-    @property
-    def device(self):
-        return self.__device
 
+class CommandViewBase(APIView):
     def is_in_test_mode(self):
         if hasattr(mail, 'outbox'):
             return True
         else:
             return False
 
-    def command_data(self):
+    def execute_request(self, request, **kwargs):
         raise NotImplementedError()
 
-    def build_url(self):
-        return '{node_url}/devices/{device_pk}/execute/'.format(
-                node_url=self.device.node.address,
-                device_pk=self.device.pk
+    def set_model(self, pk):
+        raise NotImplementedError()
+
+    def get(self, request, pk, **kwargs):
+        if not self.set_model(pk=pk):
+            return Response(status=404)
+
+        ## HERE, change to using communicator
+        success = self.execute_request(
+            request,
+            **kwargs
+        )
+
+        if not success:
+            return Response(
+                status=500
             )
 
-    def execute_request(self, url, data):
-        if self.is_in_test_mode():
-            return 200, {}
-
-        response = requests.post(
-            url,
-            json.dumps(data),
-            content_type='application/json'
-        )
-
-        return response.status_code, response.json()
-
-
-    def get(self, request, pk, format=None):
-        try:
-            self.__device = Device.objects.get(pk=pk)
-        except Device.DoesNotExist:
-            return Response(status_code=404)
-
-
-        url, data = self.command_data()
-
-        request_log_object = RequestLog(
-            url=url,
-            request_data=json.dumps(data)
-        )
-        request_log_object.save()
-
-        status_code, json_response = self.execute_request(
-            url, data
-        )
-
-        request_log_object.response_status_code = status_code
-        request_log_object.response_data = json.dumps(data) 
-        request_log_object.response_received = timezone.now()
-        request_log_object.save()
-
-        if status_code not in [200]:
-            return Response(status_code=400)
-        
         return Response()
 
+
+class DeviceCommandViewBase(CommandViewBase):
+    __device = None
+
+    @property
+    def device(self):
+        return self.__device
+
+    def set_model(self, pk):
+        try:
+            self.__device = Device.objects.get(pk=pk)
+            return True
+        except Device.DoesNotExist:
+            return False
+
+
+class DeviceGroupCommandViewBase(DeviceCommandViewBase):
+    __group = None
+    model = DeviceGroup
+
+    @property
+    def group(self):
+        return self.__group
+
+    def set_model(self, pk):
+        try:
+            self.__group = DeviceGroup.objects.get(pk=pk)
+            return True
+        except DeviceGroup.DoesNotExist:
+            return False
+
+
 class DeviceCommandOnView(DeviceCommandViewBase):
-    def command_data(self):
-        url = self.build_url()
-        data = {
-                'command': 'on',
-        }
-        return url, data
+    def execute_request(self, request, **kwargs):
+        communicator = self.device.get_communicator()
+        if communicator.turn_on():
+            return Response()
 
 
 class DeviceCommandOffView(DeviceCommandViewBase):
-    def command_data(self):
-        url = self.build_url()
-        data = {
-                'command': 'off',
-        }
-        return url, data
+    def execute_request(self, request, **kwargs):
+        communicator = self.device.get_communicator()
+        if communicator.turn_off():
+            return Response()
+
+
+class DeviceCommandDimView(DeviceCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        communicator = self.device.get_communicator()
+        if communicator.dim(dimlevel=int(kwargs.get('dimlevel', 0))):
+            return Response()
 
 
 class DeviceCommandLearnView(DeviceCommandViewBase):
-    def command_data(self):
-        url = self.build_url()
-        data = {
-                'command': 'learn',
-        }
-        return url, data
+    permission_classes = (IsAdminUser, )
 
-
-class WriteConfigView(APIView):
-    def post(self, request):
-        pass
-
-
-class RestartDaemonView(APIView):
-    def post(self, request):
-        pass
+    def execute_request(self, request, **kwargs):
+        communicator = self.device.get_communicator()
+        if communicator.learn():
+            return Response()
 
 
 class DeviceOptionsView(APIView):
@@ -160,10 +166,42 @@ class DeviceOptionsView(APIView):
                 }
             )
 
-
         return Response(
             {
                 'protocol_model_options' : protocol_model_options,
                 'button_type_options' : button_types
             }
         )
+
+
+class DeviceGroupViewSet(viewsets.ModelViewSet):
+    queryset = DeviceGroup.objects.all()
+    serializer_class = DeviceGroupSerializer
+
+
+class DeviceGroupCommandOnView(DeviceGroupCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        result = []
+        for device in self.group.devices.all():
+            result.append(
+                {
+                    'device_id': device.pk,
+                    'result': device.get_communicator().turn_on()
+                }
+            )
+
+        return Response(result)
+
+
+class DeviceGroupCommandOffView(DeviceGroupCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        result = []
+        for device in self.group.devices.all():
+            result.append(
+                {
+                    'device_id': device.pk,
+                    'result': device.get_communicator().turn_off()
+                }
+            )
+
+        return Response(result)

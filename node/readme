@@ -10,3 +10,47 @@ $visudo
 and add
 
 joel ALL = NOPASSWD: /home/joel/projects/jarvis/node/scripts/restart_daemon.sh
+
+
+apt-get install libssl-dev
+## Python installation ## (grab 3.3.x)
+cd ~
+wget https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tar.xz
+tar -xvf Python-3.4.3.tar.xz
+cd Python-3.4.3
+./configure --prefix=/opt/python3.4.3
+make && sudo make install
+
+# Install easy_install.
+wget https://bootstrap.pypa.io/ez_setup.py
+sudo /opt/python3.3.2/bin/python3.3 ez_setup.py
+
+
+## Tellcore Installation ##
+# Copied from: https://lassesunix.wordpress.com/2013/08/12/installing-telldus-core-on-raspberry-pi/
+
+# I always work in a dedicated Src directory when compiling things...
+cd Src;mkdir telldus-core;cd telldus-core
+# Make Telldus sources available to the distribution
+sudo nano /etc/apt/sources.list.d/telldus.list
+# Add the line:
+# deb-src http://download.telldus.com/debian/ stable main
+# Make key available and update package information.
+wget http://download.telldus.se/debian/telldus-public.key
+sudo apt-key add telldus-public.key
+rm telldus-public.key
+sudo apt-get update
+
+sudo apt-get install build-essential  # already installed
+sudo apt-get build-dep telldus-core
+# This fetched the following packages
+# debhelper gettext html2text intltool-debian libgettextpo0 libunisting0 po-debconf
+
+# Install other needed packages
+sudo apt-get install cmake libconfuse-dev libftdi-dev help2man
+
+# Download sources and compile
+sudo apt-get --compile source telldus-core
+
+# Install the three packages: libtelldus-core2 telldus-core libtelldus-core-dev
+sudo dpkg --install *.deb

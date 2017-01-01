@@ -1,23 +1,56 @@
 import json
+try:
+    import zmq
+except ImportError:
+    print('Could not import zmq library, this is NOT a requirement in external hubs')
+
 import requests
+from django.conf import settings
 from datetime import datetime
 from django.core import mail
 from django.utils import timezone
 
+
 from node.models import RequestLog
+
+from node import zmqclient
 
 
 class CommunicatorBase(object):
     def is_in_test_mode(self):
+        if settings.TEST_MODE is not None:
+            return settings.TEST_MODE
+
         return hasattr(mail, 'outbox')
 
-    def get_response(self, url, method, data=None):
+    def get_response(self, url, method, data=None, auth_token=None):
+        if not method:
+            raise ValueError('Method "{method}" is not valie'.format(method=method))
+
         if self.is_in_test_mode():
             print('In test mode, does not execute {method} request'.format(method=method), 'to', url, 'with data:', data)
-            return 200, {'fake': 'request'}
+            return 200, {'fake': 'response', 'id': 666}
+
+        request_headers = {}
+        if auth_token is not None:
+            request_headers['Authorization'] = 'Token ' + auth_token
 
         request_method = getattr(requests, method)
-        response = request_method(url, data=data)
+        try:
+            request_headers['content-type'] = 'application/json'
+
+            if method in ['post', 'put']:
+                response = request_method(url, data=json.dumps(data), headers=request_headers
+            )
+            else:
+                response = request_method(url, headers=request_headers)
+
+        except requests.ConnectionError:
+            return 503, {
+                'error': 'connection_error',
+                'message': 'Could not connect to node, perhaps not running?',
+                'url': url
+            }
 
         try:
             response_json = response.json()
@@ -53,20 +86,17 @@ class CommunicatorBase(object):
             #raise exception
             pass
 
-    def execute_request(self, url, method, data=None):
+    def execute_request(self, url, method, data=None, auth_token=None):
         request_log_object = self.create_request_log(url, method, data)
 
-        status_code, response_json = self.get_response(url, method, data)
+        status_code, response_json = self.get_response(url, method, data, auth_token)
         self.update_request_log_with_response(
             request_log_object=request_log_object,
             response_status_code=status_code,
             response_json=response_json,
         )
 
-        if status_code not in [200, 201]:
-            return None
-
-        return response_json
+        return status_code, response_json
 
 
 class NodeCommunicator(CommunicatorBase):
@@ -81,7 +111,10 @@ class NodeCommunicator(CommunicatorBase):
 
     @property
     def node_url(self):
-        return self.node.address
+        return 'http://{address}:{port}'.format(
+            address=self.node.address,
+            port=self.node.api_port
+        )
 
     def build_url(self, path, **kwargs):
         return '{node_url}/{path}'.format(
@@ -89,17 +122,25 @@ class NodeCommunicator(CommunicatorBase):
             path=path.format(**kwargs)
         )
 
+    def execute_request(self, url, method, data=None, auth_token=None):
+        return super(NodeCommunicator, self).execute_request(
+            url=url,
+            method=method,
+            data=data,
+            auth_token=auth_token or self.node.auth_token
+        )
+
     def get_all_devices(self):
         pass
 
     def write_conf(self):
-        response = self.execute_request(
+        status_code, response_json = self.execute_request(
             self.build_url('conf/write/'),
             method='post',
             data={}
         )
 
-        if response == None:
+        if status_code not in [200]:
             return False
 
         self.node.device_set.all().update(
@@ -109,13 +150,13 @@ class NodeCommunicator(CommunicatorBase):
         return True
 
     def restart_daemon(self):
-        response = self.execute_request(
+        status_code, response_json = self.execute_request(
             self.build_url('conf/restart-daemon/'),
             method='post',
             data={}
         )
 
-        return response is not None
+        return status_code in [200]
 
 
 class NodeDeviceCommunicator(NodeCommunicator):
@@ -139,26 +180,51 @@ class NodeDeviceCommunicator(NodeCommunicator):
             )
         )
 
-    def get_device_command_url(self):
-        return self.get_device_url() + 'command/'
-
     def execute_device_command(self, command_name, command_data=None):
         data = {
-            'command': command_name,
+            'command_name': command_name,
+            'command_data': command_data or {},
+            'device_id': self.device.node_device_pk
         }
+        node_name = self.device.node.name
 
-        # Setting the 'data' key in request data to include all command data
-        if command_data is not None:
-            data['data'] = command_data
+        # if node name is testnode, do not continue.
+        if node_name == 'testnode':
+            print('Node name is "testnode" does NOT send message', data)
+            return True
 
-        response = self.execute_request(
-            self.get_device_command_url(),
-            method='post',
-            data=data
-        )
+        if self.is_in_test_mode():
+            print('In test mode, do not send message', data)
+            return True
 
-        return response is not None
+        # Setting socket and context if there is none.
+        try:
+            if zmqclient.sockets.get(node_name, None) is None:
+                print('Connecting socket ZeroMQ... ', self.device.node.address)
+                context = zmq.Context()
+                socket = context.socket(zmq.PUB)
+                socket.connect("tcp://{node_address}:5557".format(
+                    node_address=self.device.node.address
+                ))
+                zmqclient.sockets[node_name] = socket
 
+                # In case this is a new socket we need to sleep.
+                from time import sleep
+                sleep(0.5)
+            else:
+                socket = zmqclient.sockets.get(node_name)
+
+        # compile and send message
+            print(zmqclient.sockets)
+            socket.send_string(
+                'command:' + json.dumps(data)
+            )
+        except Exception as e:
+            print(e)
+            print('ERROR while trying to publish message', data)
+            return False
+
+        return True
 
     def serialize_device(self):
         return {
@@ -177,16 +243,18 @@ class NodeDeviceCommunicator(NodeCommunicator):
         }
 
     def create(self):
-        response = self.execute_request(
+        status_code, response_json = self.execute_request(
             self.build_url('devices/'),
             'post',
             data=self.serialize_device()
         )
 
-        if response is None:
+        print(status_code, response_json)
+
+        if status_code not in [200, 201]:
             return False
 
-        self.device.node_device_pk = response['id']
+        self.device.node_device_pk = response_json['id']
         self.device.save()
 
         return True
@@ -209,6 +277,10 @@ class NodeDeviceCommunicator(NodeCommunicator):
         return response is not None
 
     def turn_on(self):
+        # If is dimmer, set dimer to 255
+        if self.device.is_dimmable:
+            return self.dim(255)
+
         success = self.execute_device_command(
             'on'
         )
@@ -234,8 +306,9 @@ class NodeDeviceCommunicator(NodeCommunicator):
 
         return True
 
-
     def learn(self):
+        print('Learn is ignored, is not executed')
+        return True
         success = self.execute_device_command(
             'learn'
         )
@@ -247,3 +320,20 @@ class NodeDeviceCommunicator(NodeCommunicator):
         self.device.save()
 
         return True
+
+    def dim(self, dimlevel):
+        success = self.execute_device_command(
+            'dim',
+            command_data={
+                'dimlevel': dimlevel
+            }
+        )
+
+        if not success:
+            return False
+
+        self.device.state = dimlevel
+        self.device.save()
+
+        return True
+

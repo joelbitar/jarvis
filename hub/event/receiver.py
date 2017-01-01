@@ -1,11 +1,12 @@
 # Class that receives raw events
 from event.models import Signal
-from event.models import Sender 
+from event.models import Sender
 
 from django.utils import timezone
 from datetime import timedelta
 
 from button.models import Button
+from button.models import Bell
 from sensor.models import Sensor
 
 
@@ -22,8 +23,8 @@ class Receiver(object):
     def get_or_create_sender(self, event):
         sender_identifiers = {}
 
-        # Fetch attributes from the event and try to get
-        for attribute_name in ['house', 'unit', 'code']:
+        # Fetch attributes from the event and set to a dictionary, used for query.
+        for attribute_name in ['house', 'unit', 'code', 'identifier']:
             event_attribute_value = getattr(event, attribute_name)
             sender_identifiers[attribute_name] = event_attribute_value
 
@@ -42,23 +43,35 @@ class Receiver(object):
 
             return sender
 
-    def get_or_create_unit(self, event):
+    def get_or_create_unit(self, signal):
         """
         Returns a Button or Sensor event
         :return:
         """
-        unit = event.sender.get_unit()
+        unit = signal.sender.get_unit()
+
         if unit is not None:
             return unit
 
-        if event.event_class == 'command' and event.method in ['turnoff', 'turnon']:
+        if signal.event_class == 'command' and signal.method in ['turnoff', 'turnon', 'learn']:
             unit = Button()
 
-        if event.event_class == 'sensor' and event.model in ['temperaturehumidity']:
+        if signal.event_class == 'sensor' and signal.model in ['temperaturehumidity']:
             unit = Sensor()
+            # Add specific stuff for sensors.
+            unit.identifier = signal.identifier
+
+        if signal.event_class == 'command' and signal.method == 'bell':
+            unit = Bell()
+
+        if unit is None:
+            print('could not identify unit', signal.raw_command)
+            print('class', signal.event_class, 'method', signal.method)
+
+            raise NotImplementedError('Did not have a class for this unit, the event_class needs to correspond to a Model ' + signal.raw_command)
 
         unit.save()
-        unit.senders.add(event.sender)
+        unit.senders.add(signal.sender)
         unit.save()
 
         return unit
@@ -67,9 +80,15 @@ class Receiver(object):
         if key == 'class':
             key = 'event_class'
 
+        if key == 'id':
+            key = 'identifier'
+
         return key
 
     def sanitize_value(self, value):
+        if not value:
+            return None
+
         return value
 
     def parse_raw_event(self, raw_event_string):
@@ -116,6 +135,7 @@ class Receiver(object):
 
         # Propagate event
         signal.propagate()
+        # Log event and in logging
         unit.log(signal=signal)
 
         return signal, unit
