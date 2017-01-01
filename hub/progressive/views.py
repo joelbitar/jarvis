@@ -19,6 +19,7 @@ class ManifestView(APIView):
             "name": "Yet Another Rather Very Intelligent System",
             "display" : "standalone",
             "theme_color": "#673AB7",
+            "background_color": "#FAFAFA",
             "icons": [],
             "start_url": "/"
         }
@@ -31,6 +32,14 @@ class ManifestView(APIView):
             (
                 "logo-180.png",
                 "180"
+            ),
+            (
+                "logo-192.png",
+                "192"
+            ),
+            (
+                "logo-256.png",
+                "256"
             )
         )
         for image_name, size in manifest_icons:
