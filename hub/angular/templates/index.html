@@ -3,6 +3,7 @@
 
 <html lang="en" ng-app="jarvis">
 <head>
+    <base href="/">
     <link rel="stylesheet" href="{% static "css/angular-material.min.css" %}{% version_extension %}">
     <link rel="stylesheet" href="{% static "css/device.css" %}{% version_extension %}">
     <link rel="stylesheet" href="{% static "css/jarvis.css" %}{% version_extension %}">
@@ -23,22 +24,22 @@
                 <md-button ng-click="toggleSidenav('left')" hide-gt-md class="md-icon-button">
                     <md-icon aria-label="Menu" md-svg-icon="{% static 'images/icons/menu.svg' %}"></md-icon>
                 </md-button>
-                <a href="#/" class="logo">YARVIS</a>
+                <a href="/" class="logo">YARVIS</a>
             </h2>
         </div>
         <div layout="row" hide show-gt-md>
             <div class="md-toolbar-tools">
-                <md-button ng-href="#/">Översikt</md-button>
-                <md-button ng-href="#/weather/">Väder</md-button>
-                <md-button ng-href="#/rooms/">Rum</md-button>
-                <md-button ng-href="#/lights/">Lampor</md-button>
-                <md-button ng-href="#/appliances/">Apparater</md-button>
-                <md-button ng-href="#/devices/">Enheter</md-button>
+                <md-button ng-href="/">Översikt</md-button>
+                <md-button ng-href="/weather/">Väder</md-button>
+                <md-button ng-href="/rooms/">Rum</md-button>
+                <md-button ng-href="/lights/">Lampor</md-button>
+                <md-button ng-href="/appliances/">Apparater</md-button>
+                <md-button ng-href="/devices/">Enheter</md-button>
             </div>
         </div>
         <div layout="row" flex layout-align="end center" hide show-gt-sm>
             <div>
-                <md-button ng-href="#/administration/">Administration</md-button>
+                <md-button ng-href="/administration/">Administration</md-button>
             </div>
         </div>
     </div>
