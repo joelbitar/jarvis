@@ -18,26 +18,14 @@ class ManifestJSONTests(TestCase):
             200
         )
 
-        self.assertJSONEqual(
-            r.content.decode('utf-8'),
-            json.dumps(
-            {
-                "short_name": "YARVIS",
-                "name": "Yet Another Rather Very Intelligent System",
-                "display" : "standalone",
-                "theme_color": "#673AB7",
-                "icons": [
-                    {
-                        "src": static("images/logo/logo.png"),
-                        "type": "image/png",
-                        "sizes": "64x64"
-                    },
-                    {
-                        "src": static("images/logo/logo-180.png"),
-                        "type": "image/png",
-                        "sizes": "180x180"
-                    }
-                ],
-                "start_url": "/"
-            })
+        # Will throw error if not valid json
+        j = json.loads(r.content.decode('utf-8'))
+
+        self.assertEqual(
+            j["short_name"],
+            "YARVIS"
+        )
+
+        self.assertTrue(
+            len(j["icons"]) > 0
         )
