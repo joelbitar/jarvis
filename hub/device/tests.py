@@ -1,5 +1,6 @@
 import json
 
+
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -9,6 +10,8 @@ from django.test.client import Client
 
 from device.models import Device
 from device.models import DeviceGroup
+from device.models import Room
+from device.models import Placement
 from node.models import Node
 from node.models import RequestLog
 
@@ -1027,6 +1030,42 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
         self.assertEqual(d.house, 'A')
         self.assertEqual(d.unit, '1')
+
+    def test_should_get_name_of_room_when_set(self):
+        room = Room()
+        room.name = 'Rum'
+        room.save()
+
+        placement = Placement()
+        placement.name = 'Placering'
+        placement.save()
+
+        self.device.room = room
+        self.device.placement = placement
+        self.device.save()
+
+        response = json.loads(self.logged_in_client.get(
+            reverse('device-detail', kwargs={'pk' : self.device.pk})
+        ).content.decode('utf-8'))
+
+        self.assertEqual(
+            response['room']['name'],
+            'Rum'
+        )
+        self.assertEqual(
+            response['room']['id'],
+            1
+        )
+
+        self.assertEqual(
+            response['placement']['name'],
+            'Placering'
+        )
+        self.assertEqual(
+            response['placement']['id'],
+            1
+        )
+
 
 
     def test_should_get_ok_response_when_sending_update(self):
