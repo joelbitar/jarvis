@@ -56,10 +56,13 @@ class Device(models.Model):
     state = models.PositiveIntegerField(null=True, default=None, blank=True, help_text='Current State')
     written_to_conf_on_node = models.BooleanField(default=False)
     learnt_on_node = models.BooleanField(default=False)
+
     category = models.PositiveSmallIntegerField(choices=CATEGORY_CHOICES, null=True, blank=True, default=None)
 
     # Relations
     node = models.ForeignKey(Node)
+    placement = models.ForeignKey('Placement', default=None, null=True)
+    room = models.ForeignKey('Room', default=None, null=True)
 
     # String representation
     @property
@@ -94,7 +97,6 @@ class DeviceGroup(models.Model):
     name = models.CharField(max_length=12, help_text=_("'Kitchen', 'Driveway'"))
     devices = models.ManyToManyField(Device)
 
-
     @property
     def state(self):
         if self.devices.filter(state__gte=1).count() > 0:
@@ -107,4 +109,19 @@ class DeviceGroup(models.Model):
 
     class Meta:
         app_label = 'device'
+        ordering = ('name', )
 
+
+class Placement(models.Model):
+    name = models.CharField(max_length=12, help_text=_("'First floor', 'attic', 'outside'"))
+
+    class Meta:
+        app_label = 'device'
+        ordering = ('name', )
+
+class Room(models.Model):
+    name = models.CharField(max_length=12, help_text=_("Name of room"))
+
+    class Meta:
+        app_label = 'device'
+        ordering = ('name', )
