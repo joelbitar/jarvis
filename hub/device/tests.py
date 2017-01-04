@@ -1196,6 +1196,22 @@ class RoomAPITests(DeviceModelTestsBase):
         self.device.room = room
         self.device.save()
 
+    def test_should_get_not_found_response_when_group_does_not_exist(self):
+        self.device.state = 0
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('room-on', kwargs={
+                'pk': 666
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            404
+        )
+
+
     def test_should_get_ok_response_when_set_group_to_on(self):
         self.device.state = 0
         self.device.save()

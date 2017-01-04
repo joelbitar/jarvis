@@ -84,20 +84,38 @@ class DeviceCommandViewBase(CommandViewBase):
             return False
 
 
-class DeviceGroupCommandViewBase(DeviceCommandViewBase):
-    __group = None
+class DeviceCollectionCommandViewBase(DeviceCommandViewBase):
+    __entity = None
     model = DeviceGroup
 
     @property
-    def group(self):
-        return self.__group
+    def entity(self):
+        return self.__entity
+
+    def get_all_devices(self):
+        return self.entity.devices.all()
 
     def set_model(self, pk):
         try:
-            self.__group = DeviceGroup.objects.get(pk=pk)
+            self.__entity = self.model.objects.get(pk=pk)
             return True
-        except DeviceGroup.DoesNotExist:
+        except self.model.DoesNotExist:
             return False
+
+    def execute_request(self, request, **kwargs):
+        result = []
+        for device in self.entity.devices.all():
+            result.append(
+                {
+                    'device_id': device.pk,
+                    'result': self.execute_command(device)
+                }
+            )
+
+        return Response(result)
+
+    def execute_command(self, device):
+        raise NotImplementedError()
 
 
 class DeviceCommandOnView(DeviceCommandViewBase):
@@ -121,48 +139,17 @@ class DeviceCommandDimView(DeviceCommandViewBase):
             return Response()
 
 
-class RoomCommandViewBase(DeviceCommandViewBase):
-    __room= None
+class RoomCommandViewBase(DeviceCollectionCommandViewBase):
     model = Room
-
-    @property
-    def room(self):
-        return self.__room
-
-    def set_model(self, pk):
-        try:
-            self.__room = Room.objects.get(pk=pk)
-            return True
-        except Room.DoesNotExist:
-            return False
 
 
 class RoomCommandOnView(RoomCommandViewBase):
-    def execute_request(self, request, **kwargs):
-        result = []
-        for device in self.room.devices.all():
-            result.append(
-                {
-                    'device_id': device.pk,
-                    'result': device.get_communicator().turn_on()
-                }
-            )
-
-        return Response(result)
-
+    def execute_command(self, device):
+        return device.get_communicator().turn_on()
 
 class RoomCommandOffView(RoomCommandViewBase):
-    def execute_request(self, request, **kwargs):
-        result = []
-        for device in self.room.devices.all():
-            result.append(
-                {
-                    'device_id': device.pk,
-                    'result': device.get_communicator().turn_off()
-                }
-            )
-
-        return Response(result)
+    def execute_command(self, device):
+        return device.get_communicator().turn_off()
 
 
 class DeviceCommandLearnView(DeviceCommandViewBase):
@@ -225,29 +212,15 @@ class DeviceGroupViewSet(viewsets.ModelViewSet):
     serializer_class = DeviceGroupSerializer
 
 
-class DeviceGroupCommandOnView(DeviceGroupCommandViewBase):
-    def execute_request(self, request, **kwargs):
-        result = []
-        for device in self.group.devices.all():
-            result.append(
-                {
-                    'device_id': device.pk,
-                    'result': device.get_communicator().turn_on()
-                }
-            )
+class DeviceGroupCommandViewBase(DeviceCollectionCommandViewBase):
+    model = DeviceGroup
 
-        return Response(result)
+
+class DeviceGroupCommandOnView(DeviceGroupCommandViewBase):
+    def execute_command(self, device):
+        return device.get_communicator().turn_on()
 
 
 class DeviceGroupCommandOffView(DeviceGroupCommandViewBase):
-    def execute_request(self, request, **kwargs):
-        result = []
-        for device in self.group.devices.all():
-            result.append(
-                {
-                    'device_id': device.pk,
-                    'result': device.get_communicator().turn_off()
-                }
-            )
-
-        return Response(result)
+    def execute_command(self, device):
+        return device.get_communicator().turn_off()
