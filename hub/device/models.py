@@ -130,6 +130,9 @@ class DeviceGroup(models.Model):
 class CategoryBaseModel(models.Model):
     name = models.CharField(max_length=18, help_text=_("'First floor', 'attic', 'outside'"))
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         app_label = 'device'
         ordering = ('name', )

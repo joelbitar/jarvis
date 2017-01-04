@@ -1184,6 +1184,76 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
 
+class PlacementAPITests(DeviceModelTestsBase):
+    def setUp(self):
+        super(PlacementAPITests, self).setUp()
+
+        placement = Placement()
+        placement.name = 'Testplacement'
+        placement.save()
+        self.placement = placement
+
+        self.device.placement = placement
+        self.device.save()
+
+    def test_should_get_not_found_response_when_group_does_not_exist(self):
+        self.device.state = 0
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('placement-on', kwargs={
+                'pk': 666
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            404
+        )
+
+    def test_should_get_ok_response_when_set_group_to_on(self):
+        self.device.state = 0
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('placement-on', kwargs={
+                'pk': self.placement.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            1
+        )
+
+    def test_should_get_ok_response_when_set_group_to_off(self):
+        self.device.state = 1
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('placement-off', kwargs={
+                'pk': self.placement.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            0
+        )
+
+
+
+
 class RoomAPITests(DeviceModelTestsBase):
     def setUp(self):
         super(RoomAPITests, self).setUp()
@@ -1210,7 +1280,6 @@ class RoomAPITests(DeviceModelTestsBase):
             response.status_code,
             404
         )
-
 
     def test_should_get_ok_response_when_set_group_to_on(self):
         self.device.state = 0

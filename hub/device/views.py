@@ -224,3 +224,17 @@ class DeviceGroupCommandOnView(DeviceGroupCommandViewBase):
 class DeviceGroupCommandOffView(DeviceGroupCommandViewBase):
     def execute_command(self, device):
         return device.get_communicator().turn_off()
+
+
+class PlacementCommandViewBase(DeviceCollectionCommandViewBase):
+    model = Placement
+
+
+class PlacementCommandOnView(PlacementCommandViewBase):
+    def execute_command(self, device):
+        return device.get_communicator().turn_on()
+
+
+class PlacementCommandOffView(PlacementCommandViewBase):
+    def execute_command(self, device):
+        return device.get_communicator().turn_off()

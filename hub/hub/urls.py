@@ -15,6 +15,9 @@ from device.views import DeviceCommandDimView
 from device.views import RoomCommandOnView
 from device.views import RoomCommandOffView
 
+from device.views import PlacementCommandOnView
+from device.views import PlacementCommandOffView
+
 from device.views import DeviceGroupViewSet
 from device.views import DeviceGroupCommandOnView
 from device.views import DeviceGroupCommandOffView
@@ -82,6 +85,10 @@ rest_patterns = patterns('',
     # Room commands
     url(r'^rooms/(?P<pk>[0-9]+)/command/on/$', RoomCommandOnView.as_view(), name="room-on"),
     url(r'^rooms/(?P<pk>[0-9]+)/command/off/$', RoomCommandOffView.as_view(), name="room-off"),
+
+    # Room commands
+    url(r'^placements/(?P<pk>[0-9]+)/command/on/$', PlacementCommandOnView.as_view(), name="room-on"),
+    url(r'^placements/(?P<pk>[0-9]+)/command/off/$', PlacementCommandOffView.as_view(), name="room-off"),
 
     # Group commands
     url(r'^devicegroups/(?P<pk>[0-9]+)/command/on/$', DeviceGroupCommandOnView.as_view(), name="devicegroup-on"),

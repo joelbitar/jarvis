@@ -75,9 +75,46 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         });
 
         $scope.$broadcast('refresh-devices');
-}]).controller('StartpageRoomController', ['$scope', 'Restangular', function($scope, Restangular) {
-        $scope.toggleRoom = function(room){
-            room.state = room.state ? 0 : 1;
+}]).controller('StartpagePlacementController', ['$scope', '$rootScope','Restangular', function($scope, $rootScope,Restangular) {
+        var set_devices_state = function(placement){
+            _.each(
+                placement.devices,
+                function(device){
+                    device.state = (function(placement_state){
+                        // If dimmable set to 255 or 0
+                        if(device.is_dimmable){
+                            return placement_state ? 255 : 0;
+                        }
+
+                        return placement_state;
+                    }(placement.state))
+                }
+            );
+        };
+        $scope.togglePlacement = function(placement){
+            placement.state = placement.state ? 0 : 1;
+
+            set_devices_state(placement);
+
+            $scope.sendPlacementState(placement);
+        };
+
+
+
+        $scope.sendPlacementState = function(placement){
+            console.info('Send room state');
+            set_devices_state(placement);
+
+            Restangular.one('placements', placement.id).one('command').one(String(placement.state ? 'on' : 'off') + '/').get().then(
+                function(response){
+                    console.log('placement command', response);
+                    $rootScope.$broadcast('refresh-groups');
+                }
+            );
+        };
+
+}]).controller('StartpageRoomController', ['$scope', '$rootScope', 'Restangular', function($scope, $rootScope, Restangular) {
+        var set_devices_state = function(room){
             _.each(
                 room.devices,
                 function(device){
@@ -91,15 +128,24 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                     }(room.state))
                 }
             );
+        }
+        $scope.toggleRoom = function(room){
+            room.state = room.state ? 0 : 1;
+
+            set_devices_state(room);
+
             $scope.sendRoomState(room);
         };
 
         $scope.sendRoomState = function(room){
             console.info('Send room state');
 
+            set_devices_state(room);
+
             Restangular.one('rooms', room.id).one('command').one(String(room.state ? 'on' : 'off') + '/').get().then(
                 function(response){
                     console.log('room command', response);
+                    $rootScope.$broadcast('refresh-groups');
                 }
             );
         };
