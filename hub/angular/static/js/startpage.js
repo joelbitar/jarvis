@@ -128,7 +128,8 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                     }(room.state))
                 }
             );
-        }
+        };
+
         $scope.toggleRoom = function(room){
             room.state = room.state ? 0 : 1;
 
