@@ -18,6 +18,50 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
             });
         };
 
+        get_categories_from_devices = function(category_name){
+            var a = [];
+
+            // Loop through each of the categories
+            _.each(_.uniq(_.filter(_.map($scope.devices, category_name)), function(o){return o.id}), function (item_original) {
+                var category_devices, state = 0, item = angular.copy(item_original);
+
+                // Get devices for this category
+                category_devices = _.filter(
+                    $scope.devices,
+                    function(o){
+                        if(_.has(o[category_name], 'id')){
+                            return o[category_name]['id'] == item.id;
+                        }
+                    }
+                );
+
+                // Check if there is any device that is NOT turned off.
+                _.each(category_devices, function(device){
+                    if(device.state != 0){
+                        state = 1;
+                        return false;
+                    }
+                });
+
+                item['state'] = state;
+                item['devices'] = category_devices;
+
+                a.push(
+                   item
+                )
+            });
+
+            return a;
+        };
+
+        $scope.$on('refresh-categories', function(){
+            $scope.placements = get_categories_from_devices('placement');
+            $scope.rooms = get_categories_from_devices('room');
+
+            console.log('placements', $scope.placements);
+            console.log('rooms', $scope.rooms);
+        });
+
         $scope.$on('refresh-devices', function(){
             Restangular.all('devices/').getList().then(function(devices){
                 if($scope.devices !== undefined){
@@ -25,6 +69,8 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                 }else{
                     $scope.devices = devices;
                 }
+
+                $scope.$broadcast('refresh-categories');
             });
         });
 

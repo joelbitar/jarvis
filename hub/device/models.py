@@ -112,16 +112,20 @@ class DeviceGroup(models.Model):
         ordering = ('name', )
 
 
-class Placement(models.Model):
-    name = models.CharField(max_length=12, help_text=_("'First floor', 'attic', 'outside'"))
+class CategoryBaseModel(models.Model):
+    name = models.CharField(max_length=18, help_text=_("'First floor', 'attic', 'outside'"))
 
     class Meta:
         app_label = 'device'
         ordering = ('name', )
+        abstract = True
 
-class Room(models.Model):
-    name = models.CharField(max_length=12, help_text=_("Name of room"))
 
-    class Meta:
-        app_label = 'device'
-        ordering = ('name', )
+class Placement(CategoryBaseModel):
+    # No own properties, JS Depends on it
+    pass
+
+
+class Room(CategoryBaseModel):
+    # No own properties, JS Depends on it
+    pass
