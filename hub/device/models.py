@@ -61,8 +61,8 @@ class Device(models.Model):
 
     # Relations
     node = models.ForeignKey(Node)
-    placement = models.ForeignKey('Placement', default=None, null=True)
-    room = models.ForeignKey('Room', default=None, null=True)
+    placement = models.ForeignKey('Placement', default=None, null=True, related_name='devices')
+    room = models.ForeignKey('Room', default=None, null=True, related_name='devices')
 
     # String representation
     @property
@@ -94,7 +94,22 @@ class Device(models.Model):
 
 
 class DeviceGroup(models.Model):
+    SHOW_ONLY_WHEN_CHOICE_OFF = 0
+    SHOW_ONLY_WHEN_CHOICE_ON = 1
+    SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW = 2
+
+    SHOW_ONLY_WHEN_CHOICES = (
+        (SHOW_ONLY_WHEN_CHOICE_OFF, _('Off')),
+        (SHOW_ONLY_WHEN_CHOICE_ON, _('On')),
+        (SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW, _('Always')),
+    )
     name = models.CharField(max_length=12, help_text=_("'Kitchen', 'Driveway'"))
+    show_only_when = models.SmallIntegerField(
+        choices=SHOW_ONLY_WHEN_CHOICES,
+        default=SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW,
+        verbose_name=_('Show only when devices are'),
+        help_text=_('Will only show this group when the group have selected status')
+    )
     devices = models.ManyToManyField(Device)
 
     @property

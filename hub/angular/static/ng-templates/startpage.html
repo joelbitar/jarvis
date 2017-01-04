@@ -4,15 +4,21 @@
     </md-button>
 </div>
 
-<md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageDeviceController">
-    <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="device in devices">
-        <div include="device-teaser.html"></div>
-    </div>
-</md-content>
-
+<div ng-controller="StartpageDeviceController">
+    <md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap>
+        <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="device in devices">
+            <div include="device-teaser.html"></div>
+        </div>
+    </md-content>
+    <md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap>
+        <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="room in rooms">
+            <div include="room-teaser.html"></div>
+        </div>
+    </md-content>
+</div>
 
 <md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageDeviceGroupController">
-    <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="group in groups">
+    <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="group in groups" ng-show="(group.show_only_when === 'always') || (group.show_only_when === group.state)">
         <div include="device-group-teaser.html"></div>
     </div>
 </md-content>

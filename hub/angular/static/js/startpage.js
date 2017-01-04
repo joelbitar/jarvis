@@ -75,6 +75,34 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         });
 
         $scope.$broadcast('refresh-devices');
+}]).controller('StartpageRoomController', ['$scope', 'Restangular', function($scope, Restangular) {
+        $scope.toggleRoom = function(room){
+            room.state = room.state ? 0 : 1;
+            _.each(
+                room.devices,
+                function(device){
+                    device.state = (function(room_state){
+                        // If dimmable set to 255 or 0
+                        if(device.is_dimmable){
+                            return room_state ? 255 : 0;
+                        }
+
+                        return room_state;
+                    }(room.state))
+                }
+            );
+            $scope.sendRoomState(room);
+        };
+
+        $scope.sendRoomState = function(room){
+            console.info('Send room state');
+
+            Restangular.one('rooms', room.id).one('command').one(String(room.state ? 'on' : 'off') + '/').get().then(
+                function(response){
+                    console.log('room command', response);
+                }
+            );
+        };
 
 }]).controller('StartpageForecastController', ['$scope', '$window', 'focus',  'Restangular', function($scope, $window, focus, Restangular) {
         focus.broadcast('refresh-forecast');

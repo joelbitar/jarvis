@@ -18,6 +18,8 @@ from device.serializers import DeviceSerializer
 from device.serializers import DeviceDetailSerializer
 from device.serializers import DeviceGroupSerializer
 from device.models import Device
+from device.models import Room
+from device.models import Placement
 from device.models import DeviceGroup
 from node.models import RequestLog
 from button.models import Button
@@ -117,6 +119,50 @@ class DeviceCommandDimView(DeviceCommandViewBase):
         communicator = self.device.get_communicator()
         if communicator.dim(dimlevel=int(kwargs.get('dimlevel', 0))):
             return Response()
+
+
+class RoomCommandViewBase(DeviceCommandViewBase):
+    __room= None
+    model = Room
+
+    @property
+    def room(self):
+        return self.__room
+
+    def set_model(self, pk):
+        try:
+            self.__room = Room.objects.get(pk=pk)
+            return True
+        except Room.DoesNotExist:
+            return False
+
+
+class RoomCommandOnView(RoomCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        result = []
+        for device in self.room.devices.all():
+            result.append(
+                {
+                    'device_id': device.pk,
+                    'result': device.get_communicator().turn_on()
+                }
+            )
+
+        return Response(result)
+
+
+class RoomCommandOffView(RoomCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        result = []
+        for device in self.room.devices.all():
+            result.append(
+                {
+                    'device_id': device.pk,
+                    'result': device.get_communicator().turn_off()
+                }
+            )
+
+        return Response(result)
 
 
 class DeviceCommandLearnView(DeviceCommandViewBase):

@@ -1184,6 +1184,59 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
 
+class RoomAPITests(DeviceModelTestsBase):
+    def setUp(self):
+        super(RoomAPITests, self).setUp()
+
+        room = Room()
+        room.name = 'Testroom'
+        room.save()
+        self.room = room
+
+        self.device.room = room
+        self.device.save()
+
+    def test_should_get_ok_response_when_set_group_to_on(self):
+        self.device.state = 0
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('room-on', kwargs={
+                'pk': self.room.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            1
+        )
+
+    def test_should_get_ok_response_when_set_group_to_off(self):
+        self.device.state = 1
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('room-off', kwargs={
+                'pk': self.room.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            0
+        )
+
+
 class DeviceGroupAPITests(DeviceModelTestsBase):
     def setUp(self):
         super(DeviceGroupAPITests, self).setUp()
@@ -1203,6 +1256,8 @@ class DeviceGroupAPITests(DeviceModelTestsBase):
                     {
                         'id': self.group.pk,
                         'name': self.group.name,
+                        # Default option, in response is not that
+                        'show_only_when' : 'always',
                         'state': 0,
                         'devices': [
                             {
