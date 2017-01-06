@@ -1,5 +1,6 @@
 import json
 
+
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -9,6 +10,9 @@ from django.test.client import Client
 
 from device.models import Device
 from device.models import DeviceGroup
+from device.models import DeviceLog
+from device.models import Room
+from device.models import Placement
 from node.models import Node
 from node.models import RequestLog
 
@@ -95,6 +99,28 @@ class DeviceModelTestsBase(HasLoggedInClientBase):
 
     def refresh(self, obj):
         return obj.__class__.objects.get(pk=obj.pk)
+
+
+class DeviceLogTests(DeviceModelTestsBase):
+    def setUp(self):
+        super(DeviceLogTests, self).setUp()
+        DeviceLog.objects.all().delete()
+
+    def test_when_saving_we_should_create_one_device_log_entry(self):
+        self.device.state = 1
+        self.device.save()
+
+        self.assertEqual(
+            DeviceLog.objects.all().count(),
+            1
+        )
+
+        device_log = DeviceLog.objects.all()[0]
+
+        self.assertEqual(
+            device_log.state,
+            1
+        )
 
 
 class DeviceBasicModelAttributesTests(DeviceModelTestsBase):
@@ -944,6 +970,11 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.assertEqual(len(response_json), Device.objects.all().count())
 
     def test_should_get_single_device(self):
+        from django.core import serializers
+        from django.core.serializers.json import DjangoJSONEncoder
+        from rest_framework.serializers import DateTimeField
+
+
         response = self.logged_in_client.get(
             reverse('device-extra', kwargs={'pk': self.device.pk}),
         )
@@ -959,6 +990,8 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'protocol_string': self.device.protocol_string,
                         'code': None,
                         'controller': None,
+                        #'created': DjangoJSONEncoder().default(o=self.device.created),
+                        'created': DateTimeField().to_representation(self.device.created),
                         'description': '',
                         'devices': None,
                         'fade': None,
@@ -970,8 +1003,10 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                             'name': self.device.node.name,
                         },
                         'node_device_pk': 1001,
+                        'placement' : None,
                         'property_iteration': 1,
                         'protocol': self.device.protocol,
+                        'room' : None,
                         'state': None,
                         'system': None,
                         'unit': '1',
@@ -1025,6 +1060,42 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
         self.assertEqual(d.house, 'A')
         self.assertEqual(d.unit, '1')
+
+    def test_should_get_name_of_room_when_set(self):
+        room = Room()
+        room.name = 'Rum'
+        room.save()
+
+        placement = Placement()
+        placement.name = 'Placering'
+        placement.save()
+
+        self.device.room = room
+        self.device.placement = placement
+        self.device.save()
+
+        response = json.loads(self.logged_in_client.get(
+            reverse('device-detail', kwargs={'pk' : self.device.pk})
+        ).content.decode('utf-8'))
+
+        self.assertEqual(
+            response['room']['name'],
+            'Rum'
+        )
+        self.assertEqual(
+            response['room']['id'],
+            1
+        )
+
+        self.assertEqual(
+            response['placement']['name'],
+            'Placering'
+        )
+        self.assertEqual(
+            response['placement']['id'],
+            1
+        )
+
 
 
     def test_should_get_ok_response_when_sending_update(self):
@@ -1143,6 +1214,144 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         )
 
 
+class PlacementAPITests(DeviceModelTestsBase):
+    def setUp(self):
+        super(PlacementAPITests, self).setUp()
+
+        placement = Placement()
+        placement.name = 'Testplacement'
+        placement.save()
+        self.placement = placement
+
+        self.device.placement = placement
+        self.device.save()
+
+    def test_should_get_not_found_response_when_group_does_not_exist(self):
+        self.device.state = 0
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('placement-on', kwargs={
+                'pk': 666
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            404
+        )
+
+    def test_should_get_ok_response_when_set_group_to_on(self):
+        self.device.state = 0
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('placement-on', kwargs={
+                'pk': self.placement.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            1
+        )
+
+    def test_should_get_ok_response_when_set_group_to_off(self):
+        self.device.state = 1
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('placement-off', kwargs={
+                'pk': self.placement.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            0
+        )
+
+
+
+
+class RoomAPITests(DeviceModelTestsBase):
+    def setUp(self):
+        super(RoomAPITests, self).setUp()
+
+        room = Room()
+        room.name = 'Testroom'
+        room.save()
+        self.room = room
+
+        self.device.room = room
+        self.device.save()
+
+    def test_should_get_not_found_response_when_group_does_not_exist(self):
+        self.device.state = 0
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('room-on', kwargs={
+                'pk': 666
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            404
+        )
+
+    def test_should_get_ok_response_when_set_group_to_on(self):
+        self.device.state = 0
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('room-on', kwargs={
+                'pk': self.room.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            1
+        )
+
+    def test_should_get_ok_response_when_set_group_to_off(self):
+        self.device.state = 1
+        self.device.save()
+
+        response = self.logged_in_client.get(
+            reverse('room-off', kwargs={
+                'pk': self.room.pk
+            })
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            self.refresh(self.device).state,
+            0
+        )
+
+
 class DeviceGroupAPITests(DeviceModelTestsBase):
     def setUp(self):
         super(DeviceGroupAPITests, self).setUp()
@@ -1162,6 +1371,8 @@ class DeviceGroupAPITests(DeviceModelTestsBase):
                     {
                         'id': self.group.pk,
                         'name': self.group.name,
+                        # Default option, in response is not that
+                        'show_only_when' : 'always',
                         'state': 0,
                         'devices': [
                             {
@@ -1378,4 +1589,51 @@ class DeviceOrderingTests(DeviceModelTestsBase):
             response_obj[2]['name'],
             'ZDevice'
         )
+
+    def test_when_sending_command_to_device_group_should_only_send_command_to_devices_that_have_not_correct_state(self):
+        device_group = DeviceGroup()
+        device_group.name = 'Device Group'
+        device_group.save()
+        device_group.devices.add(self.device)
+        device_group.devices.add(self.device2)
+        device_group.devices.add(self.device3)
+
+
+        self.device.state = 1
+        self.device.save()
+
+        self.device2.state = 0
+        self.device2.save()
+
+        self.device3.state = 1
+        self.device3.save()
+
+        DeviceLog.objects.all().delete()
+        self.assertEqual(
+            DeviceLog.objects.all().count(),
+            0
+        )
+
+        response = self.logged_in_client.get(
+            reverse('devicegroup-on', kwargs={'pk': device_group.pk}),
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            self.device2.logs.all().count(),
+            1,
+            "should have created one log on device 2"
+        )
+
+        self.assertEqual(
+            DeviceLog.objects.all().count(),
+            1,
+            "Should only be one log on one device"
+        )
+
+
 

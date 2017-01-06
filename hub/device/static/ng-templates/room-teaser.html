@@ -1,0 +1,18 @@
+<div ng-controller="StartpageRoomController" layout="column" layout-xs="row">
+    <div layout="column" layout-xs="row" layout-align="start center" flex-xs="40">
+        <div flex-order-xs="2">
+            <h4><a href="/room/{{ room.id }}/">{{ room.name }}</a></h4>
+        </div>
+
+        <div flex-order-xs="1">
+            <div class="device" ng-click="toggleRoom(room);">
+                <div ng-if="!room.state" class="device light light-off"></div>
+                <div ng-if="room.state" class="device light light-on"></div>
+            </div>
+        </div>
+    </div>
+
+    <div layout="row" layout-align="center center" flex-xs="60">
+        <md-switch ng-model="room.state" ng-true-value="1" ng-false-value="0" aria-label="State"  ng-change="sendRoomState(room);"></md-switch>
+    </div>
+</div>

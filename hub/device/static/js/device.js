@@ -88,6 +88,8 @@ var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
                     }
                 );
             }
+
+            $rootScope.$broadcast('refresh-categories');
         };
 
         $scope.brightnessSliderChange = function(device){
