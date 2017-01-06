@@ -21,17 +21,17 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         get_categories_from_devices = function(category_name){
             var a = [];
 
+            console.log($scope.devices);
+
             // Loop through each of the categories
-            _.each(_.uniq(_.filter(_.map($scope.devices, category_name)), function(o){return o.id}), function (item_original) {
+            _.each(_.uniqBy(_.filter(_.map($scope.devices, category_name)), 'id'), function (item_original) {
                 var category_devices, state = 0, item = angular.copy(item_original);
 
                 // Get devices for this category
                 category_devices = _.filter(
                     $scope.devices,
                     function(o){
-                        if(_.has(o[category_name], 'id')){
-                            return o[category_name]['id'] == item.id;
-                        }
+                        return _.get(o, category_name + '.id', undefined) == item.id;
                     }
                 );
 
