@@ -6,6 +6,8 @@ from django.core import mail
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from django.db.models import Q
+
 from rest_framework import viewsets
 from rest_framework import generics
 from rest_framework.views import APIView
@@ -86,6 +88,7 @@ class DeviceCommandViewBase(CommandViewBase):
 
 class DeviceCollectionCommandViewBase(DeviceCommandViewBase):
     __entity = None
+    only_devices_with_state = None
     model = DeviceGroup
 
     @property
@@ -93,7 +96,22 @@ class DeviceCollectionCommandViewBase(DeviceCommandViewBase):
         return self.__entity
 
     def get_all_devices(self):
-        return self.entity.devices.all()
+        # If we have no restrictions on state
+        if self.only_devices_with_state is None:
+            return self.entity.devices.all()
+
+        if self.only_devices_with_state == 0:
+            # If device state is 0 find all devices that are off of None
+            return self.entity.devices.filter(
+                Q(state=None) | Q(state=0)
+            )
+        else:
+            # If device state is 1 find all devices that are on of None
+            return self.entity.devices.filter(
+                Q(state=None) | Q(state__gte=1)
+            )
+
+
 
     def set_model(self, pk):
         try:
@@ -104,7 +122,7 @@ class DeviceCollectionCommandViewBase(DeviceCommandViewBase):
 
     def execute_request(self, request, **kwargs):
         result = []
-        for device in self.entity.devices.all():
+        for device in self.get_all_devices():
             result.append(
                 {
                     'device_id': device.pk,
@@ -137,19 +155,6 @@ class DeviceCommandDimView(DeviceCommandViewBase):
         communicator = self.device.get_communicator()
         if communicator.dim(dimlevel=int(kwargs.get('dimlevel', 0))):
             return Response()
-
-
-class RoomCommandViewBase(DeviceCollectionCommandViewBase):
-    model = Room
-
-
-class RoomCommandOnView(RoomCommandViewBase):
-    def execute_command(self, device):
-        return device.get_communicator().turn_on()
-
-class RoomCommandOffView(RoomCommandViewBase):
-    def execute_command(self, device):
-        return device.get_communicator().turn_off()
 
 
 class DeviceCommandLearnView(DeviceCommandViewBase):
@@ -212,29 +217,60 @@ class DeviceGroupViewSet(viewsets.ModelViewSet):
     serializer_class = DeviceGroupSerializer
 
 
+# Device group collection
 class DeviceGroupCommandViewBase(DeviceCollectionCommandViewBase):
     model = DeviceGroup
 
 
 class DeviceGroupCommandOnView(DeviceGroupCommandViewBase):
+    only_devices_with_state = 0
+
     def execute_command(self, device):
+        print('Execute command device group command on')
+
         return device.get_communicator().turn_on()
 
 
 class DeviceGroupCommandOffView(DeviceGroupCommandViewBase):
+    only_devices_with_state = 1
+
     def execute_command(self, device):
         return device.get_communicator().turn_off()
 
 
+# Room collection
+class RoomCommandViewBase(DeviceCollectionCommandViewBase):
+    model = Room
+
+
+class RoomCommandOnView(RoomCommandViewBase):
+    only_devices_with_state = 0
+
+    def execute_command(self, device):
+        return device.get_communicator().turn_on()
+
+
+class RoomCommandOffView(RoomCommandViewBase):
+    only_devices_with_state = 1
+
+    def execute_command(self, device):
+        return device.get_communicator().turn_off()
+
+
+# Placement collection
 class PlacementCommandViewBase(DeviceCollectionCommandViewBase):
     model = Placement
 
 
 class PlacementCommandOnView(PlacementCommandViewBase):
+    only_devices_with_state = 0
+
     def execute_command(self, device):
         return device.get_communicator().turn_on()
 
 
 class PlacementCommandOffView(PlacementCommandViewBase):
+    only_devices_with_state = 1
+
     def execute_command(self, device):
         return device.get_communicator().turn_off()

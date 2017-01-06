@@ -10,6 +10,7 @@ from django.test.client import Client
 
 from device.models import Device
 from device.models import DeviceGroup
+from device.models import DeviceLog
 from device.models import Room
 from device.models import Placement
 from node.models import Node
@@ -98,6 +99,28 @@ class DeviceModelTestsBase(HasLoggedInClientBase):
 
     def refresh(self, obj):
         return obj.__class__.objects.get(pk=obj.pk)
+
+
+class DeviceLogTests(DeviceModelTestsBase):
+    def setUp(self):
+        super(DeviceLogTests, self).setUp()
+        DeviceLog.objects.all().delete()
+
+    def test_when_saving_we_should_create_one_device_log_entry(self):
+        self.device.state = 1
+        self.device.save()
+
+        self.assertEqual(
+            DeviceLog.objects.all().count(),
+            1
+        )
+
+        device_log = DeviceLog.objects.all()[0]
+
+        self.assertEqual(
+            device_log.state,
+            1
+        )
 
 
 class DeviceBasicModelAttributesTests(DeviceModelTestsBase):
@@ -947,6 +970,11 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.assertEqual(len(response_json), Device.objects.all().count())
 
     def test_should_get_single_device(self):
+        from django.core import serializers
+        from django.core.serializers.json import DjangoJSONEncoder
+        from rest_framework.serializers import DateTimeField
+
+
         response = self.logged_in_client.get(
             reverse('device-extra', kwargs={'pk': self.device.pk}),
         )
@@ -962,6 +990,8 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'protocol_string': self.device.protocol_string,
                         'code': None,
                         'controller': None,
+                        #'created': DjangoJSONEncoder().default(o=self.device.created),
+                        'created': DateTimeField().to_representation(self.device.created),
                         'description': '',
                         'devices': None,
                         'fade': None,
@@ -1559,4 +1589,51 @@ class DeviceOrderingTests(DeviceModelTestsBase):
             response_obj[2]['name'],
             'ZDevice'
         )
+
+    def test_when_sending_command_to_device_group_should_only_send_command_to_devices_that_have_not_correct_state(self):
+        device_group = DeviceGroup()
+        device_group.name = 'Device Group'
+        device_group.save()
+        device_group.devices.add(self.device)
+        device_group.devices.add(self.device2)
+        device_group.devices.add(self.device3)
+
+
+        self.device.state = 1
+        self.device.save()
+
+        self.device2.state = 0
+        self.device2.save()
+
+        self.device3.state = 1
+        self.device3.save()
+
+        DeviceLog.objects.all().delete()
+        self.assertEqual(
+            DeviceLog.objects.all().count(),
+            0
+        )
+
+        response = self.logged_in_client.get(
+            reverse('devicegroup-on', kwargs={'pk': device_group.pk}),
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            self.device2.logs.all().count(),
+            1,
+            "should have created one log on device 2"
+        )
+
+        self.assertEqual(
+            DeviceLog.objects.all().count(),
+            1,
+            "Should only be one log on one device"
+        )
+
+
 

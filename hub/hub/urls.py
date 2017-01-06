@@ -87,8 +87,8 @@ rest_patterns = patterns('',
     url(r'^rooms/(?P<pk>[0-9]+)/command/off/$', RoomCommandOffView.as_view(), name="room-off"),
 
     # Room commands
-    url(r'^placements/(?P<pk>[0-9]+)/command/on/$', PlacementCommandOnView.as_view(), name="room-on"),
-    url(r'^placements/(?P<pk>[0-9]+)/command/off/$', PlacementCommandOffView.as_view(), name="room-off"),
+    url(r'^placements/(?P<pk>[0-9]+)/command/on/$', PlacementCommandOnView.as_view(), name="placement-on"),
+    url(r'^placements/(?P<pk>[0-9]+)/command/off/$', PlacementCommandOffView.as_view(), name="placement-off"),
 
     # Group commands
     url(r'^devicegroups/(?P<pk>[0-9]+)/command/on/$', DeviceGroupCommandOnView.as_view(), name="devicegroup-on"),

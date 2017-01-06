@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from django.contrib.auth.models import User
+
 from node.models import Node 
 
 from node.communicator import NodeDeviceCommunicator
@@ -64,6 +66,9 @@ class Device(models.Model):
     placement = models.ForeignKey('Placement', default=None, null=True, related_name='devices')
     room = models.ForeignKey('Room', default=None, null=True, related_name='devices')
 
+    # Logging
+    created = models.DateTimeField(auto_now_add=True)
+
     # String representation
     @property
     def protocol_string(self):
@@ -82,6 +87,14 @@ class Device(models.Model):
     def get_communicator(self):
         return NodeDeviceCommunicator(device=self)
 
+    def save(self, **kwargs):
+        super(Device, self).save(**kwargs)
+
+        device_log = DeviceLog()
+        device_log.device = self
+        device_log.state = self.state
+        device_log.save()
+
     def __unicode__(self):
         return self.name
 
@@ -91,6 +104,13 @@ class Device(models.Model):
     class Meta:
         app_label = 'device'
         ordering = ('name', )
+
+
+class DeviceLog(models.Model):
+    device = models.ForeignKey(Device, related_name='logs')
+    created = models.DateTimeField(auto_now_add=True)
+    state = models.PositiveIntegerField(null=True)
+    user = models.ForeignKey(User, null=True, blank=True, default=None)
 
 
 class DeviceGroup(models.Model):
