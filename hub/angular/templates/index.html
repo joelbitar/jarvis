@@ -7,6 +7,8 @@
     <base href="/">
     <link rel="stylesheet" media="all" href="{% static "css/angular-material.min.css" %}{% version_extension %}">
     <link rel="stylesheet" media="all" href="{% static "css/device.css" %}{% version_extension %}">
+    <link rel="stylesheet" media="all" href="{% static "css/loading-bar.min.css" %}{% version_extension %}">
+    {# Has overrides in it, needs to be last #}
     <link rel="stylesheet" media="all" href="{% static "css/jarvis.css" %}{% version_extension %}">
 
     <link rel="stylesheet" media="all" href="{% static "fonts/weather-icons/css/weather-icons.min.css" %}{% version_extension %}">
@@ -80,6 +82,7 @@
 <script src="{% static "js/lib/lodash.min.js" %}{% version_extension %}"></script>
 <script src="{% static "js/lib/restangular.min.js" %}{% version_extension %}"></script>
 <script src="{% static "js/lib/visibly.js" %}{% version_extension %}"></script>
+<script src="{% static "js/lib/loading-bar.min.js" %}{% version_extension %}"></script>
 
 {# AngularJS Third party modules #}
 <script src="{% static "js/lib/ngStorage.min.js" %}{% version_extension %}"></script>

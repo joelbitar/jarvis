@@ -107,8 +107,8 @@ class ServiceWorkerView(TemplateView):
 
             "js/lib/lodash.min.js",
             "js/lib/visibly.js",
-            "js/lib/loading-bar.js",
-            "css/loading-bar.css",
+            "js/lib/loading-bar.min.js",
+            "css/loading-bar.min.css",
             "js/lib/restangular.min.js",
 
             "js/angular-material.min.js",
