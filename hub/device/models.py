@@ -112,6 +112,9 @@ class DeviceLog(models.Model):
     state = models.PositiveIntegerField(null=True)
     user = models.ForeignKey(User, null=True, blank=True, default=None)
 
+    class Meta:
+        app_label = 'device'
+
 
 class DeviceGroup(models.Model):
     SHOW_ONLY_WHEN_CHOICE_OFF = 0
