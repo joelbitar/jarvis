@@ -1007,6 +1007,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'property_iteration': 1,
                         'protocol': self.device.protocol,
                         'room' : None,
+                        'slug' : None,
                         'state': None,
                         'system': None,
                         'unit': '1',
@@ -1371,6 +1372,7 @@ class DeviceGroupAPITests(DeviceModelTestsBase):
                     {
                         'id': self.group.pk,
                         'name': self.group.name,
+                        'slug': None,
                         # Default option, in response is not that
                         'show_only_when' : 'always',
                         'state': 0,

@@ -26,6 +26,8 @@ from device.models import DeviceGroup
 from node.models import RequestLog
 from button.models import Button
 
+from device.command import Command
+
 
 class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.all()
@@ -95,24 +97,6 @@ class DeviceCollectionCommandViewBase(DeviceCommandViewBase):
     def entity(self):
         return self.__entity
 
-    def get_all_devices(self):
-        # If we have no restrictions on state
-        if self.only_devices_with_state is None:
-            return self.entity.devices.all()
-
-        if self.only_devices_with_state == 0:
-            # If device state is 0 find all devices that are off of None
-            return self.entity.devices.filter(
-                Q(state=None) | Q(state=0)
-            )
-        else:
-            # If device state is 1 find all devices that are on of None
-            return self.entity.devices.filter(
-                Q(state=None) | Q(state__gte=1)
-            )
-
-
-
     def set_model(self, pk):
         try:
             self.__entity = self.model.objects.get(pk=pk)
@@ -120,34 +104,38 @@ class DeviceCollectionCommandViewBase(DeviceCommandViewBase):
         except self.model.DoesNotExist:
             return False
 
-    def execute_request(self, request, **kwargs):
-        result = []
-        for device in self.get_all_devices():
-            result.append(
-                {
-                    'device_id': device.pk,
-                    'result': self.execute_command(device)
-                }
-            )
-
-        return Response(result)
-
     def execute_command(self, device):
         raise NotImplementedError()
 
 
+class DeviceCollectionCommandViewOnBase(DeviceCollectionCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        command = Command(self.entity, only_devices_with_state=0)
+        return Response(
+            command.turn_on()
+        )
+
+
+class DeviceCollectionCommandViewOffBase(DeviceCollectionCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        command = Command(self.entity, only_devices_with_state=1)
+        return Response(
+            command.turn_off()
+        )
+
+
 class DeviceCommandOnView(DeviceCommandViewBase):
     def execute_request(self, request, **kwargs):
-        communicator = self.device.get_communicator()
-        if communicator.turn_on():
-            return Response()
+        command = Command(self.device)
+        command.turn_on()
+        return Response()
 
 
 class DeviceCommandOffView(DeviceCommandViewBase):
     def execute_request(self, request, **kwargs):
-        communicator = self.device.get_communicator()
-        if communicator.turn_off():
-            return Response()
+        command = Command(self.device)
+        command.turn_off()
+        return Response()
 
 
 class DeviceCommandDimView(DeviceCommandViewBase):
@@ -218,59 +206,25 @@ class DeviceGroupViewSet(viewsets.ModelViewSet):
 
 
 # Device group collection
-class DeviceGroupCommandViewBase(DeviceCollectionCommandViewBase):
-    model = DeviceGroup
-
-
-class DeviceGroupCommandOnView(DeviceGroupCommandViewBase):
+class DeviceGroupCommandOnView(DeviceCollectionCommandViewOnBase):
     only_devices_with_state = 0
 
-    def execute_command(self, device):
-        print('Execute command device group command on')
 
-        return device.get_communicator().turn_on()
-
-
-class DeviceGroupCommandOffView(DeviceGroupCommandViewBase):
+class DeviceGroupCommandOffView(DeviceCollectionCommandViewOffBase):
     only_devices_with_state = 1
 
-    def execute_command(self, device):
-        return device.get_communicator().turn_off()
 
-
-# Room collection
-class RoomCommandViewBase(DeviceCollectionCommandViewBase):
-    model = Room
-
-
-class RoomCommandOnView(RoomCommandViewBase):
+class RoomCommandOnView(DeviceCollectionCommandViewOnBase):
     only_devices_with_state = 0
 
-    def execute_command(self, device):
-        return device.get_communicator().turn_on()
 
-
-class RoomCommandOffView(RoomCommandViewBase):
+class RoomCommandOffView(DeviceCollectionCommandViewOffBase):
     only_devices_with_state = 1
 
-    def execute_command(self, device):
-        return device.get_communicator().turn_off()
 
-
-# Placement collection
-class PlacementCommandViewBase(DeviceCollectionCommandViewBase):
-    model = Placement
-
-
-class PlacementCommandOnView(PlacementCommandViewBase):
+class PlacementCommandOnView(DeviceCollectionCommandViewOnBase):
     only_devices_with_state = 0
 
-    def execute_command(self, device):
-        return device.get_communicator().turn_on()
 
-
-class PlacementCommandOffView(PlacementCommandViewBase):
+class PlacementCommandOffView(DeviceCollectionCommandViewOffBase):
     only_devices_with_state = 1
-
-    def execute_command(self, device):
-        return device.get_communicator().turn_off()
