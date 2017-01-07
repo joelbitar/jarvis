@@ -35,6 +35,7 @@ class Device(models.Model):
 
     protocol = models.PositiveSmallIntegerField(choices=PROTOCOL_CHOICES)
     name = models.CharField(max_length=56)
+    slug = models.SlugField(max_length=18, help_text=_('Common code name'), null=True, default=None)
     description = models.TextField(default='', blank=True)
     model = models.PositiveSmallIntegerField(choices=MODEL_CHOICES)
     controller = models.PositiveIntegerField(null=True, blank=True, default=None)
@@ -127,6 +128,7 @@ class DeviceGroup(models.Model):
         (SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW, _('Always')),
     )
     name = models.CharField(max_length=12, help_text=_("'Kitchen', 'Driveway'"))
+    slug = models.SlugField(max_length=18, help_text=_('Common code name'), null=True, default=None)
     show_only_when = models.SmallIntegerField(
         choices=SHOW_ONLY_WHEN_CHOICES,
         default=SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW,
@@ -152,6 +154,7 @@ class DeviceGroup(models.Model):
 
 class CategoryBaseModel(models.Model):
     name = models.CharField(max_length=18, help_text=_("'First floor', 'attic', 'outside'"))
+    slug = models.SlugField(max_length=18, help_text=_('Common code name'), null=True, default=None)
 
     def __str__(self):
         return self.name

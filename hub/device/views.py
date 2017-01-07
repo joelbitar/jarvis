@@ -26,6 +26,8 @@ from device.models import DeviceGroup
 from node.models import RequestLog
 from button.models import Button
 
+from device.command import Command
+
 
 class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.all()
@@ -111,8 +113,6 @@ class DeviceCollectionCommandViewBase(DeviceCommandViewBase):
                 Q(state=None) | Q(state__gte=1)
             )
 
-
-
     def set_model(self, pk):
         try:
             self.__entity = self.model.objects.get(pk=pk)
@@ -136,18 +136,34 @@ class DeviceCollectionCommandViewBase(DeviceCommandViewBase):
         raise NotImplementedError()
 
 
+class DeviceCollectionCommandViewOnBase(DeviceCollectionCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        command = Command(self.entity, only_devices_with_state=0)
+        return Response(
+            command.turn_on()
+        )
+
+
+class DeviceCollectionCommandViewOffBase(DeviceCollectionCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        command = Command(self.entity, only_devices_with_state=1)
+        return Response(
+            command.turn_off()
+        )
+
+
 class DeviceCommandOnView(DeviceCommandViewBase):
     def execute_request(self, request, **kwargs):
-        communicator = self.device.get_communicator()
-        if communicator.turn_on():
-            return Response()
+        command = Command(self.device)
+        command.turn_on()
+        return Response()
 
 
 class DeviceCommandOffView(DeviceCommandViewBase):
     def execute_request(self, request, **kwargs):
-        communicator = self.device.get_communicator()
-        if communicator.turn_off():
-            return Response()
+        command = Command(self.device)
+        command.turn_off()
+        return Response()
 
 
 class DeviceCommandDimView(DeviceCommandViewBase):

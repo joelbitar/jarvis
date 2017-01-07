@@ -1,4 +1,5 @@
 from django.conf.urls import include, url, patterns
+
 from django.contrib import admin
 
 from rest_framework import routers
@@ -110,6 +111,9 @@ rest_patterns = patterns('',
     url(r'^forecast/now/(?P<date>.*)/$', NowForecastView.as_view(), name="forecast-now"),
 
     url(r'^sensors/(?P<sensor_pk>\d+)/logs/$', SensorLogView.as_view(), name='sensorlog-list'),
+
+    # API entrypoints
+    url(r'^entrypoint/', include('api.urls'))
 )
 
 urlpatterns = patterns('',
