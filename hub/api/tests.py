@@ -16,9 +16,9 @@ from device.models import Device, Room, Placement
 
 # Create your tests here.
 class ApiTestsBase(TestCase):
-    request_string = """{
-                "originalRequest": {
-                    "data": {
+    request_string = """{{
+                "originalRequest": {{
+                    "data": {{
                         "text": "shipping costs for asia",
                         "match": [
                             "shipping costs for asia"
@@ -29,45 +29,45 @@ class ApiTestsBase(TestCase):
                         "user": "U0FLW1N95",
                         "channel": "D4VTEALFP",
                         "ts": "1478131884.000006"
-                    },
+                    }},
                     "source": "slack_testbot"
-                },
+                }},
                 "id": "0783cd7f-2cf3-482f-b9db-9ab72cc4386b",
                 "timestamp": "2017-01-06T08:20:37.459Z",
-                "result": {
+                "result": {{
                     "source": "agent",
                     "resolvedQuery": "turn on lights in the bedroom",
-                    "action": "toggle",
+                    "action": "{action}",
                     "actionIncomplete": false,
-                    "parameters": {
-                        "device_state": "on",
-                        "light_type": "all",
-                        "location": "bedroom"
-                    },
+                    "parameters": {{
+                        "device_state": "{device_state}",
+                        "light_type": "{light_type}",
+                        "location": "{location}"
+                    }},
                     "contexts": [],
-                    "metadata": {
+                    "metadata": {{
                         "intentId": "9d6a1b76-3891-44ea-8abc-419b4ba26b71",
                         "webhookUsed": "false",
                         "webhookForSlotFillingUsed": "false",
                         "intentName": "toggle_lights"
-                    },
-                    "fulfillment": {
+                    }},
+                    "fulfillment": {{
                         "speech": "",
                         "messages": [
-                            {
+                            {{
                                 "type": 0,
                                 "speech": ""
-                            }
+                            }}
                         ]
-                    },
+                    }},
                     "score": 1
-                },
-                "status": {
+                }},
+                "status": {{
                     "code": 200,
                     "errorType": "success"
-                },
+                }},
                 "sessionId": "bbadfa67-6f1a-462d-8b24-d9fc986e7f80"
-            }"""
+            }}"""
 
     def setUp(self):
         self.api_user = User.objects.create_user(
@@ -107,14 +107,39 @@ class ApiTestsBase(TestCase):
     def refresh(self, obj):
         return obj.__class__.objects.get(pk=obj.pk)
 
+    def get_api_ai_response(self, **kwargs):
+        response = self.client.post(
+            reverse('api_entrypoint_api-ai'),
+            self.request_string.format(
+                **kwargs
+            ),
+            content_type='application/json'
+        )
+
+        return response
+
 
 class ApiAiParserTests(ApiTestsBase):
-    def setUp(self):
+    def test_api_ai_parser(self):
         request_factory = RequestFactory()
         request = request_factory.post(
             reverse('api_entrypoint_api-ai'),
-            data=self.request_string
+            data=self.request_string.format(
+                action="toggle",
+                device_state="on",
+                light_type="all",
+                location="bedroom"
+            ),
+            content_type="application/json"
         )
+
+
+        json.loads(self.request_string.format(
+                action="toggle",
+                device_state="on",
+                light_type="all",
+                location=self.bedroom.slug
+            ))
 
         api_ai = ApiAi(request)
 
@@ -137,16 +162,17 @@ class ApiAiParserTests(ApiTestsBase):
 
         self.assertEqual(
             properties['parameters']['location'],
-            "bedroom"
+            self.bedroom.slug
         )
 
 
 class ApiAiAuthenticationTests(ApiTestsBase):
     def test_should_be_able_to_access_site_with_token(self):
-        response = self.client.post(
-            reverse('api_entrypoint_api-ai'),
-            self.request_string,
-            content_type='application/json'
+        response = self.get_api_ai_response(
+            action="toggle",
+            device_state="on",
+            light_type="all",
+            location=self.bedroom.slug
         )
 
         self.assertEqual(
@@ -160,10 +186,11 @@ class ApiAiTests(ApiTestsBase):
         self.bedroom_ceiling_light.state = 0
         self.bedroom_ceiling_light.save()
 
-        response = self.client.post(
-            reverse('api_entrypoint_api-ai'),
-            self.request_string,
-            content_type='application/json'
+        response = self.get_api_ai_response(
+            action="toggle",
+            device_state="on",
+            light_type="all",
+            location=self.bedroom.slug
         )
 
         self.assertEqual(

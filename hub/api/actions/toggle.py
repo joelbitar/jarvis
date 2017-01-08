@@ -12,8 +12,6 @@ class ActionBase(object):
             'slug': slug
         }
 
-        print('filters', filters)
-
         for model in [Room, Placement, DeviceGroup, Device]:
             try:
                 return model.objects.get(**filters)
