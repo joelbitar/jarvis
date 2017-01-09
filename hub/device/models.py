@@ -67,6 +67,8 @@ class Device(models.Model):
     placement = models.ForeignKey('Placement', default=None, null=True, related_name='devices')
     room = models.ForeignKey('Room', default=None, null=True, related_name='devices')
 
+    light_type = models.ForeignKey('LightType', default=None, null=True, blank=True, related_name='devices')
+
     # Logging
     created = models.DateTimeField(auto_now_add=True)
 
@@ -165,6 +167,7 @@ class CategoryBaseModel(models.Model):
         abstract = True
 
 
+# Placement like
 class Placement(CategoryBaseModel):
     # No own properties, JS Depends on it
     pass
@@ -173,3 +176,8 @@ class Placement(CategoryBaseModel):
 class Room(CategoryBaseModel):
     # No own properties, JS Depends on it
     pass
+
+
+class LightType(CategoryBaseModel):
+    pass
+
