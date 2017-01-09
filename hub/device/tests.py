@@ -996,6 +996,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'devices': None,
                         'fade': None,
                         'house': 'A',
+                        'light_type': None,
                         'model': self.device.model,
                         'name': 'TestDevice',
                         'node': {

@@ -110,7 +110,10 @@ class DeviceCollectionCommandViewBase(DeviceCommandViewBase):
 
 class DeviceCollectionCommandViewOnBase(DeviceCollectionCommandViewBase):
     def execute_request(self, request, **kwargs):
-        command = Command(self.entity, only_devices_with_state=0)
+        command = Command(only_devices_with_state=0)
+        command.set_location_instance(
+            self.entity
+        )
         return Response(
             command.turn_on()
         )
@@ -118,7 +121,10 @@ class DeviceCollectionCommandViewOnBase(DeviceCollectionCommandViewBase):
 
 class DeviceCollectionCommandViewOffBase(DeviceCollectionCommandViewBase):
     def execute_request(self, request, **kwargs):
-        command = Command(self.entity, only_devices_with_state=1)
+        command = Command(only_devices_with_state=1)
+        command.set_location_instance(
+            self.entity
+        )
         return Response(
             command.turn_off()
         )
@@ -126,14 +132,16 @@ class DeviceCollectionCommandViewOffBase(DeviceCollectionCommandViewBase):
 
 class DeviceCommandOnView(DeviceCommandViewBase):
     def execute_request(self, request, **kwargs):
-        command = Command(self.device)
+        command = Command()
+        command.set_location_instance(self.device)
         command.turn_on()
         return Response()
 
 
 class DeviceCommandOffView(DeviceCommandViewBase):
     def execute_request(self, request, **kwargs):
-        command = Command(self.device)
+        command = Command()
+        command.set_location_instance(self.device)
         command.turn_off()
         return Response()
 

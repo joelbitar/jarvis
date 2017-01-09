@@ -11,7 +11,7 @@ from node.models import Node
 
 from api.vendors.api_ai import ApiAi
 
-from device.models import Device, Room, Placement
+from device.models import Device, Room, Placement, LightType
 
 
 # Create your tests here.
@@ -69,6 +69,29 @@ class ApiTestsBase(TestCase):
                 "sessionId": "bbadfa67-6f1a-462d-8b24-d9fc986e7f80"
             }}"""
 
+    def create_device(self, slug, room=None, placement=None, light_type=None, name=None):
+        d = Device()
+        d.name =  slug or name
+        d.slug = slug
+        d.protocol = Device.PROTOCOL_ARCHTEC
+        d.model = Device.MODEL_CODESWITCH
+        d.state = 0
+        d.node = self.node
+        d.room = room
+        d.placement = placement
+        d.light_type = light_type
+        d.save()
+
+        return d
+
+    def helper_assert_light_has_state(self, *args, state):
+        for d in args:
+            self.assertEqual(
+                self.refresh(d).state,
+                state,
+                'Device ' + str(d.slug) + ' was not ' + str(state)
+            )
+
     def setUp(self):
         self.api_user = User.objects.create_user(
             username='api_user_test',
@@ -83,24 +106,45 @@ class ApiTestsBase(TestCase):
         n.api_port = 8001
         n.save()
 
-        d = Device()
-        d.name = 'Sovrum taklampa'
-        d.slug = 'bedroom_ceiling'
-        d.protocol = Device.PROTOCOL_ARCHTEC
-        d.model = Device.MODEL_CODESWITCH
-        d.node = n
-        d.save()
+        self.placements = {}
+
+        self.light_type_ceiling = LightType()
+        self.light_type_ceiling.slug = 'ceiling'
+        self.light_type_ceiling.name = 'Tak'
+        self.light_type_ceiling.save()
+
+        for slug in ['outside', 'inside', 'garden']:
+            p = Placement()
+            p.slug = slug
+            p.save()
+
+            self.placements[slug] = p
 
         self.node = n
-        self.bedroom_ceiling_light = d
 
         self.bedroom = Room()
         self.bedroom.name = 'Sovrum'
         self.bedroom.slug = 'bedroom'
         self.bedroom.save()
 
+        self.bedroom_ceiling_light = self.create_device(
+            'bedroom_ceiling',
+            room=self.bedroom,
+            light_type=self.light_type_ceiling
+        )
+
         self.bedroom_ceiling_light.room = self.bedroom
         self.bedroom_ceiling_light.save()
+
+        self.bedroom_window_light = self.create_device(
+            'bedroom_window',
+            self.bedroom
+        )
+
+        self.deck_lights = self.create_device(
+            'deck_floor',
+            placement=self.placements.get('outside')
+        )
 
         self.client.defaults['HTTP_AUTHORIZATION'] = "Token " + str(self.api_user.auth_token.key)
 
@@ -132,7 +176,6 @@ class ApiAiParserTests(ApiTestsBase):
             ),
             content_type="application/json"
         )
-
 
         json.loads(self.request_string.format(
                 action="toggle",
@@ -196,4 +239,83 @@ class ApiAiTests(ApiTestsBase):
         self.assertEqual(
             self.refresh(self.bedroom_ceiling_light).state,
             1
+        )
+
+        self.assertEqual(
+            self.refresh(self.bedroom_window_light).state,
+            1
+        )
+
+    def test_should_turn_on_only_bedroom_ceiling_lights(self):
+        self.get_api_ai_response(
+            action="toggle",
+            device_state="on",
+            light_type="ceiling",
+            location=self.bedroom.slug
+        )
+
+        self.assertEqual(
+            self.refresh(self.bedroom_ceiling_light).state,
+            1,
+            "Did NOT turn on ceiling light"
+        )
+
+        self.assertEqual(
+            self.refresh(self.bedroom_window_light).state,
+            0,
+            "Whopsie turned on window light"
+        )
+
+        self.helper_assert_light_has_state(
+            self.bedroom_ceiling_light,
+            state=1
+        )
+
+        self.helper_assert_light_has_state(
+            self.bedroom_window_light,
+            state=0
+        )
+
+    def test_should_turn_on_devices_that_are_in_outside_placement(self):
+        self.get_api_ai_response(
+            action="toggle",
+            device_state="on",
+            light_type="all",
+            location=self.placements.get('outside').slug
+        )
+
+        self.helper_assert_light_has_state(
+            *[d for d in Device.objects.exclude(slug=self.deck_lights.slug)],
+            state=0
+        )
+
+        self.helper_assert_light_has_state(
+            self.deck_lights,
+            state=1
+        )
+
+    def test_should_be_able_to_turn_on_all_lights(self):
+        self.get_api_ai_response(
+            action="toggle",
+            device_state="on",
+            light_type="all",
+            location="all"
+        )
+
+        self.helper_assert_light_has_state(
+            *[d for d in Device.objects.exclude(slug=self.deck_lights.slug)],
+            state=1
+        )
+
+    def test_should_not_cast_error_when_trying_for_location_that_does_not_exist(self):
+        self.get_api_ai_response(
+            action="toggle",
+            device_state="on",
+            light_type="all",
+            location="does_not_exist"
+        )
+
+        self.helper_assert_light_has_state(
+            *[d for d in Device.objects.all()],
+            state=0
         )
