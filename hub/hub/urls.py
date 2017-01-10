@@ -128,5 +128,7 @@ urlpatterns = patterns('',
     url(r'^manifest.json$', ManifestView.as_view(), name='manifest-json'),
     url(r'^service_worker.js$', ServiceWorkerView.as_view(), name='service_worker-js'),
 
+    url(r'^git_hook/', include('github_hook.urls')),
+
     url(r'^', include('angular.urls')),
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

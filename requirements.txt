@@ -7,3 +7,4 @@ django-extensions
 beautifulsoup4==4.5.1
 pytz==2015.4
 pyzmq==14.7.0
+django-github-hook==0.2.0
