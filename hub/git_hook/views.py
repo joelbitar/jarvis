@@ -71,6 +71,13 @@ class GitHookView(APIView):
         if request.META.get('X-Hub-Signature', None) != settings.GITHUB_WEBHOOK_SECRET:
             return Response({}, status=404)
 
+        try:
+            payload = json.loads(request.)
+        except Exception:
+            return Response(status=500)
+
+        print(payload)
+
         if self.is_in_test_mode():
             print("is in test mode, does NOT execute script :", settings.GITHUB_WEBHOOK_EXECUTE_PATH)
         else:
