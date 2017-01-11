@@ -42,6 +42,7 @@ class ForecastBase(models.Model):
     vis = models.PositiveIntegerField(verbose_name='Visibility')
     gust = models.DecimalField(max_digits=4, decimal_places=1, verbose_name='Gust')
     pit = models.DecimalField(max_digits=4, decimal_places=1, verbose_name='Percipitation intensity total')
+    # LEGACY
     pis = models.DecimalField(max_digits=4, decimal_places=1, verbose_name='Percipitation intensity snow')
     pcat = models.PositiveSmallIntegerField(verbose_name='Percipitation category', choices=PRECIPITATION_CATEGORY_CHOICES)
     msl = models.DecimalField(max_digits=5, decimal_places=1, verbose_name='Air pressure')
