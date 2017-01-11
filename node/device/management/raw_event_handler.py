@@ -1,5 +1,6 @@
 __author__ = 'joel'
 import json
+from datetime import timedelta
 import requests
 import re
 from django.conf import settings
@@ -75,11 +76,12 @@ class RawEventHandler(object):
         self.__recent_signals = self.__recent_signals[:10]
 
     def has_been_recently_been_received(self, raw_command):
+        break_point = timezone.now() - timedelta(seconds=2)
+
         for recent_signal, received in self.__recent_signals:
             if recent_signal == raw_command:
-                delta = timezone.now() - received
                 # If this was sent less than 0.5 seconds ago
-                if delta.microseconds < 500:
+                if received > break_point:
                     return True
 
         return False
