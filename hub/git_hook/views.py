@@ -29,6 +29,7 @@ class GitHookView(APIView):
 
         for node in Node.objects.all():
             node_communicator = NodeCommunicator(node=node)
+
             result.append(
                 {
                     "node": {
@@ -45,7 +46,7 @@ class GitHookView(APIView):
         if settings.MAIN_HUB_URL is None:
             return None
 
-        if self.is_in_test_mode() and False:
+        if self.is_in_test_mode() or settings.MAIN_HUB_URL.startswith("http://example.com"):
             print('Is In test mode, doest NOT execute request to ' + settings.MAIN_HUB_URL + 'githook/hook/')
             return False
 
@@ -72,11 +73,13 @@ class GitHookView(APIView):
             return Response({}, status=404)
 
         try:
-            payload = json.loads(request.)
+            payload = json.loads(request.body.decode('utf-8'))
         except Exception:
             return Response(status=500)
 
-        print(payload)
+        # Check that we are at master branch
+        if payload.get('ref') is None or not payload.get('ref').endswith("master"):
+            return Response("Was not for master", status=400)
 
         if self.is_in_test_mode():
             print("is in test mode, does NOT execute script :", settings.GITHUB_WEBHOOK_EXECUTE_PATH)

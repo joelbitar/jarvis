@@ -22,7 +22,7 @@ class GitHubHookTestsBase(TestCase):
             reverse("git_hook"),
             data=json.dumps(
                 {
-                    "ref": ref
+                    "ref": ref or "refs/heads/master"
                 }
             ),
             content_type='application/json',
@@ -104,10 +104,13 @@ class GitHubNodeTests(GitHubHookTestsBase):
 
         self.node = Node.objects.create(
             name='TestNode',
-            address='http://example.com',
+            address='example.com',
             auth_token='asefasefasefasef',
             api_port=8001
         )
+
+    def test_empty_test(self):
+        self.assertTrue(True)
 
     def test_should_call_to_nodes_run_git_hooks(self):
         response = self.get_hook_response()
@@ -153,7 +156,7 @@ class GitHubNodeTests(GitHubHookTestsBase):
         settings.TEST_MODE = False
         old_hub_url = settings.MAIN_HUB_URL
 
-        settings.MAIN_HUB_URL = 'http://127.0.0.1:9090/nothihng/'
+        settings.MAIN_HUB_URL = 'http://example.com/nothihng/'
 
         response = self.get_hook_response()
 
