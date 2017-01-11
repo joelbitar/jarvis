@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     'django_extensions',
 
     'authentication',
+    'git_hook',
 
     'device',
 )
@@ -113,6 +114,8 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+GITHUB_WEBHOOK_EXECUTE_PATH = "/path/to/executable/"
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

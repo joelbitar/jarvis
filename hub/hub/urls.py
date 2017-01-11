@@ -124,6 +124,7 @@ urlpatterns = patterns('',
     url(r'^proxy/', include('rest_router.urls')),
     url(r'^api/', include(rest_patterns)), # All REST patterns
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^githook/', include('git_hook.urls')),
 
     url(r'^manifest.json$', ManifestView.as_view(), name='manifest-json'),
     url(r'^service_worker.js$', ServiceWorkerView.as_view(), name='service_worker-js'),

@@ -149,6 +149,16 @@ class NodeCommunicator(CommunicatorBase):
 
         return True
 
+    def upgrade_node(self):
+        status_code, response_json = self.execute_request(
+            self.build_url('githook/hook/'),
+            method='post',
+            data={}
+        )
+
+        return status_code in [201]
+
+
     def restart_daemon(self):
         status_code, response_json = self.execute_request(
             self.build_url('conf/restart-daemon/'),
