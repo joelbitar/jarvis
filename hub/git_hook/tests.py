@@ -17,16 +17,28 @@ class GitHubHookTestsBase(TestCase):
         self.client = Client()
         self.client.defaults["X-Hub-Signature"] = settings.GITHUB_WEBHOOK_SECRET
 
+    def get_hook_response(self, ref=None, **kwargs):
+        response = self.client.post(
+            reverse("git_hook"),
+            data=json.dumps(
+                {
+                    "ref": ref
+                }
+            ),
+            content_type='application/json',
+            **kwargs
+        )
+
+        return response
+
 
 # Create your tests here.
-class GitHookAuthTests(TestCase):
+class GitHookAuthTests(GitHubHookTestsBase):
     def setUp(self):
         self.client = Client()
 
     def test_should_get_not_auhtorized_when_posting_without_secret(self):
-        response = self.client.post(
-            reverse("git_hook")
-        )
+        response = self.get_hook_response()
 
         self.assertEqual(
             response.status_code,
@@ -38,8 +50,7 @@ class GitHookAuthTests(TestCase):
             "X-Hub-Signature": "wrong key"
         }
 
-        response = self.client.post(
-            reverse("git_hook"),
+        response = self.get_hook_response(
             **kwargs
         )
 
@@ -53,40 +64,37 @@ class GitHookAuthTests(TestCase):
             "X-Hub-Signature":settings.GITHUB_WEBHOOK_SECRET
         }
 
-        response = self.client.post(
-            reverse("git_hook"),
+        response = self.get_hook_response(
             **kwargs
         )
 
         self.assertEqual(
             response.status_code,
-            200
+            202
         )
 
     def test_should_get_ok_when_posting_with_weirdly_cased_secret(self):
         kwargs = {
             "X-Hub-Signature":settings.GITHUB_WEBHOOK_SECRET
         }
-        response = self.client.post(
-            reverse("git_hook"),
+
+        response = self.get_hook_response(
             **kwargs
         )
 
         self.assertEqual(
             response.status_code,
-            200
+            202
         )
 
 
 class GitHubHookAuthTestsWithBaseClass(GitHubHookTestsBase):
     def test_should_get_ok_when_using_default_headers(self):
-        response = self.client.post(
-            reverse("git_hook")
-        )
+        response = self.get_hook_response()
 
         self.assertEqual(
             response.status_code,
-            200
+            202
         )
 
 
@@ -102,13 +110,11 @@ class GitHubNodeTests(GitHubHookTestsBase):
         )
 
     def test_should_call_to_nodes_run_git_hooks(self):
-        response = self.client.post(
-            reverse("git_hook")
-        )
+        response = self.get_hook_response()
 
         self.assertEqual(
             response.status_code,
-            200
+            202
         )
 
         self.assertEqual(
@@ -126,7 +132,7 @@ class GitHubNodeTests(GitHubHookTestsBase):
         c = NodeCommunicator(node=self.node)
 
         def fake_get_response(url, method, data, auth_token):
-            return 200, {}
+            return 202, {}
 
         c.get_response = fake_get_response
 
@@ -149,14 +155,24 @@ class GitHubNodeTests(GitHubHookTestsBase):
 
         settings.MAIN_HUB_URL = 'http://127.0.0.1:9090/nothihng/'
 
-        response = self.client.post(
-            reverse("git_hook")
-        )
+        response = self.get_hook_response()
 
         self.assertEqual(
             response.status_code,
-            200
+            202
         )
 
         settings.MAIN_HUB_URL = old_hub_url
         settings.TEST_MODE = True
+
+
+class GitHookTestWebhookPayloads(GitHubHookTestsBase):
+    def test_should_not_execute_if_ref_is_not_master(self):
+        response = self.get_hook_response(
+            ref="refs/heads/changes"
+        )
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )

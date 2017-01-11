@@ -63,7 +63,7 @@ class GitHookView(APIView):
             }
 
         return {
-            "success": response.status_code in [200],
+            "success": response.status_code in [202, 200],
             "status_code": response.status_code
         }
 
@@ -80,5 +80,6 @@ class GitHookView(APIView):
             {
                 "main_hub" : self.execute_request_to_main_hub(),
                 "nodes": self.execute_requests_to_nodes()
-            }
+            },
+            status=202
         )
