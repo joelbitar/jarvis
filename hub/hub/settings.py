@@ -137,7 +137,7 @@ USE_TZ = True
 
 # Github intragation
 GITHUB_WEBHOOK_SECRET = "GITHUB_SECRET"
-GITHUB_WEBHOOK_EXECUTE_PATH = "/path/to/executable/"
+GITHUB_WEBHOOK_EXECUTE_PATH = os.path.join(BASE_DIR, "deploy.sh")
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
