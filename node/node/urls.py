@@ -23,4 +23,6 @@ urlpatterns = [
     url(r'conf/write/', WriteConfigView.as_view(), name='write-conf'),
     url(r'conf/restart-daemon/', RestartDaemonView.as_view(), name='restart-daemon'),
     url(r'^admin/', include(admin.site.urls)),
+
+    url(r'^githook/', include('git_hook.urls')),
 ]

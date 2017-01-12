@@ -6,3 +6,6 @@ secret.py
 settings_*.py
 hub/collected_static/*
 node/collected_static/*
+
+hub/deploy.sh
+node/deploy.sh

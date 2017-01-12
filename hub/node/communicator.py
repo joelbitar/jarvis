@@ -27,7 +27,7 @@ class CommunicatorBase(object):
         if not method:
             raise ValueError('Method "{method}" is not valie'.format(method=method))
 
-        if self.is_in_test_mode():
+        if self.is_in_test_mode() or url.startswith('http://example.com'):
             print('In test mode, does not execute {method} request'.format(method=method), 'to', url, 'with data:', data)
             return 200, {'fake': 'response', 'id': 666}
 
@@ -148,6 +148,16 @@ class NodeCommunicator(CommunicatorBase):
         )
 
         return True
+
+    def upgrade_node(self):
+        status_code, response_json = self.execute_request(
+            self.build_url('githook/hook/'),
+            method='post',
+            data={}
+        )
+
+        return status_code in [201]
+
 
     def restart_daemon(self):
         status_code, response_json = self.execute_request(

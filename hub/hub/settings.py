@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
 
+    'git_hook',
     'rest_router',
 
     'authentication',
@@ -134,6 +135,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Github intragation
+GITHUB_WEBHOOK_SECRET = "GITHUB_SECRET"
+GITHUB_WEBHOOK_EXECUTE_PATH = os.path.join(BASE_DIR, "deploy.sh")
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
