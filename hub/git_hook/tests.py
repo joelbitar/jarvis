@@ -109,9 +109,6 @@ class GitHubNodeTests(GitHubHookTestsBase):
             api_port=8001
         )
 
-    def test_empty_test(self):
-        self.assertTrue(True)
-
     def test_should_call_to_nodes_run_git_hooks(self):
         response = self.get_hook_response()
 
