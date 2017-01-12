@@ -13,7 +13,7 @@ class DjangoSettingsTestsBase(TestCase):
         c = Client()
 
         r = c.get('/')
-        soup = BeautifulSoup(r.content)
+        soup = BeautifulSoup(r.content, 'html.parser')
 
         settings_script_elm = soup.find(id="settings")
 

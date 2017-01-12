@@ -6,6 +6,8 @@ from django.core import mail
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from django.db.models import Q
+
 from rest_framework import viewsets
 from rest_framework import generics
 from rest_framework.views import APIView
@@ -18,9 +20,13 @@ from device.serializers import DeviceSerializer
 from device.serializers import DeviceDetailSerializer
 from device.serializers import DeviceGroupSerializer
 from device.models import Device
+from device.models import Room
+from device.models import Placement
 from device.models import DeviceGroup
 from node.models import RequestLog
 from button.models import Button
+
+from device.command import Command
 
 
 class DeviceViewSet(viewsets.ModelViewSet):
@@ -82,34 +88,62 @@ class DeviceCommandViewBase(CommandViewBase):
             return False
 
 
-class DeviceGroupCommandViewBase(DeviceCommandViewBase):
-    __group = None
+class DeviceCollectionCommandViewBase(DeviceCommandViewBase):
+    __entity = None
+    only_devices_with_state = None
     model = DeviceGroup
 
     @property
-    def group(self):
-        return self.__group
+    def entity(self):
+        return self.__entity
 
     def set_model(self, pk):
         try:
-            self.__group = DeviceGroup.objects.get(pk=pk)
+            self.__entity = self.model.objects.get(pk=pk)
             return True
-        except DeviceGroup.DoesNotExist:
+        except self.model.DoesNotExist:
             return False
+
+    def execute_command(self, device):
+        raise NotImplementedError()
+
+
+class DeviceCollectionCommandViewOnBase(DeviceCollectionCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        command = Command(only_devices_with_state=0)
+        command.set_location_instance(
+            self.entity
+        )
+        return Response(
+            command.turn_on()
+        )
+
+
+class DeviceCollectionCommandViewOffBase(DeviceCollectionCommandViewBase):
+    def execute_request(self, request, **kwargs):
+        command = Command(only_devices_with_state=1)
+        command.set_location_instance(
+            self.entity
+        )
+        return Response(
+            command.turn_off()
+        )
 
 
 class DeviceCommandOnView(DeviceCommandViewBase):
     def execute_request(self, request, **kwargs):
-        communicator = self.device.get_communicator()
-        if communicator.turn_on():
-            return Response()
+        command = Command()
+        command.set_location_instance(self.device)
+        command.turn_on()
+        return Response()
 
 
 class DeviceCommandOffView(DeviceCommandViewBase):
     def execute_request(self, request, **kwargs):
-        communicator = self.device.get_communicator()
-        if communicator.turn_off():
-            return Response()
+        command = Command()
+        command.set_location_instance(self.device)
+        command.turn_off()
+        return Response()
 
 
 class DeviceCommandDimView(DeviceCommandViewBase):
@@ -179,29 +213,26 @@ class DeviceGroupViewSet(viewsets.ModelViewSet):
     serializer_class = DeviceGroupSerializer
 
 
-class DeviceGroupCommandOnView(DeviceGroupCommandViewBase):
-    def execute_request(self, request, **kwargs):
-        result = []
-        for device in self.group.devices.all():
-            result.append(
-                {
-                    'device_id': device.pk,
-                    'result': device.get_communicator().turn_on()
-                }
-            )
-
-        return Response(result)
+# Device group collection
+class DeviceGroupCommandOnView(DeviceCollectionCommandViewOnBase):
+    only_devices_with_state = 0
 
 
-class DeviceGroupCommandOffView(DeviceGroupCommandViewBase):
-    def execute_request(self, request, **kwargs):
-        result = []
-        for device in self.group.devices.all():
-            result.append(
-                {
-                    'device_id': device.pk,
-                    'result': device.get_communicator().turn_off()
-                }
-            )
+class DeviceGroupCommandOffView(DeviceCollectionCommandViewOffBase):
+    only_devices_with_state = 1
 
-        return Response(result)
+
+class RoomCommandOnView(DeviceCollectionCommandViewOnBase):
+    only_devices_with_state = 0
+
+
+class RoomCommandOffView(DeviceCollectionCommandViewOffBase):
+    only_devices_with_state = 1
+
+
+class PlacementCommandOnView(DeviceCollectionCommandViewOnBase):
+    only_devices_with_state = 0
+
+
+class PlacementCommandOffView(DeviceCollectionCommandViewOffBase):
+    only_devices_with_state = 1

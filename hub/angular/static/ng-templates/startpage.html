@@ -4,23 +4,35 @@
     </md-button>
 </div>
 
-<md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageDeviceController">
-    <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="device in devices">
-        <div include="device-teaser.html"></div>
+<div ng-controller="StartpageDeviceController">
+    <md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap>
+        <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="device in devices">
+            <div include="device-teaser.html"></div>
+        </div>
+    </md-content>
+    <md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap>
+        <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="room in rooms">
+            <div include="room-teaser.html"></div>
+        </div>
+    </md-content>
+    <md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap>
+        <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="placement in placements">
+            <div include="placement-teaser.html"></div>
+        </div>
+    </md-content>
+</div>
+
+<md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageDeviceGroupController">
+    <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="group in groups" ng-show="(group.show_only_when === 'always') || (group.show_only_when === group.state)">
+        <div include="device-group-teaser.html"></div>
     </div>
 </md-content>
 
-<div layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageDeviceGroupController">
-    <div flex="20" flex-xs="100" flex-sm="100" flex-md="50" flex-lg="33" ng-repeat="group in groups">
-        <div include="device-group-teaser.html"></div>
-    </div>
-</div>
-
-<div class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageSensorController">
+<md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageSensorController">
     <div flex="20" flex-xs="100" flex-sm="50" flex-md="33" flex-lg="25" ng-repeat="sensor in sensors">
         <div include="sensor-teaser.html"></div>
     </div>
-</div>
+</md-content>
 
 <div layout="row" layout-align="center" ng-controller="StartpageForecastController">
     <md-card flex ng-show="forecasts">

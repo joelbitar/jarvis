@@ -11,21 +11,18 @@ from forecast.models import Forecast
 
 class ForecastFetcher(object):
     def get_url(self):
-        url = "http://opendata-download-metfcst.smhi.se/api/category/pmp1.5g/version/1/geopoint/lat/57.892365/lon/12.476692/data.json"
+        url = "http://opendata-download-metfcst.smhi.se/api/category/pmp2g/version/2/geotype/point/lon/12.476692/lat/57.892365/data.json"
 
         return url
 
     def get_parsed_result(self):
-        result = self.fetch_from_shmi()
         return json.loads(
-            result
+            self.fetch_from_shmi()
         )
 
     def fetch_from_shmi(self):
-        url = self.get_url()
-
         response = requests.get(
-            url
+            self.get_url()
         )
 
         return response.content.decode('utf-8')
@@ -38,50 +35,79 @@ class ForecastFetcher(object):
 
     def create_entry(self, data):
         # Check if a forecast with this valid time exists
-        data['valid_time'] = self.parse_time(data['valid_time'])
-        data['reference_time'] = self.parse_time(data['reference_time'])
 
         try:
             forecast = Forecast.objects.get(
                 valid_time=data['valid_time']
             )
+
+            for key, value in data.items():
+                # Ignore the following attributes
+                if key in ('valid_time',):
+                    continue
+
+                setattr(forecast, key, value)
+
         except Forecast.DoesNotExist:
             forecast = Forecast(
                 **data
             )
 
+        # Save it!
         forecast.save()
 
         return forecast
 
     def transform_data(self, data, **kwargs):
-        map = (
-            ('validTime', 'valid_time'),
+        result = {}
+
+        parameters = (
+            ('t',       't'),
+            ('tcc',     'tcc_mean'),
+            ('lcc',     'lcc_mean'),
+            ('mcc',     'mcc_mean'),
+            ('hcc',     'hcc_mean'),
+            ('tstm',    'tstm'),
+            ('r',       'r'),
+            ('vis',     'vis'),
+            ('gust',    'gust'),
+            ('pit',     'pmean'),
+            ('pis',     'pmean'),
+            ('pcat',    'pcat'),
+            ('msl',     'msl'),
+            ('wd',      'wd'),
+            ('ws',      'ws'),
         )
 
-        for key_from, key_to in map:
-            data[key_to] = data[key_from]
-            del data[key_from]
+        for result_key, parameter_conf in parameters:
+            for entry in data['parameters']:
+                if entry['name'] == parameter_conf:
+                    values = entry['values']
+                    result[result_key] = values[0]
+                    break
 
-        data.update(
-            kwargs
-        )
+        result['valid_time'] = self.parse_time(data['validTime'])
+        result['reference_time'] = self.parse_time(kwargs['reference_time'])
 
-        return data
+        return result
 
-    def create_entries(self):
-        print('create entries')
+    def get_transformed_result(self):
         result = self.get_parsed_result()
 
-        print('result', result)
-
-        for data in result['timeseries']:
-            yield self.create_entry(
-                self.transform_data(
-                    data=data,
-                    reference_time=result['referenceTime']
-                )
+        for data in result['timeSeries']:
+            yield self.transform_data(
+                data=data,
+                reference_time=result['referenceTime']
             )
+
+        return
+
+    def create_entries(self):
+        for data in self.get_transformed_result():
+            yield self.create_entry(
+                data
+            )
+
 
 
 

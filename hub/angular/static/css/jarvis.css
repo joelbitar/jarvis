@@ -28,3 +28,26 @@ div.floating-toolbar{
     z-index: 1;
     right: 1px;
 }
+
+/* Loading bar */
+#loading-bar .peg, #loading-bar .bar {
+    height: 7px;
+}
+#loading-bar .bar {
+    background-color: #b5b5b5;
+}
+#loading-bar-spinner {
+    top: 15px;
+}
+#loading-bar-spinner .spinner-icon {
+    width: 24px;
+    height: 24px;
+
+    border-width: 7px;
+    border-top-color: #b5b5b5;
+    border-left-color: #b5b5b5;
+}
+
+#loading-bar .peg {
+    box-shadow: #d0d0d0 1px 0 16px 1px;
+}

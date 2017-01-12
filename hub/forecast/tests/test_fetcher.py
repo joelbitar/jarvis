@@ -15,10 +15,12 @@ from device.tests import HasLoggedInClientBase
 
 
 class MockedSMHIFetcherBase(HasLoggedInClientBase):
-    FAKE_RESPONSE_JSON_FILE_NAME = '1.json'
+    FAKE_RESPONSE_JSON_FILE_NAME = None
 
     def setUp(self):
         super(MockedSMHIFetcherBase, self).setUp()
+
+        self.FAKE_RESPONSE_JSON_FILE_NAME = "1.json"
 
         self.fetcher = fetcher.ForecastFetcher()
 
@@ -36,22 +38,35 @@ class MockedSMHIFetcherBase(HasLoggedInClientBase):
 
         self.fetcher.fetch_from_shmi = fake_fetch_from_smhi
 
+    def run_create_entries(self, file_name=None):
+        self.FAKE_RESPONSE_JSON_FILE_NAME = file_name or "1.json"
+        entries = [e for e in self.fetcher.create_entries()]
+        return entries
+
+    def tearDown(self):
+        self.FAKE_RESPONSE_JSON_FILE_NAME = "1.json"
+
 
 class FetchFromSMHITests(MockedSMHIFetcherBase):
-    def __test_create_entries_should_produce_equal_number_of_units_as_there_is_timeseries(self):
+    def test_create_entries_should_produce_equal_number_of_units_as_there_is_timeseries(self):
         json = self.fetcher.get_parsed_result()
 
-        self.fetcher.create_entries()
+        entries = self.run_create_entries()
+
+        self.assertTrue(
+            Forecast.objects.all().count() > 10
+        )
 
         self.assertEqual(
             Forecast.objects.all().count(),
-            len(json['timeseries'])
+            len(json['timeSeries'])
         )
 
     def test_create_entries_should_not_yield_duplicates(self):
-        self.fetcher.create_entries()
+        self.run_create_entries()
         created_entries = Forecast.objects.all().count()
-        self.fetcher.create_entries()
+
+        self.run_create_entries()
 
         self.assertEqual(
             created_entries,
@@ -59,58 +74,50 @@ class FetchFromSMHITests(MockedSMHIFetcherBase):
         )
 
 
-class ForecastAPITests(MockedSMHIFetcherBase):
-    def setUp(self):
-        super(ForecastAPITests, self).setUp()
-        self.fetcher.create_entries()
-
-    def __test_should_return_seventy_one_entries_even_if_there_are_more(self):
-        self.FAKE_RESPONSE_JSON_FILE_NAME = '2.json'
-        self.fetcher.create_entries()
-
-        r = self.logged_in_client.get(
-            reverse('latest-forecast')
-        )
-
-        self.assertEqual(
-            71,
-            len(
-                json.loads(
-                    r.content.decode('utf-8')
-                )
-            )
-        )
-
-    def __test_should_render_fields_in_forecasts(self):
-        r = self.logged_in_client.get(
-            reverse('forecasts-detail', kwargs={
-                'pk': 1
-            })
-        )
-
-        j = json.loads(
-            r.content.decode('utf-8')
-        )
-        should_have_keys = (
-            'valid_time',
-            'reference_time',
+class ForecastFetcherParserTests(MockedSMHIFetcherBase):
+    def test_fetcher_should_be_able_to_create_a_list_of_understandable_data(self):
+        should_be_there = (
             't',
+            'tcc',
+            'lcc',
+            'mcc',
+            'hcc',
+            'tstm',
+            'r',
+            'vis',
+            'gust',
             'pit',
+            'pis',
             'pcat',
+            'msl',
             'wd',
             'ws',
-            'tcc'
+
+            'valid_time',
+            'reference_time',
         )
 
-        for should_have_key in should_have_keys:
-            self.assertTrue(
-                should_have_key in j.keys()
-            )
+        for data in self.fetcher.get_transformed_result():
+            for param in should_be_there:
+                self.assertTrue(
+                    data.get(param, None) is not None,
+                    "Parameter '" + param + "' was empty"
+                )
+
+
+class OverwriteOlderTests(MockedSMHIFetcherBase):
+    def test_new_forecast_should_overwrite_older(self):
+        self.run_create_entries()
+        self.run_create_entries("2.json")
+
+        forecast_instance = Forecast.objects.get(
+            valid_time=self.fetcher.parse_time("2017-01-11T15:00:00Z")
+        )
 
         self.assertEqual(
-            len(should_have_keys),
-            len(j.keys()),
-            'Does not match number of items in response: ' + ", ".join(j.keys())
+            forecast_instance.pit,
+            1.5,
+            "Forecast was NOT updated."
         )
 
 

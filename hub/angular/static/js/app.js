@@ -2,9 +2,11 @@
 var app = angular.module('jarvis', [
     'restangular',
     'ngMaterial',
+    'angular-loading-bar',
 
     'ngCookies',
     'ngStorage',
+    'ngAnimate',
 
     'ngFocus',
 

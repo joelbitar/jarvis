@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
 
+    'git_hook',
     'rest_router',
 
     'authentication',
@@ -72,6 +73,8 @@ INSTALLED_APPS = (
     'timer',
 
     'janitor',
+
+    'api',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -132,6 +135,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Github intragation
+GITHUB_WEBHOOK_SECRET = "GITHUB_SECRET"
+GITHUB_WEBHOOK_EXECUTE_PATH = os.path.join(BASE_DIR, "deploy.sh")
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -155,7 +161,7 @@ TEST_MODE = None
 MAIN_HUB_URL = None
 #MAIN_HUB_URL = 'http://127.0.0.1:9999/'
 
-VERSION = "0.6.0"
+VERSION = "0.7.0"
 AUTO_GENERATE_VERSION = False
 
 try:
