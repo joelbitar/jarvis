@@ -10,9 +10,14 @@ from django.test.client import RequestFactory
 from node.models import Node
 
 from api.vendors.api_ai import ApiAi
+from api.action_router import ActionRouter
+from api.actions.toggle import ActionToggle
+from api.actions.temperature import GetTemperature
 
 from device.models import Device, Room, Placement, LightType
+from sensor.models import Sensor
 
+from api.vendors.api_ai import ApiAiResponse
 
 # Create your tests here.
 class ApiTestsBase(TestCase):
@@ -39,11 +44,7 @@ class ApiTestsBase(TestCase):
                     "resolvedQuery": "turn on lights in the bedroom",
                     "action": "{action}",
                     "actionIncomplete": false,
-                    "parameters": {{
-                        "device_state": "{device_state}",
-                        "light_type": "{light_type}",
-                        "location": "{location}"
-                    }},
+                    "parameters": {parameters},
                     "contexts": [],
                     "metadata": {{
                         "intentId": "9d6a1b76-3891-44ea-8abc-419b4ba26b71",
@@ -127,6 +128,11 @@ class ApiTestsBase(TestCase):
         self.bedroom.slug = 'bedroom'
         self.bedroom.save()
 
+        self.bathroom = Room.objects.create(
+            name="Badrum",
+            slug="bathroom"
+        )
+
         self.bedroom_ceiling_light = self.create_device(
             'bedroom_ceiling',
             room=self.bedroom,
@@ -152,15 +158,183 @@ class ApiTestsBase(TestCase):
         return obj.__class__.objects.get(pk=obj.pk)
 
     def get_api_ai_response(self, **kwargs):
+        action = kwargs.get('action', None)
+
+        if action is not None:
+            del kwargs['action']
+
+        parameters = json.dumps(kwargs)
+
         response = self.client.post(
             reverse('api_entrypoint_api-ai'),
             self.request_string.format(
-                **kwargs
+                action=action,
+                parameters=parameters
             ),
             content_type='application/json'
         )
 
         return response
+
+
+class ApiAiRequestRouterTests(ApiTestsBase):
+    def helper_get_action(self, action, parameters=None):
+        request_factory = RequestFactory()
+        request = request_factory.post(
+            reverse('api_entrypoint_api-ai'),
+            data=self.request_string.format(
+                action=action,
+                parameters=json.dumps(
+                    parameters or {}
+                )
+            ),
+            content_type="application/json"
+        )
+
+        api_ai = ApiAi(request)
+        properties = api_ai.get_properties()
+        router = ActionRouter()
+
+        return router.get_action(properties)
+
+    def test_should_get_none_action_if_matches_nothing(self):
+        action = self.helper_get_action(action="does_not_exist")
+
+        self.assertIsNone(action)
+
+    def test_should_get_toggle_action(self):
+        action = self.helper_get_action(action="toggle")
+
+        self.assertIsInstance(
+            action,
+            ActionToggle
+        )
+
+    def test_should_get_get_lights_action(self):
+        action = self.helper_get_action(action="get_temperature")
+
+        self.assertIsInstance(
+            action,
+            GetTemperature
+        )
+
+
+class GetTemperatureActionTests(ApiTestsBase):
+    def setUp(self):
+        super(GetTemperatureActionTests, self).setUp()
+
+        self.sensor = Sensor.objects.create(
+            name="Badrum Temp",
+            active=True,
+            room=self.bedroom,
+            placement=self.placements['inside']
+        )
+        self.sensor.temperature = 20.0
+        self.sensor.save()
+
+        self.living_room_sensor = Sensor.objects.create(
+            name="Vardagsrum",
+            active=True,
+            room=self.bathroom,
+            placement=self.placements['inside'],
+            temperature=22.0
+        )
+
+
+    def test_get_sensors_in_bedroom(self):
+        action = GetTemperature(vendor_name='api_ai')
+        sensors = action.get_sensors(
+            location_slug=self.bedroom.slug
+        )
+
+        self.assertTrue(
+            len(sensors) == 1,
+            "Should be one sensor"
+        )
+
+    def test_get_mean_temperature_from_inside(self):
+        action = GetTemperature(vendor_name='api_ai')
+        sensors = action.get_sensors(
+            location_slug='inside'
+        )
+
+        self.assertTrue(
+            len(sensors) == 2,
+            "Should be two sensors"
+        )
+
+        self.assertEqual(
+            action.get_temperature(
+                sensors=sensors
+            ),
+            21.0
+        )
+
+    def get_temperature_where_there_is_no_sensors(self):
+        action = GetTemperature(vendor_name='api_ai')
+        sensors = action.get_sensors(
+            location_slug='bedroom'
+        )
+
+        self.assertTrue(
+            len(sensors) == 0,
+            "Should be zero sensors"
+        )
+
+        self.assertIsNone(
+            action.get_temperature(
+                sensors=sensors
+            )
+        )
+
+    def test_get_response_object(self):
+        action = GetTemperature(vendor_name='api_ai')
+
+        response = action.run(
+            {
+                'parameters': {
+                    'location': 'inside'
+                }
+            }
+        )
+
+        self.assertIsInstance(
+            response,
+            ApiAiResponse
+        )
+
+        self.assertJSONEqual(
+            json.dumps(response.get_dict()),
+            json.dumps(
+                {
+                    "speech": "It is 21.0 degrees",
+                    "displayText": "It is 21.0 degrees",
+                    "data": {},
+                    "contextOut": [],
+                    "source": "Yarvis"
+                }
+            )
+        )
+
+    def test_response_to_view_should_be_a_json_response_with_speach(self):
+        response = self.get_api_ai_response(
+            action="get_temperature",
+            location="inside"
+        )
+
+        self.assertJSONEqual(
+            response.content.decode('utf-8'),
+            json.dumps(
+                {
+                    "speech": "It is 21.0 degrees",
+                    "displayText": "It is 21.0 degrees",
+                    "data": {},
+                    "contextOut": [],
+                    "source": "Yarvis"
+                }
+            )
+        )
+
 
 
 class ApiAiParserTests(ApiTestsBase):
@@ -170,19 +344,16 @@ class ApiAiParserTests(ApiTestsBase):
             reverse('api_entrypoint_api-ai'),
             data=self.request_string.format(
                 action="toggle",
-                device_state="on",
-                light_type="all",
-                location="bedroom"
+                parameters=json.dumps(
+                    {
+                        'device_state': "on",
+                        'light_type': "all",
+                        'location': "bedroom"
+                    }
+                )
             ),
             content_type="application/json"
         )
-
-        json.loads(self.request_string.format(
-                action="toggle",
-                device_state="on",
-                light_type="all",
-                location=self.bedroom.slug
-            ))
 
         api_ai = ApiAi(request)
 

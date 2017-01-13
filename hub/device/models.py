@@ -167,12 +167,13 @@ class CategoryBaseModel(models.Model):
         abstract = True
 
 
-# Placement like
+# Placement like outside, inside, attic
 class Placement(CategoryBaseModel):
     # No own properties, JS Depends on it
     pass
 
 
+# Like bedroom, living room, bathroom
 class Room(CategoryBaseModel):
     # No own properties, JS Depends on it
     pass

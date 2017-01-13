@@ -7,15 +7,29 @@ import subprocess
 import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 
 from node.models import Node
 from node.communicator import NodeCommunicator
 
 
+class GitHubSecretAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        possible_headers = (
+            'X-Hub-Signature',
+            'HTTP_X_HUB_SIGNATURE',
+        )
+        for header_key in possible_headers:
+            if request.META.get(header_key) == settings.GITHUB_WEBHOOK_SECRET:
+                return (None, None)
+
+        raise AuthenticationFailed('Could not find hub signatuer')
+
 # Create your views here.
 class GitHookView(APIView):
     permission_classes = ()
-    authentication_classes = ()
+    authentication_classes = (GitHubSecretAuthentication,)
 
     def is_in_test_mode(self):
         if hasattr(mail, 'outbox'):
@@ -69,9 +83,6 @@ class GitHookView(APIView):
         }
 
     def post(self, request):
-        if request.META.get('X-Hub-Signature', None) != settings.GITHUB_WEBHOOK_SECRET:
-            return Response({}, status=404)
-
         try:
             payload = json.loads(request.body.decode('utf-8'))
         except Exception:
@@ -81,6 +92,7 @@ class GitHookView(APIView):
         if payload.get('ref') is None or not payload.get('ref').endswith("master"):
             return Response("Was not for master", status=400)
 
+        # If in test mode do not call to subprocess
         if self.is_in_test_mode():
             print("is in test mode, does NOT execute script :", settings.GITHUB_WEBHOOK_EXECUTE_PATH)
         else:

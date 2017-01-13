@@ -11,12 +11,14 @@ from api.action_router import ActionRouter
 Entry point for api.ai
 """
 class EntryPointApiAiView(APIView):
+
     def post(self, request):
         api_ai = ApiAi(request)
 
         properties = api_ai.get_properties()
 
         router = ActionRouter()
-        print(router.execute(properties))
+        router.set_vendor_name(vendor_name='api_ai')
+        result = router.execute(properties)
 
-        return Response({})
+        return Response(result.get_dict())

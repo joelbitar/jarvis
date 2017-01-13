@@ -42,7 +42,7 @@ class GitHookAuthTests(GitHubHookTestsBase):
 
         self.assertEqual(
             response.status_code,
-            404
+            403
         )
 
     def test_should_get_not_auhtorized_when_posting_with_wrong_secret(self):
@@ -56,7 +56,7 @@ class GitHookAuthTests(GitHubHookTestsBase):
 
         self.assertEqual(
             response.status_code,
-            404
+            403
         )
 
     def test_should_get_ok_when_posting_with_secret(self):
@@ -150,9 +150,7 @@ class GitHubNodeTests(GitHubHookTestsBase):
         )
 
     def test_should_request_on_main_hub(self):
-        settings.TEST_MODE = False
         old_hub_url = settings.MAIN_HUB_URL
-
         settings.MAIN_HUB_URL = 'http://example.com/nothihng/'
 
         response = self.get_hook_response()
@@ -163,7 +161,6 @@ class GitHubNodeTests(GitHubHookTestsBase):
         )
 
         settings.MAIN_HUB_URL = old_hub_url
-        settings.TEST_MODE = True
 
 
 class GitHookTestWebhookPayloads(GitHubHookTestsBase):

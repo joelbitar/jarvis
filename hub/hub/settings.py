@@ -136,6 +136,7 @@ USE_L10N = True
 USE_TZ = True
 
 # Github intragation
+# Be sure to use the github secret when github sends its request
 GITHUB_WEBHOOK_SECRET = "GITHUB_SECRET"
 GITHUB_WEBHOOK_EXECUTE_PATH = os.path.join(BASE_DIR, "deploy.sh")
 
@@ -161,7 +162,7 @@ TEST_MODE = None
 MAIN_HUB_URL = None
 #MAIN_HUB_URL = 'http://127.0.0.1:9999/'
 
-VERSION = "0.7.0"
+VERSION = "0.8.0"
 AUTO_GENERATE_VERSION = False
 
 try:
