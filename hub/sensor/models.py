@@ -5,6 +5,9 @@ from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 
+from device.models import Room
+from device.models import Placement
+
 
 class Sensor(models.Model):
     name = models.CharField(max_length=56, default='', blank=True)
@@ -18,6 +21,9 @@ class Sensor(models.Model):
     identifier = models.CharField(max_length=4, default=None, blank=True, null=True)
 
     active = models.BooleanField(default=False, help_text="If we should bother with the sensor")
+
+    room = models.ForeignKey(Room, related_name='sensors', default=None, blank=True, null=True)
+    placement = models.ForeignKey(Placement, related_name='sensors', default=None, blank=True, null=True)
 
     def log(self, signal):
         self.humidity = int(signal.humidity)

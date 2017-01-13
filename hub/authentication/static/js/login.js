@@ -16,7 +16,7 @@ jarvis_auth.factory('User', ['$rootScope', '$cookies', '$http', '$localStorage',
             },
             loadCurrent : function(){
                 // Uses the Auth token header to fetch current so no need to set Auth token or headers.
-                Restangular.one('auth/current').get().then(
+                Restangular.one('auth/current/').get().then(
                     function(user){
                         // If the user fetched was not a proper one with a pk, it is to be considered false.
                         // Otherwise, set it to the user we got.

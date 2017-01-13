@@ -9,3 +9,8 @@ script: ./runtests.sh
 notifications:
   email:
     - jarvis.travis-ci@joelbitar.se
+# safelist
+branches:
+  only:
+  - master
+  - develop

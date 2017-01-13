@@ -136,6 +136,7 @@ USE_L10N = True
 USE_TZ = True
 
 # Github intragation
+# Be sure to use the github secret when github sends its request
 GITHUB_WEBHOOK_SECRET = "GITHUB_SECRET"
 GITHUB_WEBHOOK_EXECUTE_PATH = os.path.join(BASE_DIR, "deploy.sh")
 

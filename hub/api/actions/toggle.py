@@ -1,35 +1,5 @@
-from device.models import Room
-from device.models import Device
-from device.models import Placement
-from device.models import DeviceGroup
-from device.models import LightType
-
+from api.actions.base import ActionBase
 from device.command import Command
-
-
-class ActionBase(object):
-    def get_location(self, slug):
-        filters = {
-            'slug': slug
-        }
-
-        for model in [Room, Placement, DeviceGroup, Device]:
-            try:
-                return model.objects.get(**filters)
-            except model.DoesNotExist:
-                pass
-
-    def get_light_type(self, slug):
-        try:
-            return LightType.objects.get(
-                slug=slug
-            )
-        except LightType.DoesNotExist:
-            return None
-
-
-    def run(self, properties):
-        raise NotImplementedError()
 
 
 class ActionToggle(ActionBase):
@@ -54,3 +24,12 @@ class ActionToggle(ActionBase):
 
         if parameters.get('device_state') == 'off':
             command.turn_off()
+
+        response = self.get_response_object(
+            speak_text = "Turned {new_state} {location} lights".format(
+                new_state = parameters.get('device_state'),
+                location = parameters.get('location')
+            )
+        )
+
+        return response
