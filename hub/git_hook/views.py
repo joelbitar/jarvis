@@ -15,16 +15,25 @@ from node.communicator import NodeCommunicator
 
 
 class GitHubSecretAuthentication(BaseAuthentication):
-    def authenticate(self, request):
+    def get_hub_secret(self, request):
         possible_headers = (
             'X-Hub-Signature',
             'HTTP_X_HUB_SIGNATURE',
         )
         for header_key in possible_headers:
-            if request.META.get(header_key) == settings.GITHUB_WEBHOOK_SECRET:
-                return (None, None)
+            header_value = request.META.get(header_key, None)
 
-        raise AuthenticationFailed('Could not find hub signatuer')
+            if header_value is not None:
+                return header_value
+
+        raise AuthenticationFailed('Could not find signature')
+
+
+    def authenticate(self, request):
+        if self.get_hub_secret(request) == settings.GITHUB_WEBHOOK_SECRET:
+            return (None, None)
+
+        raise AuthenticationFailed('Signature did not match')
 
 # Create your views here.
 class GitHookView(APIView):
