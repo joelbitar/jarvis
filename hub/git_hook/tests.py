@@ -87,6 +87,30 @@ class GitHookAuthTests(GitHubHookTestsBase):
             202
         )
 
+    def test_should_return_does_not_match(self):
+        kwargs = {
+            "X-Hub-Signature":"not_correct_secret"
+        }
+
+        response = self.get_hook_response(
+            **kwargs
+        )
+
+        self.assertEqual(
+            json.loads(response.content.decode('utf-8')).get('detail'),
+            'Signature did not match'
+        )
+
+    def test_should_return_could_not_find(self):
+        response = self.get_hook_response()
+
+        self.assertEqual(
+            json.loads(response.content.decode('utf-8')).get('detail'),
+            'Could not find signature'
+        )
+
+
+
 
 class GitHubHookAuthTestsWithBaseClass(GitHubHookTestsBase):
     def test_should_get_ok_when_using_default_headers(self):
