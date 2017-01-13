@@ -4,6 +4,9 @@ from django.conf import settings
 import json
 import subprocess
 
+import hmac
+from hashlib import sha1
+
 import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,7 +18,7 @@ from node.communicator import NodeCommunicator
 
 
 class GitHubSecretAuthentication(BaseAuthentication):
-    def get_hub_secret(self, request):
+    def get_hub_signature_from_header(self, request):
         possible_headers = (
             'X-Hub-Signature',
             'HTTP_X_HUB_SIGNATURE',
@@ -24,13 +27,21 @@ class GitHubSecretAuthentication(BaseAuthentication):
             header_value = request.META.get(header_key, None)
 
             if header_value is not None:
-                return header_value
+                return str(header_value)
 
         raise AuthenticationFailed('Could not find signature')
 
+    def calculate_github_sha_signature(self, request, secret=None):
+        secret = secret or settings.GITHUB_WEBHOOK_SECRET
+
+        # HMAC requires the key to be bytes, but data is string
+        mac = hmac.new(bytearray(secret, encoding='utf-8'), msg=request.body, digestmod=sha1)
+
+        return "sha1=" + str(mac.hexdigest())
 
     def authenticate(self, request):
-        if self.get_hub_secret(request) == settings.GITHUB_WEBHOOK_SECRET:
+        #print('Signatures', self.get_hub_signature_from_header(request), self.calculate_github_sha_signature(request))
+        if self.get_hub_signature_from_header(request) == self.calculate_github_sha_signature(request):
             return (None, None)
 
         raise AuthenticationFailed('Signature did not match')
@@ -95,6 +106,9 @@ class GitHookView(APIView):
         try:
             payload = json.loads(request.body.decode('utf-8'))
         except Exception:
+            print('No payload', dir(request))
+            print(request.content_type)
+            print(request.body)
             return Response(status=500)
 
         # Check that we are at master branch
