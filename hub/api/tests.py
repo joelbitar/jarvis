@@ -336,7 +336,6 @@ class GetTemperatureActionTests(ApiTestsBase):
         )
 
 
-
 class ApiAiParserTests(ApiTestsBase):
     def test_api_ai_parser(self):
         request_factory = RequestFactory()
