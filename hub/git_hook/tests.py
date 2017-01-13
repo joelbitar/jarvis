@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
+from django.test.client import RequestFactory
 import json
 
 from node.communicator import NodeCommunicator
@@ -11,13 +12,17 @@ from node.models import RequestLog
 from django.test import TestCase
 from django.test import Client
 
+from git_hook.views import GitHubSecretAuthentication
+
 
 class GitHubHookTestsBase(TestCase):
     def setUp(self):
         self.client = Client()
-        self.client.defaults["X-Hub-Signature"] = settings.GITHUB_WEBHOOK_SECRET
 
-    def get_hook_response(self, ref=None, **kwargs):
+    def get_hook_response(self, ref=None, signature=None, **kwargs):
+        if signature is not None:
+            kwargs["X-Hub-Signature"] = signature
+
         response = self.client.post(
             reverse("git_hook"),
             data=json.dumps(
@@ -60,12 +65,8 @@ class GitHookAuthTests(GitHubHookTestsBase):
         )
 
     def test_should_get_ok_when_posting_with_secret(self):
-        kwargs = {
-            "X-Hub-Signature":settings.GITHUB_WEBHOOK_SECRET
-        }
-
         response = self.get_hook_response(
-            **kwargs
+            signature="sha1=d7139d4938e9969c24836f5ca63ad6b19fb7abeb"
         )
 
         self.assertEqual(
@@ -73,23 +74,10 @@ class GitHookAuthTests(GitHubHookTestsBase):
             202
         )
 
-    def test_should_get_ok_when_posting_with_weirdly_cased_secret(self):
-        kwargs = {
-            "X-Hub-Signature":settings.GITHUB_WEBHOOK_SECRET
-        }
-
-        response = self.get_hook_response(
-            **kwargs
-        )
-
-        self.assertEqual(
-            response.status_code,
-            202
-        )
 
     def test_should_return_does_not_match(self):
         kwargs = {
-            "X-Hub-Signature":"not_correct_secret"
+            "X-Hub-Signature": "not_correct_secret"
         }
 
         response = self.get_hook_response(
@@ -109,17 +97,12 @@ class GitHookAuthTests(GitHubHookTestsBase):
             'Could not find signature'
         )
 
-
-
-
-class GitHubHookAuthTestsWithBaseClass(GitHubHookTestsBase):
-    def test_should_get_ok_when_using_default_headers(self):
-        response = self.get_hook_response()
-
-        self.assertEqual(
-            response.status_code,
-            202
+        self.assertNotEqual(
+            202,
+            response.status_code
         )
+
+
 
 
 class GitHubNodeTests(GitHubHookTestsBase):
@@ -134,7 +117,9 @@ class GitHubNodeTests(GitHubHookTestsBase):
         )
 
     def test_should_call_to_nodes_run_git_hooks(self):
-        response = self.get_hook_response()
+        response = self.get_hook_response(
+            signature="sha1=d7139d4938e9969c24836f5ca63ad6b19fb7abeb"
+        )
 
         self.assertEqual(
             response.status_code,
@@ -173,24 +158,12 @@ class GitHubNodeTests(GitHubHookTestsBase):
             'http://' + self.node.address + ':' + str(self.node.api_port) + '/githook/hook/'
         )
 
-    def test_should_request_on_main_hub(self):
-        old_hub_url = settings.MAIN_HUB_URL
-        settings.MAIN_HUB_URL = 'http://example.com/nothihng/'
-
-        response = self.get_hook_response()
-
-        self.assertEqual(
-            response.status_code,
-            202
-        )
-
-        settings.MAIN_HUB_URL = old_hub_url
-
 
 class GitHookTestWebhookPayloads(GitHubHookTestsBase):
     def test_should_not_execute_if_ref_is_not_master(self):
         response = self.get_hook_response(
-            ref="refs/heads/changes"
+            ref="refs/heads/changes",
+            signature="sha1=7eef0c5f2a40253f802012e8d7902669f2a10701"
         )
 
         self.assertEqual(
