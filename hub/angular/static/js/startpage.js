@@ -21,8 +21,6 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         get_categories_from_devices = function(category_name){
             var a = [];
 
-            console.log($scope.devices);
-
             // Loop through each of the categories
             _.each(_.uniqBy(_.filter(_.map($scope.devices, category_name)), 'id'), function (item_original) {
                 var category_devices, state = 0, item = angular.copy(item_original);
@@ -57,9 +55,6 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         $scope.$on('refresh-categories', function(){
             $scope.placements = get_categories_from_devices('placement');
             $scope.rooms = get_categories_from_devices('room');
-
-            console.log('placements', $scope.placements);
-            console.log('rooms', $scope.rooms);
         });
 
         $scope.$on('refresh-devices', function(){
@@ -102,12 +97,10 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
 
 
         $scope.sendPlacementState = function(placement){
-            console.info('Send room state');
             set_devices_state(placement);
 
             Restangular.one('placements', placement.id).one('command').one(String(placement.state ? 'on' : 'off') + '/').get().then(
                 function(response){
-                    console.log('placement command', response);
                     $rootScope.$broadcast('refresh-groups');
                 }
             );
@@ -139,13 +132,11 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         };
 
         $scope.sendRoomState = function(room){
-            console.info('Send room state');
 
             set_devices_state(room);
 
             Restangular.one('rooms', room.id).one('command').one(String(room.state ? 'on' : 'off') + '/').get().then(
                 function(response){
-                    console.log('room command', response);
                     $rootScope.$broadcast('refresh-groups');
                 }
             );
@@ -155,9 +146,9 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         focus.broadcast('refresh-forecast');
 
         $scope.$on('refresh-forecast', function(){
-            Restangular.all('forecast/short/').getList().then(function(forecasts){
-                console.log(forecasts);
+            delete $scope.grouped_forecasts;
 
+            Restangular.all('forecast/short/').getList().then(function(forecasts){
                 $scope.grouped_forecasts = _.groupBy(
                     _.flatten(forecasts),
                     function(forecast){
@@ -167,7 +158,9 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                         // Just the date-part.
                         return String(valid_time).slice(0, 10)
                     }
-                )
+                );
+
+                console.log($scope.grouped_forecasts);
             });
         });
 
