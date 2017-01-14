@@ -156,16 +156,22 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
 
         $scope.$on('refresh-forecast', function(){
             Restangular.all('forecast/short/').getList().then(function(forecasts){
-                $scope.forecasts = [];
+                console.log(forecasts);
 
-                forecasts.forEach(function(forecast_group){
-                    $scope.forecasts = $scope.forecasts.concat(forecast_group);
-                });
+                $scope.grouped_forecasts = _.groupBy(
+                    _.flatten(forecasts),
+                    function(forecast){
+                        // Valid time or valid_time_min, whatevva
+                        var valid_time = _.get(forecast, 'valid_time', _.get(forecast, 'valid_time__min'));
+
+                        // Just the date-part.
+                        return String(valid_time).slice(0, 10)
+                    }
+                )
             });
         });
 
-        $scope.$broadcast('refresh-forceast');
-
+        $scope.$broadcast('refresh-forecast');
 }])
 .controller('StartpageSensorController', ['$scope', 'focus', 'Restangular',  function($scope, focus, Restangular) {
         focus.broadcast('refresh-sensors');

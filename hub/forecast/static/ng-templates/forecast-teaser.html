@@ -1,28 +1,7 @@
 <div layout="column">
     <div layout="column" layout-xs="row" layout-padding layout-align="start center" layout-align-xs="space-around center">
-        <div flex-xs="15">
-        <span ng-if="forecast.valid_time__min">
-            {{ forecast.valid_time__min | date : "d/M" }}
-        </span>
-        <span ng-if="forecast.valid_time">
-            {{ forecast.valid_time | date : "d/M" }}
-        </span>
-        </div>
-
-        <div flex-xs="15">
-        <span ng-if="forecast.valid_time__min">
-            {{ forecast.valid_time__min | date : "EEE" }}
-        </span>
-        <span ng-if="forecast.valid_time">
-            {{ forecast.valid_time | date : "EEE" }}
-        </span>
-        </div>
-
-        <div ng-if="forecast.valid_time" flex-xs="20">
-            {{ forecast.valid_time | date : "HH:mm" }}
-        </div>
-        <div ng-if="forecast.valid_time__min" flex-xs="20">
-            {{ forecast.valid_time__min | date : "HH" }}-{{ forecast.valid_time__max | date : "HH" }}
+        <div flex-xs="20">
+            <span ng-if="forecast.valid_time">{{ forecast.valid_time | date : "HH" }}</span><span ng-if="forecast.valid_time__min">{{ forecast.valid_time__min | date : "HH" }}</span><span>:00</span>
         </div>
 
         <div layout="column" layout-xs="row" flex-xs="50">
@@ -37,6 +16,16 @@
                     {{ forecast.pit }}<span style="font-size: 0.7em">mm</span>
                 </span>
             </div>
+        </div>
+
+        <div flex-xs="15" layout="row">
+            <wind-icon forecast="forecast"></wind-icon>
+            <span>
+                &nbsp;
+            </span>
+            <span>
+            {{ forecast.ws }}
+            </span>
         </div>
     </div>
 </div>
