@@ -6,7 +6,34 @@
 var jarvis_weather = angular.module('jarvis.weather', ['ngRoute'])
     .factory('WeatherIcon', [function(){
         return {
-            'icon' : function (forecast){
+            'wind' : function(forecast){
+                var closest, choices = [
+                    0,
+                    23,
+                    45,
+                    68,
+                    90,
+                    113,
+                    135,
+                    158,
+                    180,
+                    203,
+                    225,
+                    248,
+                    270,
+                    293,
+                    313,
+                    336
+                ];
+
+                closest = choices.reduce(function (prev, curr) {
+                    return (Math.abs(curr - forecast.wd) < Math.abs(prev - forecast.wd) ? curr : prev);
+                });
+
+                return 'towards-' + String(closest) + '-deg';
+
+            },
+            'weather' : function (forecast){
                 var valid_time, icon_parts = [], night_time = false;
 
                 if(forecast.valid_time !== undefined){
@@ -96,11 +123,23 @@ var jarvis_weather = angular.module('jarvis.weather', ['ngRoute'])
         }
     }])
     .controller('WeatherIconController', ['$scope', 'WeatherIcon', function($scope, WeatherIcon){
-        $scope.weather_icon_class = WeatherIcon.icon($scope.forecast);
+        $scope.weather_icon_class = WeatherIcon.weather($scope.forecast);
     }])
     .directive('weatherIcon', function(){
         return {
             templateUrl : template_url('directive/weather-icon.html'),
+            restrict: 'E',
+            scope : {
+                forecast : '='
+            }
+        }
+    })
+    .controller('WindIconController', ['$scope', 'WeatherIcon', function($scope, WeatherIcon){
+        $scope.weather_icon_class = WeatherIcon.wind($scope.forecast);
+    }])
+    .directive('windIcon', function(){
+        return {
+            templateUrl : template_url('directive/wind-icon.html'),
             restrict: 'E',
             scope : {
                 forecast : '='

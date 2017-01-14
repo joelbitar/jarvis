@@ -124,7 +124,8 @@ class GitHookView(APIView):
         return Response(
             {
                 "main_hub" : self.execute_request_to_main_hub(),
-                "nodes": self.execute_requests_to_nodes()
+                "nodes": self.execute_requests_to_nodes(),
+                "test_mode": self.is_in_test_mode()
             },
             status=202
         )

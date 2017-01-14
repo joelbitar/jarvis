@@ -75,6 +75,7 @@ class ServiceWorkerView(TemplateView):
             "fonts/weather-icons/font/weathericons-regular-webfont.svg",
             "fonts/weather-icons/font/weathericons-regular-webfont.ttf",
             "fonts/weather-icons/font/weathericons-regular-webfont.woff"
+            "fonts/weather-icons/font/weathericons-regular-webfont.woff2"
         )
 
         context['resources'] = (
@@ -88,6 +89,7 @@ class ServiceWorkerView(TemplateView):
             "images/logo/logo-256.png",
 
             "fonts/weather-icons/css/weather-icons.min.css",
+            "fonts/weather-icons/css/weather-icons-wind.min.css",
 
             "images/icons/ic_autorenew_black_24px.svg",
             "images/icons/ic_autorenew_white_24px.svg",
@@ -137,6 +139,7 @@ class ServiceWorkerView(TemplateView):
             "ng-templates/device-teaser.html",
 
             "ng-templates/directive/weather-icon.html",
+            "ng-templates/directive/wind-icon.html",
             "ng-templates/forecast-teaser.html",
             "ng-templates/weather.html",
 
