@@ -74,7 +74,7 @@ class ServiceWorkerView(TemplateView):
             "fonts/weather-icons/font/weathericons-regular-webfont.eot",
             "fonts/weather-icons/font/weathericons-regular-webfont.svg",
             "fonts/weather-icons/font/weathericons-regular-webfont.ttf",
-            "fonts/weather-icons/font/weathericons-regular-webfont.woff"
+            "fonts/weather-icons/font/weathericons-regular-webfont.woff",
             "fonts/weather-icons/font/weathericons-regular-webfont.woff2"
         )
 
