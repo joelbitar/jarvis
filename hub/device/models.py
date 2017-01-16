@@ -137,7 +137,7 @@ class DeviceGroup(models.Model):
         verbose_name=_('Show only when devices are'),
         help_text=_('Will only show this group when the group have selected status')
     )
-    devices = models.ManyToManyField(Device)
+    devices = models.ManyToManyField(Device, related_name='groups')
 
     @property
     def state(self):

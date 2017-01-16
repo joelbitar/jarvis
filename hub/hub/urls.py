@@ -7,6 +7,7 @@ from rest_framework import routers
 from device.views import DeviceViewSet
 from device.views import DeviceOptionsView
 from device.views import DeviceDetailedView
+from device.views import DeviceListShortView
 
 from device.views import DeviceCommandOnView
 from device.views import DeviceCommandOffView
@@ -22,6 +23,12 @@ from device.views import PlacementCommandOffView
 from device.views import DeviceGroupViewSet
 from device.views import DeviceGroupCommandOnView
 from device.views import DeviceGroupCommandOffView
+
+# Rooms
+from device.views import RoomViewSet
+
+# Placements
+from device.views import PlacementViewSet
 
 from node.views import NodeViewSet
 from node.views import NodeWriteConfView
@@ -63,6 +70,8 @@ device_detail = DeviceViewSet.as_view({
 router = routers.DefaultRouter()
 router.register(r'devices', DeviceViewSet)
 router.register(r'nodes', NodeViewSet)
+router.register(r'rooms', RoomViewSet)
+router.register(r'placements', PlacementViewSet)
 router.register(r'groups', DeviceGroupViewSet)
 router.register(r'devices/(?P<pk>[0-9]+)/$', device_detail, base_name='devices')
 router.register(r'nodes/(?P<pk>[0-9]+)/$', node_detail, base_name='nodes')
@@ -71,12 +80,12 @@ router.register(r'forecasts', ForecastViewSet, base_name='forecasts')
 #router.register(r'devices/(?P<pk>[0-9]+)/command/on/$', DeviceCommandOnView.as_view(), base_name='device_command')
 
 rest_patterns = patterns('',
-    url(r'^', include(router.urls)),
     url(r'^auth/current/', CurrentUserView.as_view(), name='current-user'),
     url(r'^auth/login/', LoginUserView.as_view(), name='login'),
     url(r'^auth/logout/', LogoutUserView.as_view(), name='logout'),
     url(r'^device/options/', DeviceOptionsView.as_view(), name='device-options'),
 
+    url(r'^devices/short/$', DeviceListShortView.as_view(), name="device-list-short"),
     url(r'^devices/(?P<pk>[0-9]+)/details/$', DeviceDetailedView.as_view(), name="device-extra"),
     url(r'^devices/(?P<pk>[0-9]+)/command/dim/(?P<dimlevel>\d+)/$', DeviceCommandDimView.as_view(), name="device-dim"),
     url(r'^devices/(?P<pk>[0-9]+)/command/on/$', DeviceCommandOnView.as_view(), name="device-on"),
@@ -87,7 +96,7 @@ rest_patterns = patterns('',
     url(r'^rooms/(?P<pk>[0-9]+)/command/on/$', RoomCommandOnView.as_view(), name="room-on"),
     url(r'^rooms/(?P<pk>[0-9]+)/command/off/$', RoomCommandOffView.as_view(), name="room-off"),
 
-    # Room commands
+    # Placement commands
     url(r'^placements/(?P<pk>[0-9]+)/command/on/$', PlacementCommandOnView.as_view(), name="placement-on"),
     url(r'^placements/(?P<pk>[0-9]+)/command/off/$', PlacementCommandOffView.as_view(), name="placement-off"),
 
@@ -111,6 +120,8 @@ rest_patterns = patterns('',
     url(r'^forecast/now/(?P<date>.*)/$', NowForecastView.as_view(), name="forecast-now"),
 
     url(r'^sensors/(?P<sensor_pk>\d+)/logs/$', SensorLogView.as_view(), name='sensorlog-list'),
+
+    url(r'^', include(router.urls)),
 
     # API entrypoints
     url(r'^entrypoint/', include('api.urls'))
