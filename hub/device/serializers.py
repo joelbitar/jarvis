@@ -42,6 +42,11 @@ class DeviceSerializer(serializers.ModelSerializer):
         model = Device
 
 
+class DeviceStateListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Device
+        fields = ('id', 'state',)
+
 class DeviceListShortSerializer(serializers.ModelSerializer):
     name = serializers.CharField(read_only=True)
     room = serializers.PrimaryKeyRelatedField(read_only=True)

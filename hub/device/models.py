@@ -123,11 +123,13 @@ class CategoryBaseModel(models.Model):
     SHOW_ONLY_WHEN_CHOICE_OFF = 0
     SHOW_ONLY_WHEN_CHOICE_ON = 1
     SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW = 2
+    SHOW_ONLY_WHEN_CHOICE_NEVER_SHOW = 3
 
     SHOW_ONLY_WHEN_CHOICES = (
         (SHOW_ONLY_WHEN_CHOICE_OFF, _('Off')),
         (SHOW_ONLY_WHEN_CHOICE_ON, _('On')),
         (SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW, _('Always')),
+        (SHOW_ONLY_WHEN_CHOICE_NEVER_SHOW, _('Never'))
     )
     name = models.CharField(max_length=18, help_text=_("'First floor', 'attic', 'outside'"))
     slug = models.SlugField(max_length=18, help_text=_('Common code name'), null=True, default=None)

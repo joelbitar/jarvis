@@ -16,15 +16,7 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
 
         // Update device without setting everything again.
         $scope.updateDevice = function(device){
-            console.error('Need a way to update devices');
-            return;
-            /*
-            devices.forEach(function(d){
-                if(d.id == device.id){
-                    d.state = device.state;
-                }
-            });
-            */
+            _.set(_.find(_.flatten(_.map(_.flatten(_.values($scope.device_categories)), 'devices')), {id: device.id}), 'state', device.state)
         };
 
         get_category_object = function(json){
@@ -42,7 +34,7 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
             };
 
             return o;
-        }
+        };
 
         add_devices_to_categories = function (devices) {
             var fetch_category_deferred, categories, requests = [];
@@ -78,14 +70,7 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                                     // Category relation can be both an array of ids or a single id
                                     // category_relation = 1, or [1,2,3]
 
-                                    if(category_name == "group"){
-                                        console.info(category_object.name);
-                                        console.log(category_object);
-                                        console.log(category_relation)
-                                    }
-
                                     if(typeof(category_relation) === 'object'){
-                                        console.log(device.groups);
                                         // Is a list if category_object.id is amongst the category relations, add it.
                                         return _.indexOf(category_relation, category_object.id) >= 0;
                                     }
@@ -100,24 +85,29 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                             );
                         });
 
-                        console.log(category_name, category_items);
                         $scope.device_categories[category_name] = category_items;
                     });
 
-                    console.log($scope.device_categories);
+                    console.log(
+                        $scope.device_categories
+                    )
                 }
             );
 
         };
 
         $scope.$on('refresh-devices', function() {
-            Restangular.all('devices/short/').getList().then(function (devices) {
-                if (_.size($scope.device_categories) > 0) {
-                    devices.forEach($scope.updateDevice);
-                } else {
+            // If there is no devices, get all the names and whatnot
+            if (_.size($scope.device_categories) == 0) {
+                Restangular.all('devices/short/').getList().then(function (devices) {
                     add_devices_to_categories(devices);
-                }
-            })
+                });
+            }else{
+                // If there is devices, just get the states
+                Restangular.all('devices/states/').getList().then(function (devices) {
+                    devices.forEach($scope.updateDevice);
+                });
+            }
         });
 
         $scope.$broadcast('refresh-devices');

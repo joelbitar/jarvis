@@ -8,6 +8,7 @@ from device.views import DeviceViewSet
 from device.views import DeviceOptionsView
 from device.views import DeviceDetailedView
 from device.views import DeviceListShortView
+from device.views import DeviceStatesView
 
 from device.views import DeviceCommandOnView
 from device.views import DeviceCommandOffView
@@ -86,6 +87,7 @@ rest_patterns = patterns('',
     url(r'^device/options/', DeviceOptionsView.as_view(), name='device-options'),
 
     url(r'^devices/short/$', DeviceListShortView.as_view(), name="device-list-short"),
+    url(r'^devices/states/$', DeviceStatesView.as_view(), name="device-list-states"),
     url(r'^devices/(?P<pk>[0-9]+)/details/$', DeviceDetailedView.as_view(), name="device-extra"),
     url(r'^devices/(?P<pk>[0-9]+)/command/dim/(?P<dimlevel>\d+)/$', DeviceCommandDimView.as_view(), name="device-dim"),
     url(r'^devices/(?P<pk>[0-9]+)/command/on/$', DeviceCommandOnView.as_view(), name="device-on"),

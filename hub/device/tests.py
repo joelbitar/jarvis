@@ -967,6 +967,23 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
         self.assertEqual(len(response_json), Device.objects.all().count())
 
+    def test_should_get_device_states_list_json(self):
+        response = self.logged_in_client.get(
+            reverse('device-list-states')
+        )
+
+        self.assertJSONEqual(
+            response.content.decode('utf-8'),
+            json.dumps(
+                [
+                    {
+                        'id': self.device.pk,
+                        'state': self.device.state
+                    }
+                ]
+            )
+        )
+
     def test_should_device_list_short_json(self):
         room = Room.objects.create(name='Testrum', slug='testslug')
         placement = Placement.objects.create(name='Inne', slug='inside')

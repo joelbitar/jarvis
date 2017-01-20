@@ -22,6 +22,8 @@ from device.serializers import DeviceGroupSerializer
 from device.serializers import RoomSerializer
 from device.serializers import PlacementSerializer
 from device.serializers import DeviceListShortSerializer
+from device.serializers import DeviceStateListSerializer
+
 from device.models import Device
 from device.models import Room
 from device.models import Placement
@@ -46,7 +48,6 @@ class DeviceDetailedView(generics.RetrieveAPIView):
 
 
 class DeviceListShortView(APIView):
-    queryset = Device.objects.all()
     serializer_class = DeviceListShortSerializer
 
     def get(self, request, *args, **kwargs):
@@ -55,6 +56,17 @@ class DeviceListShortView(APIView):
         )
         return Response(
             serializer.data
+        )
+
+
+class DeviceStatesView(APIView):
+    serializer_class = DeviceStateListSerializer
+
+    def get(self, request, *args, **kwargs):
+        return Response(
+            self.serializer_class(
+                Device.objects.all().values('id', 'state'), many=True
+            ).data
         )
 
 
