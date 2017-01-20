@@ -19,6 +19,11 @@ from rest_framework import filters
 from device.serializers import DeviceSerializer
 from device.serializers import DeviceDetailSerializer
 from device.serializers import DeviceGroupSerializer
+from device.serializers import RoomSerializer
+from device.serializers import PlacementSerializer
+from device.serializers import DeviceListShortSerializer
+from device.serializers import DeviceStateListSerializer
+
 from device.models import Device
 from device.models import Room
 from device.models import Placement
@@ -40,6 +45,29 @@ class DeviceViewSet(viewsets.ModelViewSet):
 class DeviceDetailedView(generics.RetrieveAPIView):
     queryset = Device.objects.all()
     serializer_class = DeviceDetailSerializer
+
+
+class DeviceListShortView(APIView):
+    serializer_class = DeviceListShortSerializer
+
+    def get(self, request, *args, **kwargs):
+        serializer = DeviceListShortSerializer(
+            Device.objects.all(), many=True
+        )
+        return Response(
+            serializer.data
+        )
+
+
+class DeviceStatesView(APIView):
+    serializer_class = DeviceStateListSerializer
+
+    def get(self, request, *args, **kwargs):
+        return Response(
+            self.serializer_class(
+                Device.objects.all().values('id', 'state'), many=True
+            ).data
+        )
 
 
 class CommandViewBase(APIView):
@@ -213,6 +241,11 @@ class DeviceGroupViewSet(viewsets.ModelViewSet):
     serializer_class = DeviceGroupSerializer
 
 
+class DeviceCategoryViewSetBase(viewsets.ModelViewSet):
+    filter_backends = (filters.OrderingFilter,)
+    ordering_fields = ('name', 'id',)
+    ordering = ('name',)
+
 # Device group collection
 class DeviceGroupCommandOnView(DeviceCollectionCommandViewOnBase):
     only_devices_with_state = 0
@@ -222,6 +255,12 @@ class DeviceGroupCommandOffView(DeviceCollectionCommandViewOffBase):
     only_devices_with_state = 1
 
 
+# Rooms
+class RoomViewSet(DeviceCategoryViewSetBase):
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+
+
 class RoomCommandOnView(DeviceCollectionCommandViewOnBase):
     only_devices_with_state = 0
 
@@ -229,6 +268,10 @@ class RoomCommandOnView(DeviceCollectionCommandViewOnBase):
 class RoomCommandOffView(DeviceCollectionCommandViewOffBase):
     only_devices_with_state = 1
 
+# Placements
+class PlacementViewSet(DeviceCategoryViewSetBase):
+    queryset = Placement.objects.all()
+    serializer_class = PlacementSerializer
 
 class PlacementCommandOnView(DeviceCollectionCommandViewOnBase):
     only_devices_with_state = 0

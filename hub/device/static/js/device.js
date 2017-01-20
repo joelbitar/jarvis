@@ -4,6 +4,34 @@
  */
 
 var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
+    .filter('showCategory', function(){
+        return function(category){
+            var SHOW_ONLY_WHEN_CHOICE_OFF = 0,
+                SHOW_ONLY_WHEN_CHOICE_ON = 1,
+                SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW = 2,
+                SHOW_ONLY_WHEN_CHOICE_NEVER_SHOW = 3;
+
+            // Always show
+            if(category.show_only_when == SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW){
+                return true;
+            }
+
+            if(category.show_only_when == SHOW_ONLY_WHEN_CHOICE_NEVER_SHOW){
+                return false;
+            }
+
+            if(category.show_only_when == SHOW_ONLY_WHEN_CHOICE_OFF){
+                return category.get_state() == 0;
+            }
+
+            if(category.show_only_when == SHOW_ONLY_WHEN_CHOICE_ON){
+                return category.get_state() == 1;
+            }
+
+
+            return false;
+        }
+    })
 .controller('DeviceController', ['$scope', '$rootScope', '$timeout', 'Restangular', function($scope, $rootScope, $timeout, Restangular){
         var last_change = {};
 
@@ -76,15 +104,12 @@ var jarvis_device = angular.module('jarvis.device', ['ngRoute', 'restangular'])
 
                 Restangular.one('devices', device.id).one('command').one(command_verb + '/').get().then(
                     function(response){
-                        console.log(response);
-                        $rootScope.$broadcast('refresh-groups');
                     }
                 );
             }else{
                 Restangular.one('devices', device.id).one('command').one('dim').one(device.state + '/').get().then(
                     function(response){
                         console.log(response);
-                        $rootScope.$broadcast('refresh-groups');
                     }
                 );
             }
