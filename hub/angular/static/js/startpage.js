@@ -6,8 +6,15 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
             }
         )
 }])
-.controller('StartpageDeviceController', ['$scope', '$rootScope', '$window', 'Restangular', 'focus',  function($scope, $rootScope, $window, Restangular, focus) {
+.controller('StartpageDeviceController', ['$scope', '$q', '$rootScope', '$window', 'Restangular', 'focus',  function($scope, $q, $rootScope, $window, Restangular, focus) {
+        var fetch_categories_promises = {};
+
+        fetch_categories_promises['room'] = undefined;
+        fetch_categories_promises['placement'] = undefined;
+
         focus.broadcast('refresh-devices');
+
+        $scope.device_categories = [];
 
         // Update device without setting everything again.
         $scope.updateDevice = function(device){
@@ -18,6 +25,7 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
             });
         };
 
+        /*
         get_categories_from_devices = function(category_name){
             var a = [];
 
@@ -56,17 +64,70 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
             $scope.placements = get_categories_from_devices('placement');
             $scope.rooms = get_categories_from_devices('room');
         });
+        */
 
-        $scope.$on('refresh-devices', function(){
-            Restangular.all('devices/').getList().then(function(devices){
-                if($scope.devices !== undefined){
-                    devices.forEach($scope.updateDevice);
-                }else{
-                    $scope.devices = devices;
-                }
 
-                $scope.$broadcast('refresh-categories');
+        get_category_object = function(json){
+            var o = angular.copy(json);
+
+            o.get_state = function(){
+                return _.size(
+                    _.filter(
+                        this.devices,
+                        function(device){
+                            return device.state != 0;
+                        }
+                    )
+                ) > 0;
+            };
+
+            return o;
+        }
+
+        add_devices_to_categories = function (devices) {
+            var fetch_category_deferred, categories, requests = [];
+
+            categories = [
+                'room',
+                'placement'
+            ];
+
+            _.each(categories, function(category_name){
+                requests.push(Restangular.all(category_name + 's/').getList().then());
             });
+
+            $q.all(requests).then(
+                function(responses){
+                    _.each(responses, function (response, i) {
+                        var category_items = [],  category_name = categories[i], device_filter;
+
+                        _.each(response, function(category_response){
+                            var category_object = get_category_object(category_response.plain());
+                            category_object.devices = _.filter(devices, function(device){
+                                return _.get(device, category_name) == category_object.id;
+                            });
+
+                            category_items.push(
+                                category_object
+                            )
+                        });
+
+                        console.log(category_items);
+                        $scope.device_categories[category_name] = category_items;
+                    });
+                }
+            )
+        };
+
+        $scope.$on('refresh-devices', function() {
+            Restangular.all('devices/short/').getList().then(function (devices) {
+                if ($scope.devices !== undefined) {
+                    devices.forEach($scope.updateDevice);
+                } else {
+                    $scope.devices = devices;
+                    add_devices_to_categories(devices);
+                }
+            })
         });
 
         $scope.$broadcast('refresh-devices');

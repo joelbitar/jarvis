@@ -119,7 +119,7 @@ class DeviceLog(models.Model):
         app_label = 'device'
 
 
-class DeviceGroup(models.Model):
+class CategoryBaseModel(models.Model):
     SHOW_ONLY_WHEN_CHOICE_OFF = 0
     SHOW_ONLY_WHEN_CHOICE_ON = 1
     SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW = 2
@@ -129,34 +129,15 @@ class DeviceGroup(models.Model):
         (SHOW_ONLY_WHEN_CHOICE_ON, _('On')),
         (SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW, _('Always')),
     )
-    name = models.CharField(max_length=12, help_text=_("'Kitchen', 'Driveway'"))
+    name = models.CharField(max_length=18, help_text=_("'First floor', 'attic', 'outside'"))
     slug = models.SlugField(max_length=18, help_text=_('Common code name'), null=True, default=None)
+
     show_only_when = models.SmallIntegerField(
         choices=SHOW_ONLY_WHEN_CHOICES,
         default=SHOW_ONLY_WHEN_CHOICE_ALWAYS_SHOW,
         verbose_name=_('Show only when devices are'),
         help_text=_('Will only show this group when the group have selected status')
     )
-    devices = models.ManyToManyField(Device, related_name='groups')
-
-    @property
-    def state(self):
-        if self.devices.filter(state__gte=1).count() > 0:
-            return 1
-
-        return 0
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        app_label = 'device'
-        ordering = ('name', )
-
-
-class CategoryBaseModel(models.Model):
-    name = models.CharField(max_length=18, help_text=_("'First floor', 'attic', 'outside'"))
-    slug = models.SlugField(max_length=18, help_text=_('Common code name'), null=True, default=None)
 
     def __str__(self):
         return self.name
@@ -166,6 +147,16 @@ class CategoryBaseModel(models.Model):
         ordering = ('name', )
         abstract = True
 
+
+class DeviceGroup(CategoryBaseModel):
+    devices = models.ManyToManyField(Device, related_name='groups')
+
+    @property
+    def state(self):
+        if self.devices.filter(state__gte=1).count() > 0:
+            return 1
+
+        return 0
 
 # Placement like outside, inside, attic
 class Placement(CategoryBaseModel):
