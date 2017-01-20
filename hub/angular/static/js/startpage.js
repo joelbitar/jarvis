@@ -6,70 +6,113 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
             }
         )
 }])
-.controller('StartpageDeviceController', ['$scope', '$rootScope', '$window', 'Restangular', 'focus',  function($scope, $rootScope, $window, Restangular, focus) {
-        focus.broadcast('refresh-devices');
+.controller('StartpageDeviceController', ['$scope', '$q', '$rootScope', '$window', 'Restangular', 'focus',  function($scope, $q, $rootScope, $window, Restangular, focus) {
+        var fetch_categories_promises = {};
+
+        fetch_categories_promises['room'] = undefined;
+        fetch_categories_promises['placement'] = undefined;
+
+        $scope.device_categories = {};
 
         // Update device without setting everything again.
         $scope.updateDevice = function(device){
-            $scope.devices.forEach(function(d){
-                if(d.id == device.id){
-                    d.state = device.state;
-                }
-            });
+            _.set(_.find(_.flatten(_.map(_.flatten(_.values($scope.device_categories)), 'devices')), {id: device.id}), 'state', device.state)
         };
 
-        get_categories_from_devices = function(category_name){
-            var a = [];
+        get_category_object = function(json){
+            var o = angular.copy(json);
 
-            // Loop through each of the categories
-            _.each(_.uniqBy(_.filter(_.map($scope.devices, category_name)), 'id'), function (item_original) {
-                var category_devices, state = 0, item = angular.copy(item_original);
+            o.get_state = function(){
+                return _.size(
+                    _.filter(
+                        this.devices,
+                        function(device){
+                            return device.state != 0;
+                        }
+                    )
+                ) > 0;
+            };
 
-                // Get devices for this category
-                category_devices = _.filter(
-                    $scope.devices,
-                    function(o){
-                        return _.get(o, category_name + '.id', undefined) == item.id;
-                    }
-                );
+            return o;
+        };
 
-                // Check if there is any device that is NOT turned off.
-                _.each(category_devices, function(device){
-                    if(device.state != 0){
-                        state = 1;
-                        return false;
-                    }
+        add_devices_to_categories = function (devices) {
+            var fetch_category_deferred, categories, requests = [];
+
+            categories = [
+                'room',
+                'placement',
+                'group'
+            ];
+
+            _.each(categories, function(category_name){
+                requests.push(Restangular.all(category_name + 's/').getList().then());
+            });
+
+            $q.all(requests).then(
+                function(responses){
+                    _.each(responses, function (response, i) {
+                        var category_items = [],  category_name = categories[i];
+                        // category_items       Array of items in this category     [room, room, room]
+                        // category_name        String name of the category type    "room", "group", "placement"
+
+                        _.each(response, function(category_response){
+                            var category_object = get_category_object(category_response.plain());
+                            // category_object      Wrapper around the response json with extra functions and properties on the category object
+
+                            category_object.devices = _.filter(
+                                devices,
+                                // Filter to only include devices that are on this specific room type
+                                function(device){
+                                    var category_relation;
+
+                                    category_relation = _.get(device, category_name, _.get(device, category_name + 's'));
+                                    // Category relation can be both an array of ids or a single id
+                                    // category_relation = 1, or [1,2,3]
+
+                                    if(typeof(category_relation) === 'object'){
+                                        // Is a list if category_object.id is amongst the category relations, add it.
+                                        return _.indexOf(category_relation, category_object.id) >= 0;
+                                    }
+
+                                    return category_relation == category_object.id;
+                                }
+                            );
+
+                            // Add category object to items
+                            category_items.push(
+                                category_object
+                            );
+                        });
+
+                        $scope.device_categories[category_name] = category_items;
+                    });
+
+                    console.log(
+                        $scope.device_categories
+                    )
+                }
+            );
+
+        };
+
+        $scope.$on('refresh-devices', function() {
+            // If there is no devices, get all the names and whatnot
+            if (_.size($scope.device_categories) == 0) {
+                Restangular.all('devices/short/').getList().then(function (devices) {
+                    add_devices_to_categories(devices);
                 });
-
-                item['state'] = state;
-                item['devices'] = category_devices;
-
-                a.push(
-                   item
-                )
-            });
-
-            return a;
-        };
-
-        $scope.$on('refresh-categories', function(){
-            $scope.placements = get_categories_from_devices('placement');
-            $scope.rooms = get_categories_from_devices('room');
-        });
-
-        $scope.$on('refresh-devices', function(){
-            Restangular.all('devices/').getList().then(function(devices){
-                if($scope.devices !== undefined){
+            }else{
+                // If there is devices, just get the states
+                Restangular.all('devices/states/').getList().then(function (devices) {
                     devices.forEach($scope.updateDevice);
-                }else{
-                    $scope.devices = devices;
-                }
-
-                $scope.$broadcast('refresh-categories');
-            });
+                });
+            }
         });
 
         $scope.$broadcast('refresh-devices');
+        focus.broadcast('refresh-devices');
+
 }]).controller('StartpagePlacementController', ['$scope', '$rootScope','Restangular', function($scope, $rootScope,Restangular) {
         var set_devices_state = function(placement){
             _.each(

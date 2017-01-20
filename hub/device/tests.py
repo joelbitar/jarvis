@@ -219,8 +219,6 @@ class DevicePropertySetterTests(TestCase):
                 i
             )
 
-
-
     def test_should_set_iteration(self):
         for i in range(1,5):
             d = Device(
@@ -240,7 +238,7 @@ class DevicePropertySetterTests(TestCase):
 
 class DeviceTests(DeviceModelTestsBase):
     def test_devices_have_been_created(self):
-        self.assertEqual(1, self.device.devicegroup_set.all().count())
+        self.assertEqual(1, self.device.groups.all().count())
 
     def test_should_set_property_iteration_on_model_after_saving_through_generate_properties_method(self):
         # Should be first if we just look at the newly created device
@@ -969,6 +967,72 @@ class HubDeviceRestTests(DeviceModelTestsBase):
 
         self.assertEqual(len(response_json), Device.objects.all().count())
 
+    def test_should_get_device_states_list_json(self):
+        response = self.logged_in_client.get(
+            reverse('device-list-states')
+        )
+
+        self.assertJSONEqual(
+            response.content.decode('utf-8'),
+            json.dumps(
+                [
+                    {
+                        'id': self.device.pk,
+                        'state': self.device.state
+                    }
+                ]
+            )
+        )
+
+    def test_should_device_list_short_json(self):
+        room = Room.objects.create(name='Testrum', slug='testslug')
+        placement = Placement.objects.create(name='Inne', slug='inside')
+        self.device.room = room
+        self.device.placement = placement
+
+        self.device.save()
+
+        DeviceGroup.objects.create(
+            name="group should not be in list"
+        )
+
+        other_group = DeviceGroup.objects.create(
+            name="YAy, we use this group"
+        )
+        other_group.devices.add(self.device)
+
+        response = self.logged_in_client.get(
+            reverse('device-list-short')
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertJSONEqual(
+            response.content.decode('utf-8'),
+            json.dumps(
+                [
+                    {
+                        'id' : self.device.pk,
+                        'name' : self.device.name,
+                        'is_dimmable' : self.device.is_dimmable,
+                        'state' : self.device.state,
+                        'category' : None,
+                        'room' : self.device.room.pk,
+                        'placement' : self.device.placement.pk,
+                        'groups' : [
+                            self.group.pk,
+                            other_group.pk
+                        ]
+                    }
+                ]
+            )
+        )
+
+
+
     def test_should_get_single_device(self):
         from django.core import serializers
         from django.core.serializers.json import DjangoJSONEncoder
@@ -1063,7 +1127,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         self.assertEqual(d.house, 'A')
         self.assertEqual(d.unit, '1')
 
-    def test_should_get_name_of_room_when_set(self):
+    def test_should_get_id_of_room_and_placement_when_getting_device_detail(self):
         room = Room()
         room.name = 'Rum'
         room.save()
@@ -1081,23 +1145,14 @@ class HubDeviceRestTests(DeviceModelTestsBase):
         ).content.decode('utf-8'))
 
         self.assertEqual(
-            response['room']['name'],
-            'Rum'
-        )
-        self.assertEqual(
             response['room']['id'],
             1
         )
 
         self.assertEqual(
-            response['placement']['name'],
-            'Placering'
-        )
-        self.assertEqual(
             response['placement']['id'],
             1
         )
-
 
 
     def test_should_get_ok_response_when_sending_update(self):
@@ -1284,8 +1339,6 @@ class PlacementAPITests(DeviceModelTestsBase):
         )
 
 
-
-
 class RoomAPITests(DeviceModelTestsBase):
     def setUp(self):
         super(RoomAPITests, self).setUp()
@@ -1351,6 +1404,26 @@ class RoomAPITests(DeviceModelTestsBase):
         self.assertEqual(
             self.refresh(self.device).state,
             0
+        )
+
+    def test_get_rooms_api_should_produce_json(self):
+        response = self.get_json_response(
+            'room-list'
+        )
+
+        self.assertEqual(
+            len(response),
+            1
+        )
+
+        self.assertEqual(
+            response[0]['id'],
+            self.room.pk,
+        )
+
+        self.assertEqual(
+            response[0]['name'],
+            self.room.name,
         )
 
 
@@ -1638,5 +1711,34 @@ class DeviceOrderingTests(DeviceModelTestsBase):
             "Should only be one log on one device"
         )
 
+
+class PlacementTests(DeviceModelTestsBase):
+    def setUp(self):
+        super(PlacementTests, self).setUp()
+
+        self.placement = Placement.objects.create(
+            name='Inne',
+            slug='inside'
+        )
+
+    def test_get_placement_json(self):
+        response = self.get_json_response(
+            'placement-list'
+        )
+
+        self.assertEqual(
+            len(response),
+            1
+        )
+
+        self.assertEqual(
+            response[0]['name'],
+            self.placement.name
+        )
+
+        self.assertEqual(
+            response[0]['id'],
+            self.placement.pk
+        )
 
 

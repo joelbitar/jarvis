@@ -5,6 +5,28 @@
 </div>
 
 <div ng-controller="StartpageDeviceController">
+
+    <md-card flex ng-repeat="(category_name, categories) in device_categories">
+        <md-card-content ng-repeat="category in categories" ng-show="category | showCategory">
+            <div layout="column">
+                <h4>
+                    {{ category.name }}
+                </h4>
+                <div flex layout="row" layout-align="space-between center" layout-wrap>
+                    <div flex flex-xs="100" flex-md="33" flex-lg="20" ng-repeat="device in category.devices">
+                        <div include="device-teaser.html"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div layout="row" layout-align="center" ng-show="!device_categories">
+                Laddar..
+            </div>
+        </md-card-content>
+    </md-card>
+
+
+    <!--
     <md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap>
         <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="device in devices">
             <div include="device-teaser.html"></div>
@@ -20,19 +42,19 @@
             <div include="placement-teaser.html"></div>
         </div>
     </md-content>
+    -->
 </div>
 
-<md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageDeviceGroupController">
-    <div flex flex-xs="100" flex-sm="50" flex-md="33" flex-lg="20" ng-repeat="group in groups" ng-show="(group.show_only_when === 'always') || (group.show_only_when === group.state)">
-        <div include="device-group-teaser.html"></div>
-    </div>
-</md-content>
 
-<md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageSensorController">
-    <div flex="20" flex-xs="100" flex-sm="50" flex-md="33" flex-lg="25" ng-repeat="sensor in sensors">
-        <div include="sensor-teaser.html"></div>
-    </div>
-</md-content>
+<md-card>
+    <md-card-content>
+        <div class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageSensorController">
+            <div flex="20" flex-xs="100" flex-sm="50" flex-md="33" flex-lg="25" ng-repeat="sensor in sensors">
+                <div include="sensor-teaser.html"></div>
+            </div>
+        </div>
+    </md-card-content>
+</md-card>
 
 <div layout="row" layout-align="center" ng-controller="StartpageForecastController">
     <md-card flex ng-show="grouped_forecasts">

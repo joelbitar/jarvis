@@ -1,8 +1,11 @@
 __author__ = 'joel'
 
 from rest_framework import serializers
+
 from device.models import Device
 from device.models import DeviceGroup
+from device.models import Room
+from device.models import Placement
 
 
 class DeviceDetailNodeSerializer(serializers.RelatedField):
@@ -23,6 +26,11 @@ class DeviceGroupShowOnlyWhenSerializer(serializers.NullBooleanField):
         )
 
 
+class GroupsPksSerialiser(serializers.ListField):
+    def to_representation(self, iterable):
+        return [group.pk for group in iterable.all()]
+
+
 class DeviceSerializer(serializers.ModelSerializer):
     protocol_string = serializers.CharField(read_only=True)
     model_string = serializers.CharField(read_only=True)
@@ -32,6 +40,22 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Device
+
+
+class DeviceStateListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Device
+        fields = ('id', 'state',)
+
+class DeviceListShortSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(read_only=True)
+    room = serializers.PrimaryKeyRelatedField(read_only=True)
+    placement = serializers.PrimaryKeyRelatedField(read_only=True)
+    groups = GroupsPksSerialiser(read_only=True)
+
+    class Meta:
+        model = Device
+        fields = ('id', 'name', 'is_dimmable', 'state', 'category', 'room', 'placement', 'groups')
 
 
 class DeviceDetailSerializer(DeviceSerializer):
@@ -54,3 +78,18 @@ class DeviceGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DeviceGroup
+
+
+class DeviceCategorySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=18)
+    slug = serializers.CharField(max_length=18)
+
+
+class RoomSerializer(DeviceCategorySerializer):
+    class Meta:
+        model = Room
+
+
+class PlacementSerializer(DeviceCategorySerializer):
+    class Meta:
+        model = Placement

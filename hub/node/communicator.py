@@ -301,6 +301,8 @@ class NodeDeviceCommunicator(NodeCommunicator):
         self.device.state = 1
         self.device.save()
 
+        print('Device state saved (on)')
+
         return True
 
     def turn_off(self):
