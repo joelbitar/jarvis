@@ -6,19 +6,17 @@
 
 <div ng-controller="StartpageDeviceController">
 
-    <md-card flex>
-        <md-card-content>
-            <div layout="column" layout-align="center" ng-repeat="(category_name, categories) in device_categories">
-                <div layout="column" layout-align="space-between center" ng-repeat="category in categories">
-                    <div flex>
-                        <h5>
-                            {{ category.name }}
-                        </h5>
-                    </div>
-                    <div flex layout="row" layout-align="space-between center" layout-wrap>
-                        <div flex flex-xs="100" ng-repeat="device in category.devices">
-                            <div include="device-teaser.html" ng-repeat="device in category.devices"></div>
-                        </div>
+    <md-card flex ng-repeat="(category_name, categories) in device_categories">
+        <md-card-content ng-repeat="category in categories">
+            <div layout="column">
+                <div flex>
+                    <h5>
+                        {{ category.name }}
+                    </h5>
+                </div>
+                <div flex layout="row" layout-align="space-between center" layout-wrap>
+                    <div flex flex-xs="100" flex-md="33" flex-lg="20" ng-repeat="device in category.devices">
+                        <div include="device-teaser.html" ng-repeat="device in category.devices"></div>
                     </div>
                 </div>
             </div>
@@ -50,11 +48,15 @@
 </div>
 
 
-<md-content class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageSensorController">
-    <div flex="20" flex-xs="100" flex-sm="50" flex-md="33" flex-lg="25" ng-repeat="sensor in sensors">
-        <div include="sensor-teaser.html"></div>
-    </div>
-</md-content>
+<md-card>
+    <md-card-content>
+        <div class="md-padding" layout="row" layout-align="space-between center" layout-wrap ng-controller="StartpageSensorController">
+            <div flex="20" flex-xs="100" flex-sm="50" flex-md="33" flex-lg="25" ng-repeat="sensor in sensors">
+                <div include="sensor-teaser.html"></div>
+            </div>
+        </div>
+    </md-card-content>
+</md-card>
 
 <div layout="row" layout-align="center" ng-controller="StartpageForecastController">
     <md-card flex ng-show="grouped_forecasts">
