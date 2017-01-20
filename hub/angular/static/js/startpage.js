@@ -12,60 +12,20 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         fetch_categories_promises['room'] = undefined;
         fetch_categories_promises['placement'] = undefined;
 
-        focus.broadcast('refresh-devices');
-
-        $scope.device_categories = [];
+        $scope.device_categories = {};
 
         // Update device without setting everything again.
         $scope.updateDevice = function(device){
-            $scope.devices.forEach(function(d){
+            console.error('Need a way to update devices');
+            return;
+            /*
+            devices.forEach(function(d){
                 if(d.id == device.id){
                     d.state = device.state;
                 }
             });
+            */
         };
-
-        /*
-        get_categories_from_devices = function(category_name){
-            var a = [];
-
-            // Loop through each of the categories
-            _.each(_.uniqBy(_.filter(_.map($scope.devices, category_name)), 'id'), function (item_original) {
-                var category_devices, state = 0, item = angular.copy(item_original);
-
-                // Get devices for this category
-                category_devices = _.filter(
-                    $scope.devices,
-                    function(o){
-                        return _.get(o, category_name + '.id', undefined) == item.id;
-                    }
-                );
-
-                // Check if there is any device that is NOT turned off.
-                _.each(category_devices, function(device){
-                    if(device.state != 0){
-                        state = 1;
-                        return false;
-                    }
-                });
-
-                item['state'] = state;
-                item['devices'] = category_devices;
-
-                a.push(
-                   item
-                )
-            });
-
-            return a;
-        };
-
-        $scope.$on('refresh-categories', function(){
-            $scope.placements = get_categories_from_devices('placement');
-            $scope.rooms = get_categories_from_devices('room');
-        });
-        */
-
 
         get_category_object = function(json){
             var o = angular.copy(json);
@@ -89,7 +49,8 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
 
             categories = [
                 'room',
-                'placement'
+                'placement',
+                'group'
             ];
 
             _.each(categories, function(category_name){
@@ -99,38 +60,69 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
             $q.all(requests).then(
                 function(responses){
                     _.each(responses, function (response, i) {
-                        var category_items = [],  category_name = categories[i], device_filter;
+                        var category_items = [],  category_name = categories[i];
+                        // category_items       Array of items in this category     [room, room, room]
+                        // category_name        String name of the category type    "room", "group", "placement"
 
                         _.each(response, function(category_response){
                             var category_object = get_category_object(category_response.plain());
-                            category_object.devices = _.filter(devices, function(device){
-                                return _.get(device, category_name) == category_object.id;
-                            });
+                            // category_object      Wrapper around the response json with extra functions and properties on the category object
 
+                            category_object.devices = _.filter(
+                                devices,
+                                // Filter to only include devices that are on this specific room type
+                                function(device){
+                                    var category_relation;
+
+                                    category_relation = _.get(device, category_name, _.get(device, category_name + 's'));
+                                    // Category relation can be both an array of ids or a single id
+                                    // category_relation = 1, or [1,2,3]
+
+                                    if(category_name == "group"){
+                                        console.info(category_object.name);
+                                        console.log(category_object);
+                                        console.log(category_relation)
+                                    }
+
+                                    if(typeof(category_relation) === 'object'){
+                                        console.log(device.groups);
+                                        // Is a list if category_object.id is amongst the category relations, add it.
+                                        return _.indexOf(category_relation, category_object.id) >= 0;
+                                    }
+
+                                    return category_relation == category_object.id;
+                                }
+                            );
+
+                            // Add category object to items
                             category_items.push(
                                 category_object
-                            )
+                            );
                         });
 
-                        console.log(category_items);
+                        console.log(category_name, category_items);
                         $scope.device_categories[category_name] = category_items;
                     });
+
+                    console.log($scope.device_categories);
                 }
-            )
+            );
+
         };
 
         $scope.$on('refresh-devices', function() {
             Restangular.all('devices/short/').getList().then(function (devices) {
-                if ($scope.devices !== undefined) {
+                if (_.size($scope.device_categories) > 0) {
                     devices.forEach($scope.updateDevice);
                 } else {
-                    $scope.devices = devices;
                     add_devices_to_categories(devices);
                 }
             })
         });
 
         $scope.$broadcast('refresh-devices');
+        focus.broadcast('refresh-devices');
+
 }]).controller('StartpagePlacementController', ['$scope', '$rootScope','Restangular', function($scope, $rootScope,Restangular) {
         var set_devices_state = function(placement){
             _.each(
