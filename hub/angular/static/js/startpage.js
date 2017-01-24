@@ -16,7 +16,35 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
 
         // Update device without setting everything again.
         $scope.updateDevice = function(device){
-            _.set(_.find(_.flatten(_.map(_.flatten(_.values($scope.device_categories)), 'devices')), {id: device.id}), 'state', device.state)
+            //_.set(_.find(_.flatten(_.map(_.flatten(_.values($scope.device_categories)), 'devices')), {id: device.id}), 'state', device.state)
+            var old_device = _.find(
+                _.flatten(
+                    _.map(
+                        _.flatten(
+                            _.values($scope.device_categories)
+                        ),
+                        'devices'
+                    )
+                ),
+                {
+                    id: device.id
+                }
+            );
+
+            if(_.isUndefined(old_device)){
+                console.warn('Could not find device ', device.id);
+                return undefined;
+            }
+
+            // device change is newer or the same as the one we are trying to update with.
+            if(moment(old_device.changed).diff(device.changed) >= 0){
+                return undefined;
+            }
+
+            // Set device properties.
+            _.each(['changed', 'state'], function(property_name){
+                _.set(old_device, property_name, _.get(device, property_name));
+            });
         };
 
         get_category_object = function(json){
