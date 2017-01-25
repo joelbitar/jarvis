@@ -71,6 +71,7 @@ class Device(models.Model):
 
     # Logging
     created = models.DateTimeField(auto_now_add=True)
+    changed = models.DateTimeField(auto_now=True)
 
     # String representation
     @property

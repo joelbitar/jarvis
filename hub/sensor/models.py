@@ -25,6 +25,8 @@ class Sensor(models.Model):
     room = models.ForeignKey(Room, related_name='sensors', default=None, blank=True, null=True)
     placement = models.ForeignKey(Placement, related_name='sensors', default=None, blank=True, null=True)
 
+    changed = models.DateTimeField(auto_now=True)
+
     def log(self, signal):
         self.humidity = int(signal.humidity)
         self.temperature = Decimal(signal.temp)

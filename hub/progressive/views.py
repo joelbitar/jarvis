@@ -112,6 +112,7 @@ class ServiceWorkerView(TemplateView):
             "js/lib/loading-bar.min.js",
             "css/loading-bar.min.css",
             "js/lib/restangular.min.js",
+            "js/lib/moment.js",
 
             "js/angular-material.min.js",
 

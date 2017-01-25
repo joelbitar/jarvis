@@ -15,7 +15,18 @@ var jarvis_sensor = angular.module('jarvis.sensor', ['ngRoute', 'restangular'])
             }
         )
     }]
-);
+).filter('isold', function (){
+        return function(input, seconds){
+            var m = moment(input);
+
+            if(((m.diff(moment.now()) / 1000) + seconds) > 0){
+                // difference is in the future! this is Not old.
+                return false;
+            }
+
+            return true
+        }
+    });
 
 jarvis_sensor.config(['$routeProvider', function($routeProvider){
         $routeProvider.when(

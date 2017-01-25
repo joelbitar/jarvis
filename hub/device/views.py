@@ -65,7 +65,7 @@ class DeviceStatesView(APIView):
     def get(self, request, *args, **kwargs):
         return Response(
             self.serializer_class(
-                Device.objects.all().values('id', 'state'), many=True
+                Device.objects.all().values('id', 'state', 'changed'), many=True
             ).data
         )
 
