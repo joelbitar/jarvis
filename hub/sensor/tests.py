@@ -463,5 +463,86 @@ class SensorMeanTests(TestCase):
         )
 
     def test_if_multiple_log_events_are_created_should_calculate_averages_and_min_max_daily(self):
-        self.assertTrue(False)
+        sensor = Sensor.objects.create(
+            name='testsensor',
+            temperature=21.0
+        )
 
+        for temp in [22, 23, 24, 25, 26]:
+            sensor.temperature = temp
+            sensor.save()
+
+        self.assertEqual(
+            SensorHourly.objects.all().count(),
+            0
+        )
+        self.assertEqual(
+            SensorDaily.objects.all().count(),
+            0
+        )
+
+        self.assertEqual(
+            SensorLog.objects.all().count(),
+            6
+        )
+
+        SensorLog.objects.all().update(
+            created = timezone.now() - timedelta(days=2)
+        )
+
+        sensor.temperature = 27
+        sensor.save()
+
+        self.assertEqual(
+            SensorLog.objects.all().count(),
+            7
+        )
+
+        # should only create one
+        self.assertEqual(
+            SensorDaily.objects.all().count(),
+            1
+        )
+
+        SensorLog.objects.all().update(
+            created=timezone.now() - timedelta(days=1),
+        )
+
+        sensor.temperature = 99
+        sensor.save()
+
+        self.assertEqual(
+            SensorDaily.objects.all().count(),
+            2
+        )
+
+        # Test temps on both hourlsys
+        first = SensorDaily.objects.get(pk=1)
+        self.assertEqual(
+            first.temperature_min,
+            Decimal(21.0)
+        )
+        self.assertEqual(
+            first.temperature_max,
+            Decimal(26.0)
+        )
+        self.assertEqual(
+            first.temperature_avg,
+            Decimal(23.5)
+        )
+
+        # This is the one one hour ago.
+        second = SensorDaily.objects.get(pk=2)
+        self.assertEqual(
+            second.temperature_min,
+            Decimal(21.0)
+        )
+        self.assertEqual(
+            second.temperature_max,
+            Decimal(27.0)
+        )
+        self.assertEqual(
+            second.temperature_avg,
+            Decimal(24.0)
+        )
+    
