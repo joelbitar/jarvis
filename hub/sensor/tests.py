@@ -185,6 +185,45 @@ class TestSensorAPI(HasLoggedInClientBase):
             1
         )
 
+class SensorMeanBatchTests(TestCase):
+    def setUp(self):
+        sensor = Sensor.objects.create(
+            name='testsensor',
+            temperature=21.0
+        )
+
+        for i in range(22, 30):
+            sensor.temperature = i
+            sensor.save()
+
+        SensorLog.objects.all().update(
+            created = timezone.now() - timedelta(hours=1)
+        )
+
+        SensorHourly.objects.all().delete()
+        SensorDaily.objects.all().delete()
+
+    def test_run_create_mean_values_should_create_database_entries(self):
+        from sensor.management.commands.create_mean_values import CreateMeanValues
+        cmv = CreateMeanValues()
+        cmv.run()
+
+        self.assertEqual(
+            SensorHourly.objects.all().count(),
+            1
+        )
+
+        self.assertEqual(
+            SensorDaily.objects.all().count(),
+            1
+        )
+
+        hourly = SensorHourly.objects.all()[0]
+
+        self.assertEqual(
+            hourly.temperature_latest,
+            29
+        )
 
 class SensorMeanTests(TestCase):
     def test_should_create_a_hourly_and_a_daily_when_this_is_the_first_save_of_a_sensor(self):
