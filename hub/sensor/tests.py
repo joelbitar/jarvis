@@ -187,362 +187,144 @@ class TestSensorAPI(HasLoggedInClientBase):
 
 
 class SensorMeanTests(TestCase):
-    def test_should_not_create_until_we_have_a_bunch_of_old_log_entries(self):
+    def test_should_create_a_hourly_and_a_daily_when_this_is_the_first_save_of_a_sensor(self):
         sensor = Sensor.objects.create(
             name='testsensor',
             temperature=21.0
         )
 
-        for temp in [22, 23, 24, 25, 26]:
-            sensor.temperature = temp
-            sensor.save()
-
-        self.assertEqual(
-            SensorHourly.objects.all().count(),
-            0
-        )
-
-        SensorLog.objects.all().update(
-            created = timezone.now() - timedelta(hours=1)
-        )
-
-        sensor.temperature = 20
-        sensor.save()
-
         self.assertEqual(
             SensorHourly.objects.all().count(),
             1
         )
 
-        hourly = sensor.hourly.all()[0]
-
         self.assertEqual(
-            hourly.temperature_min,
-            Decimal(21.0)
+            SensorDaily.objects.all().count(),
+            1
         )
 
-        self.assertEqual(
-            hourly.temperature_max,
-            Decimal(26.0)
+    def test_should_update_hourly_and_daily_when_a_sensor_is_updated(self):
+        sensor = Sensor.objects.create(
+            name='testsensor',
+            temperature=21.0
         )
+
+        hourly = SensorHourly.objects.get(pk=1)
+        self.assertEqual(
+            hourly.temperature_avg,
+            Decimal(21)
+        )
+
+        sensor.temperature = 23
+        sensor.save()
+
+        hourly = SensorHourly.objects.get(pk=1)
+        daily = SensorDaily.objects.get(pk=1)
 
         self.assertEqual(
             hourly.temperature_avg,
-            Decimal(23.5)
+            Decimal(22)
         )
-
-    def test_should_create_hourly_mean_values_if_when_the_latest_entry_is_created_in_a_new_hour(self):
-        sensor = Sensor.objects.create(
-            name='testsensor',
-            temperature=21.5
-        )
-
-        SensorHourly.objects.all().delete()
-
         self.assertEqual(
-            SensorHourly.objects.all().count(),
-            0
+            hourly.temperature_min,
+            Decimal(21)
         )
-
-        SensorLog.objects.all().delete()
-        # Backdate sensor and log entry
-        sensor.save()
-        SensorLog.objects.all().update(
-            created = timezone.now() - timedelta(hours=1)
-        )
-
-        SensorHourly.objects.all().delete()
-        SensorDaily.objects.all().delete()
-
-        log_entry = SensorLog.objects.all()[0]
-
-        # New temperature.
-        sensor.temperature = 24.5
-        sensor.save()
-
-        # There should now be a new log entry, two in total
         self.assertEqual(
-            SensorLog.objects.all().count(),
-            2
+            hourly.temperature_max,
+            Decimal(23)
         )
-
-        # The latest log entry
-        log_entry = SensorLog.objects.get(pk=3)
-
-        # Should be created same second
         self.assertEqual(
-            str(log_entry.created)[:19],
-            str(sensor.updated)[:19]
+            hourly.temperature_latest,
+            Decimal(23)
         )
 
         self.assertEqual(
-            SensorDaily.objects.all().count(),
-            0
+            daily.temperature_avg,
+            Decimal(22),
+            "Did not update daily."
+        )
+        self.assertEqual(
+            daily.temperature_min,
+            Decimal(21)
+        )
+        self.assertEqual(
+            daily.temperature_max,
+            Decimal(23)
+        )
+        self.assertEqual(
+            daily.temperature_latest,
+            Decimal(23),
+            "did nto set daily latest"
         )
 
+        # Did not create more hourly or daily
         self.assertEqual(
             SensorHourly.objects.all().count(),
             1
         )
-
-        sensor_hourly = SensorHourly.objects.all()[0]
-        self.assertEqual(
-            sensor_hourly.temperature_min,
-            Decimal(21.5)
-        )
-        self.assertEqual(
-            sensor_hourly.temperature_max,
-            Decimal(21.5)
-        )
-        self.assertEqual(
-            sensor_hourly.temperature_avg,
-            Decimal(21.5)
-        )
-
-    def test_should_create_day_mean_values_if_when_the_latest_entry_is_created_a_day_later(self):
-        sensor = Sensor.objects.create(
-            name='old sensor',
-            temperature=21.5
-        )
-
         self.assertEqual(
             SensorDaily.objects.all().count(),
-            0
+            1
         )
 
-        SensorLog.objects.all().delete()
+    def test_should_not_use_older_sensor_logs_when_creating_hourly(self):
+        sensor = Sensor.objects.create(
+            name='testsensor',
+            temperature=21.0
+        )
 
+        SensorLog.objects.all().update(
+            created = timezone.now() - timedelta(hours=1)
+        )
+
+        sensor.temperature = 23
         sensor.save()
-        # Backdate sensor and log entry
+
+        hourly = SensorHourly.objects.get(pk=1)
+
+        self.assertEqual(
+            hourly.temperature_avg,
+            Decimal(23)
+        )
+
+    def test_should_not_use_older_sensor_logs_when_creating_daily(self):
+        sensor = Sensor.objects.create(
+            name='testsensor',
+            temperature=21.0
+        )
+
         SensorLog.objects.all().update(
             created = timezone.now() - timedelta(days=1)
         )
 
+        SensorDaily.objects.all().update(
+            date = timezone.now() - timedelta(days=1)
+        )
 
-        SensorHourly.objects.all().delete()
-        SensorDaily.objects.all().delete()
+        first_daily = SensorDaily.objects.all()[0]
 
-        # New temperature.
-        sensor.temperature = 24.5
+        print('Second save')
+        print('-'*33)
+        sensor.temperature = 23
         sensor.save()
 
-        # There should now be a new log entry, two in total
-        self.assertEqual(
-            SensorLog.objects.all().count(),
-            2
-        )
-
-        # The latest log entry
-        log_entry = SensorLog.objects.get(pk=3)
-
-        # Should be created same second
-        self.assertEqual(
-            str(log_entry.created)[:19],
-            str(sensor.updated)[:19]
-        )
-
-        # Should create one hourly for that day.
-        self.assertEqual(
-            SensorHourly.objects.all().count(),
-            1
-        )
-
-        sensor_hourly = SensorHourly.objects.all()[0]
-        self.assertEqual(
-            sensor_hourly.temperature_min,
-            21.5
-        )
-        self.assertEqual(
-            sensor_hourly.temperature_max,
-            21.5
-        )
-        self.assertEqual(
-            sensor_hourly.temperature_avg,
-            21.5
-        )
-
-        self.assertEqual(
-            SensorDaily.objects.all().count(),
-            1,
-            "should create a daily mean"
-        )
-
-        # The daily hourly
-        sensor_daily = SensorDaily.objects.all()[0]
-        self.assertEqual(
-            sensor_daily.temperature_min,
-            21.5
-        )
-        self.assertEqual(
-            sensor_daily.temperature_max,
-            21.5
-        )
-        self.assertEqual(
-            sensor_daily.temperature_avg,
-            21.5
-        )
-
-    def test_if_multiple_log_events_are_created_should_calculate_averages_and_min_max_hourly(self):
-        sensor = Sensor.objects.create(
-            name='testsensor',
-            temperature=21.0
-        )
-
-        for temp in [22, 23, 24, 25, 26]:
-            sensor.temperature = temp
-            sensor.save()
-
-        self.assertEqual(
-            SensorHourly.objects.all().count(),
-            0
-        )
-
-        self.assertEqual(
-            SensorLog.objects.all().count(),
-            6
-        )
-
-        SensorLog.objects.all().update(
-            created = timezone.now() - timedelta(hours=2)
-        )
-
-        sensor.temperature = 27
-        sensor.save()
-
-        self.assertEqual(
-            SensorLog.objects.all().count(),
-            7
-        )
-
-        # should only create one
-        self.assertEqual(
-            SensorHourly.objects.all().count(),
-            1
-        )
-
-        SensorLog.objects.all().update(
-            created = timezone.now() - timedelta(hours=1),
-        )
-
-        sensor.temperature = 99
-        sensor.save()
-
-        self.assertEqual(
-            SensorHourly.objects.all().count(),
-            2
-        )
-
-        # Test temps on both hourlsys
-        first = SensorHourly.objects.get(pk=1)
-        self.assertEqual(
-            first.temperature_min,
-            Decimal(21.0)
-        )
-        self.assertEqual(
-            first.temperature_max,
-            Decimal(26.0)
-        )
-        self.assertEqual(
-            first.temperature_avg,
-            Decimal(23.5)
-        )
-
-        # This is the one one hour ago.
-        second = SensorHourly.objects.get(pk=2)
-        self.assertEqual(
-            second.temperature_min,
-            Decimal(21.0)
-        )
-        self.assertEqual(
-            second.temperature_max,
-            Decimal(27.0)
-        )
-        self.assertEqual(
-            second.temperature_avg,
-            Decimal(24.0)
-        )
-
-    def test_if_multiple_log_events_are_created_should_calculate_averages_and_min_max_daily(self):
-        sensor = Sensor.objects.create(
-            name='testsensor',
-            temperature=21.0
-        )
-
-        for temp in [22, 23, 24, 25, 26]:
-            sensor.temperature = temp
-            sensor.save()
-
-        self.assertEqual(
-            SensorHourly.objects.all().count(),
-            0
-        )
-        self.assertEqual(
-            SensorDaily.objects.all().count(),
-            0
-        )
-
-        self.assertEqual(
-            SensorLog.objects.all().count(),
-            6
-        )
-
-        SensorLog.objects.all().update(
-            created = timezone.now() - timedelta(days=2)
-        )
-
-        sensor.temperature = 27
-        sensor.save()
-
-        self.assertEqual(
-            SensorLog.objects.all().count(),
-            7
-        )
-
-        # should only create one
-        self.assertEqual(
-            SensorDaily.objects.all().count(),
-            1
-        )
-
-        SensorLog.objects.all().update(
-            created=timezone.now() - timedelta(days=1),
-        )
-
-        sensor.temperature = 99
-        sensor.save()
-
+        # Should create one for this day (again)
         self.assertEqual(
             SensorDaily.objects.all().count(),
             2
         )
 
-        # Test temps on both hourlsys
-        first = SensorDaily.objects.get(pk=1)
+        daily = SensorDaily.objects.get(pk=2)
+
         self.assertEqual(
-            first.temperature_min,
-            Decimal(21.0)
-        )
-        self.assertEqual(
-            first.temperature_max,
-            Decimal(26.0)
-        )
-        self.assertEqual(
-            first.temperature_avg,
-            Decimal(23.5)
+            daily.temperature_avg,
+            Decimal(23)
         )
 
-        # This is the one one hour ago.
-        second = SensorDaily.objects.get(pk=2)
         self.assertEqual(
-            second.temperature_min,
-            Decimal(21.0)
+            first_daily.temperature_avg,
+            Decimal(21)
         )
-        self.assertEqual(
-            second.temperature_max,
-            Decimal(27.0)
-        )
-        self.assertEqual(
-            second.temperature_avg,
-            Decimal(24.0)
-        )
-    
+
+
+

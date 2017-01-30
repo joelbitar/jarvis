@@ -81,9 +81,12 @@ class SensorMeanBase(models.Model):
     temperature_min = models.DecimalField(max_digits=4, decimal_places=1, null=True, default=None, blank=True)
     temperature_max = models.DecimalField(max_digits=4, decimal_places=1, null=True, default=None, blank=True)
     temperature_avg = models.DecimalField(max_digits=4, decimal_places=1, null=True, default=None, blank=True)
+    temperature_latest = models.DecimalField(max_digits=4, decimal_places=1, null=True, default=None, blank=True)
+
     humidity_min = models.SmallIntegerField(null=True, blank=True, default=None)
     humidity_max = models.SmallIntegerField(null=True, blank=True, default=None)
     humidity_avg = models.SmallIntegerField(null=True, blank=True, default=None)
+    humidity_latest = models.SmallIntegerField(null=True, blank=True, default=None)
 
     class Meta:
         abstract = True
@@ -91,12 +94,12 @@ class SensorMeanBase(models.Model):
 
 class SensorHourly(SensorMeanBase):
     sensor = models.ForeignKey(Sensor, related_name='hourly')
-    date_time = models.DateTimeField(auto_now_add=True)
+    date_time = models.DateTimeField()
 
 
 class SensorDaily(SensorMeanBase):
     sensor = models.ForeignKey(Sensor, related_name='daily')
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField()
 
 
 @receiver(post_save, sender=Sensor)
