@@ -8,15 +8,38 @@ from django.db.models import Max
 
 
 class CreateMeanBase(object):
+    mean_cls = None
+    SENSOR_CLASS_NAME_DAILY = 'SensorDaily'
+    SENSOR_CLASS_NAME_HOURLY = 'SensorHourly'
+
     def get_sensor_data(self, query):
         return query.aggregate(
             Avg('temperature'), Min('temperature'), Max('temperature'),
             Avg('humidity'), Min('humidity'), Max('humidity')
         )
-    def create_mean(self, cls, query, log_instance, **kwargs):
+
+    @property
+    def mean_class_name(self):
+        return self.mean_cls.__name__
+
+    @property
+    def time_property_name(self):
+        if self.mean_class_name == self.SENSOR_CLASS_NAME_DAILY:
+            return 'date'
+
+        if self.mean_class_name == self.SENSOR_CLASS_NAME_HOURLY:
+            return 'date_time'
+
+        raise ValueError('Could not calculate what name the property should be named for ', self.mean_class_name)
+
+    def create_mean(self, query, log_instance, search_time):
         sensor_data = self.get_sensor_data(query)
 
-        return cls.objects.create(
+        kwargs = {
+            self.time_property_name : search_time
+        }
+
+        return self.mean_cls.objects.create(
             sensor=log_instance.sensor,
             temperature_min=sensor_data.get('temperature__min', None),
             temperature_max=sensor_data.get('temperature__max', None),
@@ -45,15 +68,15 @@ class CreateMeanBase(object):
 
         return mean_instance
 
-    def get_query(self, sensor, search_at, **kwargs):
+    def get_query(self, sensor, search_at):
         from sensor.models import SensorLog
-
-        timedelta_unit = list(kwargs.keys())[0]
-        timedelta_value = kwargs.get(timedelta_unit)
-
         lt = {}
 
-        lt[timedelta_unit] = timedelta_value
+        if self.mean_class_name == self.SENSOR_CLASS_NAME_HOURLY:
+            lt['hours'] = 1
+
+        if self.mean_class_name == self.SENSOR_CLASS_NAME_DAILY:
+            lt['days'] = 1
 
         return SensorLog.objects.filter(
             sensor=sensor,
@@ -62,22 +85,26 @@ class CreateMeanBase(object):
         )
 
     # Check if a class instance exists.
-    def get_mean_instance(self, cls, **kwargs):
+    def get_mean_instance(self, search_time):
+        kwargs = {
+            self.time_property_name : search_time
+        }
+
         try:
-            return cls.objects.get(
+            return self.mean_cls.objects.get(
                 **kwargs
             )
-        except cls.DoesNotExist:
+        except self.mean_cls.DoesNotExist:
             pass
 
         return None
 
-    def get_created_time(self, instance, hour):
+    def get_created_time(self, instance):
         kwargs = {
             "year": instance.created.year,
             "month": instance.created.month,
             "day": instance.created.day,
-            "hour": instance.created.hour if hour else 0,
+            "hour": instance.created.hour if self.mean_class_name == self.SENSOR_CLASS_NAME_HOURLY else 0,
             "minute": 0,
             "second": 0
         }
@@ -89,33 +116,24 @@ class CreateMeanBase(object):
         ) + timedelta(hours=1)
 
     def create_log(self, sender, instance, **kwargs):
-        raise NotImplementedError("Method create_log not implemented " + str(self.__class__))
-
-
-class CreateHourly(CreateMeanBase):
-    def create_log(self, sender, instance, **kwargs):
-        from sensor.models import SensorHourly
-
         if instance.humidity is None and instance.temperature is None:
             return None
 
-        search_hour = self.get_created_time(
-            instance=instance,
-            hour=True
+        search_time = self.get_created_time(
+            instance=instance
         )
 
         # Go backwards in time and create for every hour for which there is no hourly log
         sensor_data = self.get_query(
             sensor=instance.sensor,
-            search_at=search_hour,
-            hours=1
+            search_at=search_time
         )
 
         if sensor_data.count() == 0:
             # No sensor data found
             raise ValueError('Could not find any sensor logs at this time')
 
-        hourly = self.get_mean_instance(SensorHourly, date_time=search_hour)
+        hourly = self.get_mean_instance(search_time=search_time)
 
         # If there is a hourly at this time
         if hourly is not None:
@@ -127,52 +145,21 @@ class CreateHourly(CreateMeanBase):
             return True
 
         self.create_mean(
-            cls=SensorHourly,
             log_instance=instance,
             query=sensor_data,
-            date_time=search_hour
+            search_time=search_time
         )
 
         return True
 
 
+class CreateHourly(CreateMeanBase):
+    def __init__(self):
+        from sensor.models import SensorHourly
+        self.mean_cls = SensorHourly
+
+
 class CreateDaily(CreateMeanBase):
-    def create_log(self, sender, instance, **kwargs):
+    def __init__(self):
         from sensor.models import SensorDaily
-
-        if instance.humidity is None and instance.temperature is None:
-            return None
-
-        search_day = self.get_created_time(
-            instance=instance,
-            hour=False
-        )
-
-        sensor_data = self.get_query(
-            sensor=instance.sensor,
-            search_at=search_day,
-            days=1
-        )
-
-        if sensor_data.count() == 0:
-            raise ValueError('Could not find sensor data')
-
-        daily = self.get_mean_instance(SensorDaily, date=search_day)
-
-        # If there is a daily at this time
-        if daily is not None:
-            self.update_mean(
-                mean_instance=daily,
-                log_instance=instance,
-                query=sensor_data
-            )
-            return True
-
-        self.create_mean(
-            cls=SensorDaily,
-            log_instance=instance,
-            query=sensor_data,
-            date=search_day
-        )
-
-
+        self.mean_cls = SensorDaily

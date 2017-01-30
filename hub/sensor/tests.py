@@ -303,8 +303,6 @@ class SensorMeanTests(TestCase):
 
         first_daily = SensorDaily.objects.all()[0]
 
-        print('Second save')
-        print('-'*33)
         sensor.temperature = 23
         sensor.save()
 
