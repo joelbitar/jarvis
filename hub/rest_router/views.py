@@ -57,6 +57,7 @@ class RestRouterView(View):
                 requests, method
             ).__call__(
                 url,
+                params=dict(request.GET),
                 data=request.body,
                 headers=request_headers
             )
