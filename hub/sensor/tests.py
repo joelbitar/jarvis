@@ -146,9 +146,9 @@ class SensorLoggingTests(TestCase):
         )
 
 
-class TestSensorAPI(HasLoggedInClientBase):
+class SensorAPITests(HasLoggedInClientBase):
     def setUp(self):
-        super(TestSensorAPI, self).setUp()
+        super(SensorAPITests, self).setUp()
 
         self.sensor = Sensor.objects.create(
             name='test',
@@ -184,6 +184,103 @@ class TestSensorAPI(HasLoggedInClientBase):
             len(json.loads(r.content.decode('utf-8'))),
             1
         )
+
+    def test_should_produce_temperature_and_humidity_history(self):
+        self.sensor.temperature = -20
+        self.sensor.humidity = 59
+        self.sensor.save()
+
+        self.assertEqual(
+            SensorLog.objects.all().count(),
+            1
+        )
+
+        for i in range(2, 31):
+            self.sensor.temperature = i - 10
+            self.sensor.humidity = i + 10
+            self.sensor.save()
+
+            SensorLog.objects.filter(
+                pk=i
+            ).update(
+                created=timezone.now() - timedelta(hours=i - 1)
+            )
+
+            log_entry = SensorLog.objects.get(pk=i)
+            log_entry.save()
+
+        self.assertEqual(
+            SensorHourly.objects.all().count(),
+            30
+        )
+
+        find_ago_timestamp = timezone.now() - timedelta(hours=24)
+
+        self.assertEqual(
+            SensorHourly.objects.filter(date_time__gte=find_ago_timestamp).count(),
+            24
+        )
+
+        response = self.get_json_response(
+            'sensors-history',
+            extra_url='?hours=24'
+        )
+
+        self.assertEqual(
+            len(response),
+            24
+        )
+
+        self.assertIsNotNone(
+            response[0].get('date_time')
+        )
+        self.assertIsNone(
+            response[0].get('date')
+        )
+
+        response = self.get_json_response(
+            'sensors-history',
+            extra_url='?days=2'
+        )
+
+        self.assertEqual(
+            len(response),
+            2
+        )
+
+        self.assertIsNotNone(
+            response[0].get('date')
+        )
+        self.assertIsNone(
+            response[0].get('date_time')
+        )
+
+        self.assertEqual(
+            len(
+                self.get_json_response(
+                    'sensor-history',
+                    kwargs={
+                        'sensor_pk': self.sensor.pk
+                    },
+                    extra_url='?hours=24'
+                )
+            ),
+            24
+        )
+
+        self.assertEqual(
+            len(
+                self.get_json_response(
+                    'sensor-history',
+                    kwargs={
+                        'sensor_pk': self.sensor.pk
+                    },
+                    extra_url='?days=2'
+                )
+            ),
+            2
+        )
+
 
 class SensorMeanBatchTests(TestCase):
     def setUp(self):
@@ -224,6 +321,7 @@ class SensorMeanBatchTests(TestCase):
             hourly.temperature_latest,
             29
         )
+
 
 class SensorMeanTests(TestCase):
     def test_should_create_a_hourly_and_a_daily_when_this_is_the_first_save_of_a_sensor(self):

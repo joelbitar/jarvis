@@ -96,10 +96,17 @@ class SensorHourly(SensorMeanBase):
     sensor = models.ForeignKey(Sensor, related_name='hourly')
     date_time = models.DateTimeField()
 
+    def __str__(self):
+        return 'Hourly - ' + str(self.date_time)[:19]
+
 
 class SensorDaily(SensorMeanBase):
     sensor = models.ForeignKey(Sensor, related_name='daily')
     date = models.DateField()
+
+    def __str__(self):
+        return 'Daily - ' + str(self.date)[:10]
+
 
 
 @receiver(post_save, sender=Sensor)

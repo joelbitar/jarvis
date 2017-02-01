@@ -149,7 +149,6 @@ class CreateMeanBase(object):
             query=sensor_data,
             search_time=search_time
         )
-
         return True
 
 
