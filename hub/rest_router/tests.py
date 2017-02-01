@@ -83,7 +83,18 @@ class HttpProxyTests(TestCase):
                 }
             )
         )
+    def test_should_pass_get_params(self):
+        settings.MAIN_HUB_URL = 'http://example.com'
+        c = Client()
 
+        r = c.get(
+            reverse('hub-proxy', kwargs={
+                'path': 'test/url/'
+            }),
+            {
+                'query': 'param'
+            }
+        )
 
 
 
