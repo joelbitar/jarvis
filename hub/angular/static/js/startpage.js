@@ -306,8 +306,11 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         focus.broadcast('refresh-sensors');
 
         $scope.$on('refresh-sensors', function(){
+            var sensors;
+            $scope.sensors = undefined;
+
             var fetch_sensors = Restangular.all('sensors/').getList().then(function(response){
-                $scope.sensors = response.plain();
+                sensors = response.plain();
             });
 
             fetch_sensors.then(
@@ -320,7 +323,7 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                                 _.groupBy(response.plain(), 'sensor'),
                                 function(raw_history, sensor_id){
                                     var history_data, sensor;
-                                    sensor = _.find($scope.sensors, {id: parseInt(sensor_id)});
+                                    sensor = _.find(sensors, {id: parseInt(sensor_id)});
                                     history_data =_.map(
                                         raw_history,
                                         function(history_item){
@@ -336,9 +339,11 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                                         {
                                             data: history_data
                                         }
-                                    ]
+                                    ];
                                 }
-                            )
+                            );
+
+                            $scope.sensors = sensors;
                         }
                     )
                 }
