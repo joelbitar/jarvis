@@ -51,12 +51,15 @@ class RestRouterView(View):
         response_content = {}
         response_content_type = 'application/json'
 
+        print(dict(request.GET))
+
         try:
             # Get the method form 'requests' lib and execute it
             response = getattr(
                 requests, method
             ).__call__(
                 url,
+                params=dict(request.GET),
                 data=request.body,
                 headers=request_headers
             )
