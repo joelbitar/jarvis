@@ -1,5 +1,5 @@
 from django.contrib import admin
-from sensor.models import Sensor, SensorLog
+from sensor.models import Sensor, SensorLog, SensorHourly, SensorDaily
 
 # Register your models here.
 @admin.register(Sensor)
@@ -11,4 +11,10 @@ class SensorAdmin(admin.ModelAdmin):
 class SensorLogAdmin(admin.ModelAdmin):
     pass
 
+@admin.register(SensorHourly)
+class SensorHourlyAdmin(admin.ModelAdmin):
+    pass
 
+@admin.register(SensorDaily)
+class SensorHourlyAdmin(admin.ModelAdmin):
+    pass

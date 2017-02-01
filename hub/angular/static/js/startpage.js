@@ -306,9 +306,47 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         focus.broadcast('refresh-sensors');
 
         $scope.$on('refresh-sensors', function(){
-            Restangular.all('sensors/').getList().then(function(sensors){
+            var fetch_sensors = Restangular.all('sensors/').getList().then(function(response){
+                var sensors = response.plain()
+                _.each(sensors, function(sensor){
+                    sensor._bleh_history = [{
+                        data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
+                    }]
+                });
+
                 $scope.sensors = sensors;
+                console.log($scope.sensors);
             });
+
+            fetch_sensors.then(
+                function(){
+                    Restangular.all('sensors/history/').getList({
+                        hours: 24
+                    }).then(
+                        function(response){
+                            _.each(
+                                _.groupBy(response.plain(), 'sensor'),
+                                function(history, sensor_id){
+                                    _.set(
+                                        _.find($scope.sensors, {id: parseInt(sensor_id)}),
+                                        'history',
+                                        [{
+                                            data: _.map(
+                                                history,
+                                                function(history_item){
+                                                    return parseFloat(
+                                                        _.get(history_item, 'temperature_avg')
+                                                    )
+                                                }
+                                            )
+                                        }]
+                                    );
+                                }
+                            )
+                        }
+                    )
+                }
+            )
         });
 
         $scope.$broadcast('refresh-sensors');

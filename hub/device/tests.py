@@ -54,9 +54,14 @@ class HasLoggedInClientBase(TestCase):
 
         self.superuser_client = superuser_client
 
-    def get_json_response(self, url_name, kwargs=None):
+    def get_json_response(self, url_name, kwargs=None, extra_url=None):
+        url = reverse(url_name,kwargs=kwargs or {})
+
+        if extra_url is not None:
+            url = url + extra_url
+
         r = self.logged_in_client.get(
-            reverse(url_name,kwargs=kwargs or {})
+            url
         )
 
         try:

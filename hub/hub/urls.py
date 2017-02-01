@@ -42,6 +42,8 @@ from event.views import RecentSignalsView
 
 from sensor.views import SensorViewSet
 from sensor.views import SensorLogView
+from sensor.views import SensorsHistoryView
+from sensor.views import SensorHistoryView
 
 from forecast.views import ForecastViewSet
 from forecast.views import LatestForecastView
@@ -121,6 +123,8 @@ rest_patterns = patterns('',
     url(r'^forecast/short/$', ShortForecastView.as_view(), name="forecast-now"),
     url(r'^forecast/now/(?P<date>.*)/$', NowForecastView.as_view(), name="forecast-now"),
 
+    url(r'^sensors/history/$', SensorsHistoryView.as_view(), name='sensors-history'),
+    url(r'^sensors/(?P<sensor_pk>\d+)/history/$', SensorHistoryView.as_view(), name='sensor-history'),
     url(r'^sensors/(?P<sensor_pk>\d+)/logs/$', SensorLogView.as_view(), name='sensorlog-list'),
 
     url(r'^', include(router.urls)),
