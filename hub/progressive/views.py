@@ -107,11 +107,13 @@ class ServiceWorkerView(TemplateView):
             "js/lib/ngStorage.min.js",
             "js/focus.js",
 
+            "js/lib/highcharts.js",
             "js/lib/lodash.min.js",
             "js/lib/visibly.js",
             "js/lib/loading-bar.min.js",
             "css/loading-bar.min.css",
             "js/lib/restangular.min.js",
+            "js/lib/moment.js",
 
             "js/angular-material.min.js",
 

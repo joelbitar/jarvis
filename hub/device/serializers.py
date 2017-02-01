@@ -45,7 +45,8 @@ class DeviceSerializer(serializers.ModelSerializer):
 class DeviceStateListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
-        fields = ('id', 'state',)
+        fields = ('id', 'state', 'changed', )
+
 
 class DeviceListShortSerializer(serializers.ModelSerializer):
     name = serializers.CharField(read_only=True)
@@ -55,7 +56,7 @@ class DeviceListShortSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Device
-        fields = ('id', 'name', 'is_dimmable', 'state', 'category', 'room', 'placement', 'groups')
+        fields = ('id', 'name', 'is_dimmable', 'state', 'category', 'room', 'placement', 'groups', 'changed')
 
 
 class DeviceDetailSerializer(DeviceSerializer):

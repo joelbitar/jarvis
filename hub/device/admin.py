@@ -4,7 +4,7 @@ from device.models import Device, DeviceGroup, Room, Placement
 
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('name', 'slug', 'room', 'placement')
 
 @admin.register(DeviceGroup)
 class DeviceGroupAdmin(admin.ModelAdmin):

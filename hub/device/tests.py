@@ -1,9 +1,9 @@
 import json
 
-
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django.core.urlresolvers import reverse
+from rest_framework.serializers import DateTimeField
 
 from django.test import TestCase
 from django.test.client import Client
@@ -54,9 +54,14 @@ class HasLoggedInClientBase(TestCase):
 
         self.superuser_client = superuser_client
 
-    def get_json_response(self, url_name, kwargs=None):
+    def get_json_response(self, url_name, kwargs=None, extra_url=None):
+        url = reverse(url_name,kwargs=kwargs or {})
+
+        if extra_url is not None:
+            url = url + extra_url
+
         r = self.logged_in_client.get(
-            reverse(url_name,kwargs=kwargs or {})
+            url
         )
 
         try:
@@ -972,13 +977,15 @@ class HubDeviceRestTests(DeviceModelTestsBase):
             reverse('device-list-states')
         )
 
+
         self.assertJSONEqual(
             response.content.decode('utf-8'),
             json.dumps(
                 [
                     {
                         'id': self.device.pk,
-                        'state': self.device.state
+                        'state': self.device.state,
+                        'changed': DateTimeField().to_representation(self.device.changed),
                     }
                 ]
             )
@@ -1018,6 +1025,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'id' : self.device.pk,
                         'name' : self.device.name,
                         'is_dimmable' : self.device.is_dimmable,
+                        'changed': DateTimeField().to_representation(self.device.changed),
                         'state' : self.device.state,
                         'category' : None,
                         'room' : self.device.room.pk,
@@ -1036,8 +1044,6 @@ class HubDeviceRestTests(DeviceModelTestsBase):
     def test_should_get_single_device(self):
         from django.core import serializers
         from django.core.serializers.json import DjangoJSONEncoder
-        from rest_framework.serializers import DateTimeField
-
 
         response = self.logged_in_client.get(
             reverse('device-extra', kwargs={'pk': self.device.pk}),
@@ -1056,6 +1062,7 @@ class HubDeviceRestTests(DeviceModelTestsBase):
                         'controller': None,
                         #'created': DjangoJSONEncoder().default(o=self.device.created),
                         'created': DateTimeField().to_representation(self.device.created),
+                        'changed': DateTimeField().to_representation(self.device.changed),
                         'description': '',
                         'devices': None,
                         'fade': None,
@@ -1499,6 +1506,7 @@ class DeviceGroupAPITests(DeviceModelTestsBase):
             self.refresh(self.device).state,
             1
         )
+
 
     def test_should_set_device_states_when_set_group_to_off(self):
         response = self.logged_in_client.get(

@@ -16,7 +16,35 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
 
         // Update device without setting everything again.
         $scope.updateDevice = function(device){
-            _.set(_.find(_.flatten(_.map(_.flatten(_.values($scope.device_categories)), 'devices')), {id: device.id}), 'state', device.state)
+            //_.set(_.find(_.flatten(_.map(_.flatten(_.values($scope.device_categories)), 'devices')), {id: device.id}), 'state', device.state)
+            var old_device = _.find(
+                _.flatten(
+                    _.map(
+                        _.flatten(
+                            _.values($scope.device_categories)
+                        ),
+                        'devices'
+                    )
+                ),
+                {
+                    id: device.id
+                }
+            );
+
+            if(_.isUndefined(old_device)){
+                console.warn('Could not find device ', device.id);
+                return undefined;
+            }
+
+            // device change is newer or the same as the one we are trying to update with.
+            if(moment(old_device.changed).diff(device.changed) >= 0){
+                return undefined;
+            }
+
+            // Set device properties.
+            _.each(['changed', 'state'], function(property_name){
+                _.set(old_device, property_name, _.get(device, property_name));
+            });
         };
 
         get_category_object = function(json){
@@ -87,10 +115,6 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
 
                         $scope.device_categories[category_name] = category_items;
                     });
-
-                    console.log(
-                        $scope.device_categories
-                    )
                 }
             );
 
@@ -186,13 +210,15 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         };
 
 }]).controller('StartpageForecastController', ['$scope', '$window', 'focus',  'Restangular', function($scope, $window, focus, Restangular) {
+        $scope.grouped_forecasts = {};
+
         focus.broadcast('refresh-forecast');
 
         $scope.$on('refresh-forecast', function(){
-            delete $scope.grouped_forecasts;
-
             Restangular.all('forecast/short/').getList().then(function(forecasts){
-                $scope.grouped_forecasts = _.groupBy(
+                var grouped_forcecasts, existing_days, new_days;
+
+                grouped_forcecasts = _.groupBy(
                     _.flatten(forecasts),
                     function(forecast){
                         // Valid time or valid_time_min, whatevva
@@ -203,7 +229,74 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                     }
                 );
 
-                console.log($scope.grouped_forecasts);
+                new_days = _.keys(grouped_forcecasts);
+
+                // Remove old days
+                _.each(_.difference(_.keys($scope.grouped_forecasts), new_days), function (day_to_remove) {
+                    _.pullAt(
+                        $scope.grouped_forecasts,
+                        _.indexOf(_.keys($scope.grouped_forecasts), day_to_remove)
+                    );
+                });
+
+                // Go over all groups
+                _.each(grouped_forcecasts, function(forecasts, new_day){
+                    _.each(forecasts, function(forecast){
+                        // Now we are at the new forecast,
+                        var old_forecast = _.find(
+                            _.get(
+                                $scope.grouped_forecasts, new_day
+                            ),
+                            function(old_forecast){
+                                var old_valid_time, new_valid_time;
+
+                                old_valid_time = _.get(old_forecast, 'valid_time', _.get(old_forecast, 'valid_time__min'));
+                                new_valid_time = _.get(forecast, 'valid_time', _.get(forecast, 'valid_time__min'));
+
+                                return old_valid_time == new_valid_time;
+                            }
+                        );
+
+                        if(_.has(old_forecast, 'valid_time__min')){
+                            // Old forecast had valid_time__min
+                            delete old_forecast['valid_time__min'];
+                        }
+
+                        if(_.has(old_forecast, 'valid_time__max')){
+                            // Old forecast had valid_time__min
+                            delete old_forecast['valid_time__max'];
+                        }
+
+                        if(_.has(old_forecast, 'valid_time')){
+                            // Old forecast had valid_time__min
+                            delete old_forecast['valid_time'];
+                        }
+
+                        // Set new properties.
+                        _.each(_.keys(forecast), function(property_name){
+                            _.set(old_forecast, property_name, _.get(forecast, property_name));
+                        })
+                    });
+                });
+
+                // Add new days
+                _.each(_.difference(new_days, _.keys($scope.grouped_forecasts)), function (day_to_add) {
+                    if(!day_to_add || day_to_add === "null"){
+                        return true;
+                    }
+
+                    // Set new a new grouped forecast
+                    _.set(
+                        $scope.grouped_forecasts,
+                        // Day key
+                        day_to_add,
+                        // All items in the new forecasts
+                        _.get(
+                            grouped_forcecasts,
+                            day_to_add
+                        )
+                    );
+                });
             });
         });
 
@@ -213,9 +306,47 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         focus.broadcast('refresh-sensors');
 
         $scope.$on('refresh-sensors', function(){
-            Restangular.all('sensors/').getList().then(function(sensors){
+            var fetch_sensors = Restangular.all('sensors/').getList().then(function(response){
+                var sensors = response.plain()
+                _.each(sensors, function(sensor){
+                    sensor._bleh_history = [{
+                        data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
+                    }]
+                });
+
                 $scope.sensors = sensors;
+                console.log($scope.sensors);
             });
+
+            fetch_sensors.then(
+                function(){
+                    Restangular.all('sensors/history/').getList({
+                        hours: 24
+                    }).then(
+                        function(response){
+                            _.each(
+                                _.groupBy(response.plain(), 'sensor'),
+                                function(history, sensor_id){
+                                    _.set(
+                                        _.find($scope.sensors, {id: parseInt(sensor_id)}),
+                                        'history',
+                                        [{
+                                            data: _.map(
+                                                history,
+                                                function(history_item){
+                                                    return parseFloat(
+                                                        _.get(history_item, 'temperature_avg')
+                                                    )
+                                                }
+                                            )
+                                        }]
+                                    );
+                                }
+                            )
+                        }
+                    )
+                }
+            )
         });
 
         $scope.$broadcast('refresh-sensors');

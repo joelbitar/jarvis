@@ -15,9 +15,18 @@ var jarvis_sensor = angular.module('jarvis.sensor', ['ngRoute', 'restangular'])
             }
         )
     }]
-);
+).filter('isold', function (){
+        return function(input, seconds){
+            var m = moment(input);
 
-jarvis_sensor.config(['$routeProvider', function($routeProvider){
+            if(((m.diff(moment.now()) / 1000) + seconds) > 0){
+                // difference is in the future! this is Not old.
+                return false;
+            }
+
+            return true
+        }
+    }).config(['$routeProvider', function($routeProvider){
         $routeProvider.when(
             '/sensors/:id/',
             {
@@ -25,5 +34,53 @@ jarvis_sensor.config(['$routeProvider', function($routeProvider){
                 controller: 'SensorDetailController'
             }
         )
-    }]
-);
+    }])
+    .directive('sensorTeaserChart', function () {
+        return {
+            restrict: 'E',
+            template: '<div></div>',
+            scope: {
+                data: '='
+            },
+            legend: {
+                enabled: false
+            },
+            link: function (scope, element) {
+                console.log("data", scope.data);
+
+                if(scope.data === undefined){
+                    return false;
+                }
+
+                Highcharts.chart(element[0], {
+                    credits: {
+                        enabled: false
+                    },
+                    chart: {
+                        width: 320,
+                        height: 150
+                    },
+                    title: {
+                        text: ""
+                    },
+                    xAxis:{
+                        labels: {
+                            enabled: false
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            enabled: false
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    },
+                    series: scope.data
+                });
+            }
+        };
+    });

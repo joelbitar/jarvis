@@ -1,13 +1,25 @@
-<div layout="column" layout-xs="row" layout-align="start center" layout-align-xs="space-around center">
-    <div flex-xs="50">
-        <h4>
-            <a ng-href="#/sensors/{{ sensor.id }}/">{{ sensor.name }}</a>
-        </h4>
-    </div>
+<div layout="column" layout-align="space-between stretch">
+    <div layout="row" layout-align="space-between center">
+        <div flex-xs="50">
+            <h4>
+                <a ng-href="#/sensors/{{ sensor.id }}/">{{ sensor.name }}</a>
+            </h4>
+        </div>
 
-    <div flex-xs="50">
-        <div>
-            <span>{{ sensor.temperature }}°C</span> <span>{{ sensor.humidity }}%</span>
+        <div flex-xs="50">
+            <div>
+                <span>{{ sensor.temperature }}°C</span> <span>{{ sensor.humidity }}%</span>
+            </div>
+        </div>
+    </div>
+    <div layout="row" layout-align="space-between center" ng-show="sensor.updated | isold:600">
+        <div flex-xs="100">
+            Uppdaterad senast {{ sensor.updated | date : "medium"}}
+        </div>
+    </div>
+    <div layout="row" layout-align="space-between center">
+        <div flex-xs="100">
+            <sensor-teaser-chart data="sensor.history"></sensor-teaser-chart>
         </div>
     </div>
 </div>
