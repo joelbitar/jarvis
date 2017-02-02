@@ -1,4 +1,5 @@
 import os
+
 from decimal import Decimal
 from django.conf import settings
 from django.test import TestCase
@@ -13,6 +14,7 @@ from event.models import Signal, Sender
 import json
 
 from sensor.models import SensorDaily, SensorHourly
+from event.tests import SignalTestsHelper
 
 
 # Create your tests here.
@@ -501,6 +503,77 @@ class SensorMeanTests(TestCase):
             first_daily.temperature_avg,
             Decimal(21)
         )
+
+
+class SensorSignalTests(SignalTestsHelper):
+    def test_should_create_hourly_after_processing_a_sensor_signal(self):
+        signals = [
+            'class:sensor;protocol:fineoffset;id:33;model:temperaturehumidity;humidity:23;temp:23.0;'
+        ]
+
+        self.helper_parse_event(
+            *signals
+        )
+
+        self.assertEqual(
+            Sensor.objects.all().count(),
+            1
+        )
+
+        self.assertEqual(
+            SensorLog.objects.all().count(),
+            1
+        )
+
+        self.assertEqual(
+            SensorHourly.objects.all().count(),
+            1
+        )
+
+        self.assertEqual(
+            SensorDaily.objects.all().count(),
+            1
+        )
+
+        daily = SensorDaily.objects.all()[0]
+
+        self.assertEqual(
+            daily.temperature_latest,
+            Decimal(23.0)
+        )
+        self.assertEqual(
+            daily.temperature_avg,
+            Decimal(23.0)
+        )
+        self.assertEqual(
+            daily.temperature_min,
+            Decimal(23.0)
+        )
+        self.assertEqual(
+            daily.temperature_max,
+            Decimal(23.0)
+        )
+
+        self.assertEqual(
+            daily.humidity_latest,
+            Decimal(23.0)
+        )
+        self.assertEqual(
+            daily.humidity_avg,
+            Decimal(23.0)
+        )
+        self.assertEqual(
+            daily.humidity_min,
+            Decimal(23.0)
+        )
+        self.assertEqual(
+            daily.humidity_max,
+            Decimal(23.0)
+        )
+
+
+
+
 
 
 
