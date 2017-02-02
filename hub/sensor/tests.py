@@ -185,6 +185,47 @@ class SensorAPITests(HasLoggedInClientBase):
             1
         )
 
+    def test_when_there_is_multiple_sensors_we_should_produce_number_of_hours_for_all_sensors(self):
+        sensor2 = Sensor.objects.create(
+            name="sensor2"
+        )
+
+        sensor2.temperature = 22
+        sensor2.save()
+
+        for sensor in Sensor.objects.all():
+            for i in range(2, 31):
+                sensor.temperature = i - 10
+                sensor.humidity = i + 10
+                sensor.save()
+
+                sensor_log = SensorLog.objects.all().order_by('-pk')[0]
+
+                SensorLog.objects.filter(
+                    pk=sensor_log.pk
+                ).update(
+                    created=timezone.now() - timedelta(hours=i - 1)
+                )
+
+                log_entry = SensorLog.objects.get(pk=sensor_log.pk)
+                log_entry.save()
+
+        self.assertEqual(
+            SensorHourly.objects.all().count(),
+            Sensor.objects.all().count() * 30
+        )
+
+        response = self.get_json_response(
+            'sensors-history',
+            extra_url='?hours=24'
+        )
+
+        self.assertEqual(
+            len(response),
+            Sensor.objects.all().count() * 24
+        )
+
+
     def test_should_produce_temperature_and_humidity_history(self):
         self.sensor.temperature = -20
         self.sensor.humidity = 59

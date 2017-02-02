@@ -46,7 +46,8 @@ var jarvis_sensor = angular.module('jarvis.sensor', ['ngRoute', 'restangular'])
                 enabled: false
             },
             link: function (scope, element) {
-                console.log("data", scope.data);
+                var data = scope.data;
+                console.log("data", data);
 
                 if(scope.data === undefined){
                     return false;
@@ -64,9 +65,7 @@ var jarvis_sensor = angular.module('jarvis.sensor', ['ngRoute', 'restangular'])
                         text: ""
                     },
                     xAxis:{
-                        labels: {
-                            enabled: false
-                        }
+                        categories: data.categories
                     },
                     yAxis: {
                         title: {
@@ -79,7 +78,7 @@ var jarvis_sensor = angular.module('jarvis.sensor', ['ngRoute', 'restangular'])
                     tooltip: {
                         enabled: false
                     },
-                    series: scope.data
+                    series: data.series
                 });
             }
         };

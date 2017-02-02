@@ -333,13 +333,18 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                                         }
                                     );
 
-                                    console.log(sensor.name, history_data);
+                                    console.log(sensor.name, raw_history, history_data);
 
-                                    sensor.history = [
-                                        {
-                                            data: history_data
-                                        }
-                                    ];
+                                    sensor.history = {
+                                        categories: _.map(raw_history, function(history_item){
+                                            return moment(history_item.date_time).format('HH')
+                                        }),
+                                        series: [
+                                            {
+                                                data: history_data
+                                            }
+                                        ]
+                                    } ;
                                 }
                             );
 
