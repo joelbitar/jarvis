@@ -80,9 +80,12 @@ class CreateMeanBase(object):
 
         return SensorLog.objects.filter(
             sensor=sensor,
-            created__gte=search_at,
-            created__lt=search_at + timedelta(**lt)
+            created__range=[
+                search_at,
+                search_at + timedelta(**lt)
+            ]
         )
+
 
     # Check if a class instance exists.
     def get_mean_instance(self, search_time, sensor_log):
