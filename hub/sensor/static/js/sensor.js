@@ -9,9 +9,9 @@ var jarvis_sensor = angular.module('jarvis.sensor', ['ngRoute', 'restangular'])
             }
         );
 
-        Restangular.one('sensors', $routeParams.id).one('logs/').getList().then(
-            function(logs){
-                $scope.sensor_logs = logs;
+        Restangular.one('sensors/', $routeParams.id).one('history/').getList().then(
+            function(history){
+                console.log('History', history);
             }
         )
     }]

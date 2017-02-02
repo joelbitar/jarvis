@@ -54,10 +54,10 @@ class SensorHistoryBaseView(generics.ListAPIView):
         return int(days)
 
     def get_serializer_class(self):
-        if self.hours is not None:
+        if self.mean_cls.__name__ == 'SensorHourly':
             return SensorHourlySerializer
 
-        if self.days is not None:
+        if self.mean_cls.__name__ == 'SensorDaily':
             return SensorDailySerializer
 
     @property
@@ -65,17 +65,16 @@ class SensorHistoryBaseView(generics.ListAPIView):
         if self.days is not None:
             return SensorDaily
 
-        if self.hours is not None:
-            return SensorHourly
+        # Default to hourly
+        return SensorHourly
 
     @property
     def filter_kwargs(self):
         kwargs = {}
 
-        if self.hours is not None:
+        if self.mean_cls.__name__ == 'SensorHourly':
             kwargs['date_time__gte'] = timezone.now() - timedelta(hours=self.hours or 12)
-
-        if self.days is not None:
+        elif self.mean_cls.__name__ == 'SensorDaily':
             kwargs['date__gte'] = timezone.now() - timedelta(days=self.days or 1)
 
         if self.kwargs.get('sensor_pk', None) is not None:

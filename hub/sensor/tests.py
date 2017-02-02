@@ -157,6 +157,20 @@ class SensorAPITests(HasLoggedInClientBase):
             active=True
         )
 
+    def test_should_respond_with_latest_twentyfour_hours_as_default(self):
+        self.sensor.temperature = 22
+        self.sensor.save()
+        
+        response = self.get_json_response(
+            'sensors-history'
+        )
+
+        self.assertEqual(
+            len(response),
+            1
+        )
+
+
     def test_should_only_see_active_sensors(self):
         inactive_sensor = Sensor.objects.create(
             name='test',
