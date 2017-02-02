@@ -10,7 +10,8 @@ class SensorAdmin(admin.ModelAdmin):
 # Register your models here.
 @admin.register(SensorLog)
 class SensorLogAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("sensor", "temperature", "humidity", "created")
+    ordering = ('id',)
 
 
 class SensorMeanAdminBase(admin.ModelAdmin):
