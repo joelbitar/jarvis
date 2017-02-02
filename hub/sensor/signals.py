@@ -85,9 +85,10 @@ class CreateMeanBase(object):
         )
 
     # Check if a class instance exists.
-    def get_mean_instance(self, search_time):
+    def get_mean_instance(self, search_time, sensor_log):
         kwargs = {
-            self.time_property_name : search_time
+            self.time_property_name : search_time,
+            "sensor": sensor_log.sensor
         }
 
         try:
@@ -133,12 +134,12 @@ class CreateMeanBase(object):
             # No sensor data found
             raise ValueError('Could not find any sensor logs at this time')
 
-        hourly = self.get_mean_instance(search_time=search_time)
+        mean = self.get_mean_instance(search_time=search_time, sensor_log=instance)
 
         # If there is a hourly at this time
-        if hourly is not None:
+        if mean is not None:
             self.update_mean(
-                mean_instance=hourly,
+                mean_instance=mean,
                 log_instance=instance,
                 query=sensor_data
             )

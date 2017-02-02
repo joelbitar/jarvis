@@ -306,11 +306,8 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         focus.broadcast('refresh-sensors');
 
         $scope.$on('refresh-sensors', function(){
-            var sensors;
-            $scope.sensors = undefined;
-
             var fetch_sensors = Restangular.all('sensors/').getList().then(function(response){
-                sensors = response.plain();
+                $scope.sensors = response.plain();
             });
 
             fetch_sensors.then(
@@ -323,7 +320,7 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                                 _.groupBy(response.plain(), 'sensor'),
                                 function(raw_history, sensor_id){
                                     var history_data, sensor;
-                                    sensor = _.find(sensors, {id: parseInt(sensor_id)});
+                                    sensor = _.find($scope.sensors, {id: parseInt(sensor_id)});
                                     history_data =_.map(
                                         raw_history,
                                         function(history_item){
@@ -333,17 +330,20 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
                                         }
                                     );
 
-                                    console.log(sensor.name, history_data);
+                                    console.log(sensor.name, raw_history, history_data);
 
-                                    sensor.history = [
-                                        {
-                                            data: history_data
-                                        }
-                                    ];
+                                    sensor.history = {
+                                        categories: _.map(raw_history, function(history_item){
+                                            return moment(history_item.date_time).format('HH')
+                                        }),
+                                        series: [
+                                            {
+                                                data: history_data
+                                            }
+                                        ]
+                                    } ;
                                 }
                             );
-
-                            $scope.sensors = sensors;
                         }
                     )
                 }
