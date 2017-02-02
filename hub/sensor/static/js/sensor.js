@@ -45,11 +45,12 @@ var jarvis_sensor = angular.module('jarvis.sensor', ['ngRoute', 'restangular'])
             legend: {
                 enabled: false
             },
-            link: function (scope, element) {
-                var data = scope.data;
+            link: function ($scope, element) {
+                $scope.$watch('data', function(){
+                var data = $scope.data;
                 console.log("data", data);
 
-                if(scope.data === undefined){
+                if(data === undefined){
                     return false;
                 }
 
@@ -58,7 +59,7 @@ var jarvis_sensor = angular.module('jarvis.sensor', ['ngRoute', 'restangular'])
                         enabled: false
                     },
                     chart: {
-                        width: 320,
+                        width: 330,
                         height: 150
                     },
                     title: {
@@ -79,6 +80,8 @@ var jarvis_sensor = angular.module('jarvis.sensor', ['ngRoute', 'restangular'])
                         enabled: false
                     },
                     series: data.series
+                });
+
                 });
             }
         };
