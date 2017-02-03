@@ -88,6 +88,8 @@ class SensorMeanBase(models.Model):
     humidity_avg = models.SmallIntegerField(null=True, blank=True, default=None)
     humidity_latest = models.SmallIntegerField(null=True, blank=True, default=None)
 
+    updated = models.DateTimeField(auto_now=True)
+
     class Meta:
         abstract = True
 

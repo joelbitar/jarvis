@@ -303,51 +303,64 @@ var jarvis_startpage = angular.module('jarvis.startpage', ['ngRoute'])
         $scope.$broadcast('refresh-forecast');
 }])
 .controller('StartpageSensorController', ['$scope', 'focus', 'Restangular',  function($scope, focus, Restangular) {
+        $scope.sensors = undefined;
         focus.broadcast('refresh-sensors');
 
-        $scope.$on('refresh-sensors', function(){
-            var fetch_sensors = Restangular.all('sensors/').getList().then(function(response){
-                $scope.sensors = response.plain();
-            });
+        $scope.refreshSensorHistory = function(){
+            Restangular.all('sensors/history/').getList({
+                hours: 24
+            }).then(
+                function(response){
+                    _.each(
+                        _.groupBy(response.plain(), 'sensor'),
+                        function(raw_history, sensor_id){
+                            var history_data, sensor, last_history_item = _.last(raw_history);
+                            sensor = _.find($scope.sensors, {id: parseInt(sensor_id)});
+                            if(_.isUndefined(sensor)){
+                                // continue to next sensor
+                                return undefined;
+                            }
 
-            fetch_sensors.then(
-                function(){
-                    Restangular.all('sensors/history/').getList({
-                        hours: 24
-                    }).then(
-                        function(response){
-                            _.each(
-                                _.groupBy(response.plain(), 'sensor'),
-                                function(raw_history, sensor_id){
-                                    var history_data, sensor;
-                                    sensor = _.find($scope.sensors, {id: parseInt(sensor_id)});
-                                    history_data =_.map(
-                                        raw_history,
-                                        function(history_item){
-                                            return parseFloat(
-                                                _.get(history_item, 'temperature_avg')
-                                            )
-                                        }
-                                    );
-
-                                    console.log(sensor.name, raw_history, history_data);
-
-                                    sensor.history = {
-                                        categories: _.map(raw_history, function(history_item){
-                                            return moment(history_item.date_time).format('HH')
-                                        }),
-                                        series: [
-                                            {
-                                                data: history_data
-                                            }
-                                        ]
-                                    } ;
+                            history_data =_.map(
+                                raw_history,
+                                function(history_item){
+                                    return parseFloat(
+                                        _.get(history_item, 'temperature_avg')
+                                    )
                                 }
                             );
+
+                            sensor.history = {
+                                categories: _.map(raw_history, function(history_item){
+                                    return moment(history_item.date_time).format('HH')
+                                }),
+                                series: [
+                                    {
+                                        data: history_data
+                                    }
+                                ]
+                            };
+
+                            sensor.updated = _.get(last_history_item, 'updated');
+                            sensor.temperature = _.get(last_history_item, 'temperature_latest');
+                            sensor.humidity = _.get(last_history_item, 'humidity_latest');
                         }
-                    )
+                    );
                 }
             )
+
+
+        };
+
+        $scope.$on('refresh-sensors', function(){
+            if(_.isUndefined($scope.sensors)){
+                Restangular.all('sensors/').getList().then(function(response){
+                    $scope.sensors = response.plain();
+                    $scope.refreshSensorHistory();
+                });
+            }else{
+                $scope.refreshSensorHistory();
+            }
         });
 
         $scope.$broadcast('refresh-sensors');

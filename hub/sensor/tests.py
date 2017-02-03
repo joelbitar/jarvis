@@ -160,7 +160,7 @@ class SensorAPITests(HasLoggedInClientBase):
     def test_should_respond_with_latest_twentyfour_hours_as_default(self):
         self.sensor.temperature = 22
         self.sensor.save()
-        
+
         response = self.get_json_response(
             'sensors-history'
         )
@@ -241,6 +241,70 @@ class SensorAPITests(HasLoggedInClientBase):
             Sensor.objects.all().count() * 24
         )
 
+    def test_should_be_correct_computations_and_all_values_in_json_response(self):
+        for temperature, humidity in ((20, 50), (29, 60), (23, 58)):
+            self.sensor.temperature = temperature
+            self.sensor.humidity = humidity
+            self.sensor.save()
+
+
+        self.assertEqual(
+            SensorLog.objects.all().count(),
+            3
+        )
+
+        response = self.get_json_response(
+            'sensors-history',
+            extra_url='?hours=24'
+        )[0]
+
+        self.assertEqual(
+            response['temperature_avg'],
+            "24.0"
+        )
+
+        self.assertEqual(
+            response['temperature_min'],
+            "20.0"
+        )
+
+        self.assertEqual(
+            response['temperature_max'],
+            "29.0"
+        )
+
+        self.assertEqual(
+            response['temperature_latest'],
+            "23.0"
+        )
+
+        self.assertEqual(
+            response['humidity_avg'],
+            56
+        )
+
+        self.assertEqual(
+            response['humidity_min'],
+            50
+        )
+
+        self.assertEqual(
+            response['humidity_max'],
+            60
+        )
+
+        self.assertEqual(
+            response['humidity_latest'],
+            58
+        )
+
+        self.assertIsNotNone(
+            response['updated']
+        )
+
+        self.assertIsNotNone(
+            response['date_time']
+        )
 
     def test_should_produce_temperature_and_humidity_history(self):
         self.sensor.temperature = -20
