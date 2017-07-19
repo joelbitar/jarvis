@@ -584,7 +584,7 @@ class SensorMeanTests(TestCase):
 
 
 class SensorSignalTests(SignalTestsHelper):
-    def test_should_create_hourly_after_processing_a_sensor_signal(self):
+    def test_should_be_able_to_create_hourly_after_processing_a_sensor_signal(self):
         signals = [
             'class:sensor;protocol:fineoffset;id:33;model:temperaturehumidity;humidity:23;temp:23.0;'
         ]
@@ -613,45 +613,40 @@ class SensorSignalTests(SignalTestsHelper):
             1
         )
 
-        daily = SensorDaily.objects.all()[0]
+        mean = SensorHourly.objects.all()[0]
 
         self.assertEqual(
-            daily.temperature_latest,
+            mean.temperature_latest,
             Decimal(23.0)
         )
         self.assertEqual(
-            daily.temperature_avg,
+            mean.temperature_avg,
             Decimal(23.0)
         )
         self.assertEqual(
-            daily.temperature_min,
+            mean.temperature_min,
             Decimal(23.0)
         )
         self.assertEqual(
-            daily.temperature_max,
-            Decimal(23.0)
-        )
-
-        self.assertEqual(
-            daily.humidity_latest,
-            Decimal(23.0)
-        )
-        self.assertEqual(
-            daily.humidity_avg,
-            Decimal(23.0)
-        )
-        self.assertEqual(
-            daily.humidity_min,
-            Decimal(23.0)
-        )
-        self.assertEqual(
-            daily.humidity_max,
+            mean.temperature_max,
             Decimal(23.0)
         )
 
-
-
-
-
+        self.assertEqual(
+            mean.humidity_latest,
+            Decimal(23.0)
+        )
+        self.assertEqual(
+            mean.humidity_avg,
+            Decimal(23.0)
+        )
+        self.assertEqual(
+            mean.humidity_min,
+            Decimal(23.0)
+        )
+        self.assertEqual(
+            mean.humidity_max,
+            Decimal(23.0)
+        )
 
 

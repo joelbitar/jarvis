@@ -72,11 +72,12 @@ class CreateMeanBase(object):
         from sensor.models import SensorLog
         lt = {}
 
-        if self.mean_class_name == self.SENSOR_CLASS_NAME_HOURLY:
-            lt['hours'] = 1
+        lt['minutes'] = 59
+        lt['seconds'] = 59
 
+        # IF we are looking at dailies check entire day.
         if self.mean_class_name == self.SENSOR_CLASS_NAME_DAILY:
-            lt['days'] = 1
+            lt['hours'] = 23
 
         return SensorLog.objects.filter(
             sensor=sensor,
@@ -85,7 +86,6 @@ class CreateMeanBase(object):
                 search_at + timedelta(**lt)
             ]
         )
-
 
     # Check if a class instance exists.
     def get_mean_instance(self, search_time, sensor_log):
@@ -103,6 +103,8 @@ class CreateMeanBase(object):
 
         return None
 
+    # Get a timezone object describing when this log instance was created.
+    # Start att hour 0 for SensorDaily and the actual hour for SensorHourly
     def get_created_time(self, instance):
         kwargs = {
             "year": instance.created.year,
@@ -116,8 +118,9 @@ class CreateMeanBase(object):
         return timezone.make_aware(
             datetime(
                 **kwargs
-            )
-        ) + timedelta(hours=1)
+            ),
+            timezone=instance.created.tzinfo
+        )
 
     def create_log(self, sender, instance, **kwargs):
         if instance.humidity is None and instance.temperature is None:
